@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal AI Employee Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary-color: #4361ee; --secondary-color: #3f37c9; --success-color: #4cc9f0; --warning-color: #f72585; --dark-color: #1d3557; --light-color: #f8f9fa; }
+        body { background-color: #f5f7fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, var(--primary-color), var(--secondary-color)); color: white; height: 100vh; position: fixed; padding-top: 20px; }
+        .sidebar .nav-link { color: rgba(255, 255, 255, 0.7); padding: 12px 20px; margin: 5px 15px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255, 255, 255, 0.1); }
+        .main-content { margin-left: 250px; padding: 20px; }
+        .header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 30px; border-radius: 8px; margin-bottom: 25px; }
+        .stat-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); }
+        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; margin-bottom: 25px; }
+        .toast-container { z-index: 1050; }
+        
+        /* Animations */
+        @keyframes rainbow-text {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes glow-text {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 8px 40px rgba(102, 126, 234, 0.8); transform: scale(1.05); }
+        }
+        
+        @keyframes float-rocket {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        @keyframes bounce-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        @keyframes star-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animated-name {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .animated-name:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.8));
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block" id="sidebarMenu">
+        <div class="text-center mb-4 p-3 border-bottom">
+            <div class="avatar-container position-relative mx-auto mb-3" style="width: 100px; height: 100px;">
+                <div class="avatar bg-gradient rounded-circle d-flex align-items-center justify-content-center shadow-lg" style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 4px solid rgba(255,255,255,0.3); box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5); animation: pulse-glow 2s ease-in-out infinite;">
+                    <i class="fas fa-rocket fa-3x text-white" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); animation: float-rocket 3s ease-in-out infinite;"></i>
+                </div>
+                <div class="verified-badge position-absolute" style="bottom: 5px; right: 5px; background: linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 3px solid white; animation: bounce-badge 2s ease-in-out infinite;">
+                    <i class="fas fa-check text-white" style="font-size: 14px;"></i>
+                </div>
+            </div>
+            <h3 class="text-white mb-1 fw-bold animated-name" style="font-size: 22px; background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-size: 300% 300%; animation: rainbow-text 3s ease infinite, glow-text 2s ease-in-out infinite; text-shadow: 0 0 20px rgba(255,255,255,0.5);">Farha Khan</h3>
+            <p class="text-light mb-1 opacity-75" style="font-size: 13px; animation: fade-in 1s ease-in;">
+                <i class="fas fa-code me-1"></i>Created by
+            </p>
+            <small class="text-light opacity-75 d-block mb-2" style="animation: fade-in 1.5s ease-in;">
+                <i class="fas fa-robot me-1"></i>AI Employee System
+            </small>
+            <div class="mt-2">
+                <span class="badge bg-success shadow-sm" style="padding: 6px 12px; font-size: 12px; animation: pulse-badge 2s ease-in-out infinite;">
+                    <i class="fas fa-circle me-1" style="font-size: 8px;"></i>Online
+                </span>
+                <span class="badge bg-primary shadow-sm ms-1" style="padding: 6px 12px; font-size: 12px; animation: star-spin 3s linear infinite;">
+                    <i class="fas fa-star me-1"></i>Pro
+                </span>
+            </div>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-home me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="banking_system.html"><i class="fas fa-university me-2"></i>Banking</a></li>
+            <li class="nav-item"><a class="nav-link" href="order_system.html"><i class="fas fa-shopping-cart me-2"></i>Orders</a></li>
+            <li class="nav-item"><a class="nav-link" href="email_setup.html"><i class="fas fa-envelope me-2"></i>Email Setup</a></li>
+            <li class="nav-item"><a class="nav-link" href="whatsapp.html"><i class="fab fa-whatsapp me-2"></i>WhatsApp</a></li>
+            <li class="nav-item"><a class="nav-link" href="approval_workflow.html"><i class="fas fa-user-check me-2"></i>Approvals</a></li>
+            <li class="nav-item"><a class="nav-link" href="analytics.html"><i class="fas fa-chart-line me-2"></i>Analytics</a></li>
+            <li class="nav-item"><a class="nav-link" href="settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+            <li class="nav-item" style="margin-top: 60px;"><a class="nav-link" href="#" onclick="logout()" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-dashboard me-2"></i>Personal AI Employee Dashboard</h2>
+                <p class="mb-0 text-muted">Real-time monitoring and management system</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted" id="welcomeUser">Welcome, Admin</span>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+                <button class="btn btn-primary" onclick="refreshDashboard()">
+                    <i class="fas fa-sync me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <h5>System Status</h5>
+                    <h3>✓ Healthy</h3>
+                    <p class="text-success mb-0"><i class="fas fa-circle-check me-1"></i>All systems operational</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="border-left-color: #4cc9f0;">
+                    <h5>Emails Received</h5>
+                    <h3 id="emails-count">0</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-history me-1"></i>Today</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="border-left-color: #f72585;">
+                    <h5>Unread Emails</h5>
+                    <h3 id="unread-count">0</h3>
+                    <p class="text-warning mb-0"><i class="fas fa-envelope me-1"></i>Need attention</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="border-left-color: #1d3557;">
+                    <h5>Uptime</h5>
+                    <h3>99.9%</h3>
+                    <p class="text-success mb-0"><i class="fas fa-arrow-up me-1"></i>Last 30 days</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Email Inbox -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-inbox me-2 text-primary"></i> Live Email Inbox</h5>
+                <div>
+                    <span class="badge bg-warning" id="live-unread-count">0 Unread</span>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="addEmail()">
+                        <i class="fas fa-plus"></i> Test Email
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>From</th>
+                                <th>Subject</th>
+                                <th>Received</th>
+                            </tr>
+                        </thead>
+                        <tbody id="live-inbox-tbody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-5">
+                                    <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                                    <p class="lead">Waiting for emails...</p>
+                                    <p class="small">First email will arrive in 2 seconds</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Authentication Check - MUST BE FIRST
+        (function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const loginTime = localStorage.getItem('loginTime');
+            
+            if (isLoggedIn !== 'true' || !loginTime) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Check session expiry (24 hours)
+            const now = new Date().getTime();
+            const hoursSinceLogin = (now - parseInt(loginTime)) / (1000 * 60 * 60);
+            
+            if (hoursSinceLogin > 24) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('loginTime');
+                localStorage.removeItem('userRole');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            console.log('✓ User authenticated:', localStorage.getItem('username'));
+        })();
+        
+        // Email storage
+        let inboxEmails = [];
+        let nextEmailId = 1;
+        let audioContext = null;
+
+        // Sample emails
+        const sampleEmails = [
+            { from: 'client@example.com', subject: 'Project Update Request', body: 'Could you provide an update on the current project status?' },
+            { from: 'manager@company.com', subject: 'Meeting Tomorrow', body: 'Don\'t forget about our team meeting tomorrow at 10am.' },
+            { from: 'support@vendor.com', subject: 'Invoice #12345', body: 'Your invoice is attached.' },
+            { from: 'team@company.com', subject: 'Weekly Report', body: 'Please submit your weekly report.' },
+            { from: 'hr@company.com', subject: 'Holiday Request Approved', body: 'Your holiday request has been approved.' }
+        ];
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const colors = { success: 'bg-success', danger: 'bg-danger', warning: 'bg-warning', info: 'bg-info' };
+            const icons = { success: '✓', danger: '!', warning: '⚠', info: 'ℹ' };
+            const toastId = `toast-${Date.now()}`;
+            const toastHTML = `
+                <div id="${toastId}" class="toast" role="alert">
+                    <div class="toast-header ${colors[type]} text-white">
+                        <strong class="me-auto">${icons[type]} ${message}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.toast-container').insertAdjacentHTML('beforeend', toastHTML);
+            const toast = new bootstrap.Toast(document.getElementById(toastId), { delay: 4000 });
+            toast.show();
+            setTimeout(() => document.getElementById(toastId)?.remove(), 4500);
+        }
+
+        // Play notification sound (ding-dong)
+        function playNotificationSound() {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioContext.state === 'suspended') audioContext.resume();
+            
+            const now = audioContext.currentTime;
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+            osc1.frequency.value = 880;
+            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+            
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = 660;
+            gain2.gain.setValueAtTime(0, now + 0.25);
+            gain2.gain.linearRampToValueAtTime(0.3, now + 0.3);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            osc2.start(now + 0.25);
+            osc2.stop(now + 0.6);
+            
+            console.log('🔔 Notification sound played');
+        }
+
+        // Add new email
+        function addEmail() {
+            const randomEmail = sampleEmails[Math.floor(Math.random() * sampleEmails.length)];
+            const inboxEntry = {
+                id: nextEmailId++,
+                from: randomEmail.from,
+                subject: randomEmail.subject,
+                body: randomEmail.body,
+                timestamp: new Date(),
+                read: false
+            };
+
+            inboxEmails.push(inboxEntry);
+            console.log('📧 Email added:', inboxEmails.length, 'total');
+
+            showToast(`📧 New email from ${randomEmail.from.split('@')[0]}`, 'success');
+            playNotificationSound();
+            updateInboxDisplay();
+        }
+
+        // Update inbox display
+        function updateInboxDisplay() {
+            const tbody = document.getElementById('live-inbox-tbody');
+            if (!tbody) return;
+
+            if (inboxEmails.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-5"><i class="fas fa-inbox fa-3x mb-3"></i><p>Waiting for emails...</p></td></tr>';
+            } else {
+                tbody.innerHTML = '';
+                inboxEmails.slice(-10).reverse().forEach(email => {
+                    const row = document.createElement('tr');
+                    row.style.cursor = 'pointer';
+                    const timeString = email.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    row.innerHTML = `
+                        <td><span class="badge ${email.read ? 'bg-secondary' : 'bg-warning'}">${email.read ? 'Read' : 'Unread'}</span></td>
+                        <td>${email.from}</td>
+                        <td>${email.subject}</td>
+                        <td>${timeString}</td>
+                    `;
+                    row.addEventListener('click', function() {
+                        email.read = true;
+                        updateInboxDisplay();
+                        updateStats();
+                        alert(`From: ${email.from}\nSubject: ${email.subject}\n\n${email.body}`);
+                    });
+                    tbody.appendChild(row);
+                });
+            }
+
+            updateStats();
+        }
+
+        // Update stats
+        function updateStats() {
+            const unreadCount = inboxEmails.filter(e => !e.read).length;
+            document.getElementById('unread-count').textContent = unreadCount;
+            document.getElementById('emails-count').textContent = inboxEmails.length;
+            document.getElementById('live-unread-count').textContent = `${unreadCount} Unread`;
+        }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            showToast('Refreshing dashboard...', 'info');
+            setTimeout(() => showToast('Dashboard refreshed successfully', 'success'), 1000);
+        }
+
+        // Initialize audio on first click
+        document.addEventListener('click', function initAudio() {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioContext.state === 'suspended') audioContext.resume();
+            console.log('🎵 Audio initialized');
+        }, { once: true });
+
+        // Auto-add emails
+        setTimeout(addEmail, 2000);  // First email after 2 seconds
+        setInterval(addEmail, 10000); // Then every 10 seconds
+
+        // Initial display
+        updateInboxDisplay();
+        updateStats();
+
+        // Set welcome message
+        const username = localStorage.getItem('username') || 'Admin';
+        document.getElementById('welcomeUser').textContent = 'Welcome, ' + username;
+
+        console.log('✅ Dashboard loaded. Emails will arrive automatically!');
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('loginTime');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('username');
+                localStorage.removeItem('gmail_connected');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Setup - AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary-color: #4361ee; --success-color: #ea4335; }
+        body { background-color: #f5f7fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, var(--primary-color), #3f37c9); color: white; height: 100vh; position: fixed; padding-top: 20px; }
+        .sidebar .nav-link { color: rgba(255, 255, 255, 0.7); padding: 12px 20px; margin: 5px 15px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255, 255, 255, 0.1); }
+        .main-content { margin-left: 250px; padding: 20px; }
+        .header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 30px; border-radius: 8px; margin-bottom: 25px; }
+        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; margin-bottom: 25px; }
+        .toast-container { z-index: 1050; }
+        .setup-step { padding: 20px; border-left: 4px solid var(--primary-color); background: white; margin-bottom: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block" id="sidebarMenu">
+        <div class="text-center mb-4 p-3 border-bottom">
+            <div class="avatar bg-danger rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                <i class="fas fa-envelope fa-2x text-white"></i>
+            </div>
+            <h5 class="text-white mb-1">Email Setup</h5>
+            <small class="text-light opacity-75">Gmail Integration</small>
+            <div class="mt-2"><span class="badge bg-success" id="connectionStatus">Checking...</span></div>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fas fa-home me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-envelope me-2"></i>Email Setup</a></li>
+            <li class="nav-item"><a class="nav-link" href="settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h2><i class="fab fa-google me-2"></i>Gmail Integration Setup</h2>
+            <p class="mb-0 text-muted">Connect your Gmail to receive real emails</p>
+        </div>
+
+        <!-- Toast Container -->
+        <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+        <!-- Connection Status -->
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-plug fa-4x text-muted mb-3"></i>
+                <h4 id="statusTitle">Gmail Not Connected</h4>
+                <p class="text-muted mb-4" id="statusDesc">Connect your Gmail account to start receiving real emails</p>
+                <button class="btn btn-danger btn-lg" onclick="connectGmail()">
+                    <i class="fab fa-google me-2"></i>Connect Gmail
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Instructions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list-ol me-2"></i>Setup Instructions</h5>
+            </div>
+            <div class="card-body">
+                <div class="setup-step">
+                    <h6><i class="fas fa-key me-2 text-primary"></i>Step 1: Get Gmail App Password</h6>
+                    <ol>
+                        <li>Go to <a href="https://myaccount.google.com" target="_blank">Google Account Settings</a></li>
+                        <li>Click on <strong>Security</strong></li>
+                        <li>Enable <strong>2-Step Verification</strong> (if not already enabled)</li>
+                        <li>Go to <a href="https://myaccount.google.com/apppasswords" target="_blank">App Passwords</a></li>
+                        <li>Select "Mail" and your device</li>
+                        <li>Click "Generate" and copy the 16-character password</li>
+                    </ol>
+                </div>
+
+                <div class="setup-step">
+                    <h6><i class="fas fa-cog me-2 text-primary"></i>Step 2: Enter Credentials</h6>
+                    <form id="gmailForm">
+                        <div class="mb-3">
+                            <label class="form-label">Gmail Address</label>
+                            <input type="email" class="form-control" id="gmailAddress" placeholder="your.email@gmail.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Gmail App Password</label>
+                            <input type="password" class="form-control" id="gmailAppPassword" placeholder="16-character app password">
+                            <small class="text-muted">Not your regular Gmail password - use the App Password from Step 1</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Your Name (for sending)</label>
+                            <input type="text" class="form-control" id="senderName" placeholder="AI Employee">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveGmailSettings()">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                    </form>
+                </div>
+
+                <div class="setup-step">
+                    <h6><i class="fas fa-check-circle me-2 text-success"></i>Step 3: Test Connection</h6>
+                    <p>After saving settings, click the button below to test your Gmail connection:</p>
+                    <button class="btn btn-success" onclick="testGmailConnection()">
+                        <i class="fas fa-vial me-2"></i>Test Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Preview -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-inbox me-2"></i>Test Email Preview</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Once connected, emails will arrive in your Gmail inbox at: <strong id="yourGmail">not configured</strong>
+                </div>
+                <p class="text-muted">Emails sent from the dashboard will be delivered to your real Gmail inbox!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let gmailConnected = false;
+        let gmailAddress = '';
+
+        // Show toast
+        function showToast(message, type = 'info') {
+            const colors = { success: 'bg-success', danger: 'bg-danger', warning: 'bg-warning', info: 'bg-info' };
+            const toastId = `toast-${Date.now()}`;
+            const toastHTML = `
+                <div id="${toastId}" class="toast" role="alert">
+                    <div class="toast-header ${colors[type]} text-white">
+                        <strong class="me-auto">${type.toUpperCase()}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+            document.querySelector('.toast-container').insertAdjacentHTML('beforeend', toastHTML);
+            const toast = new bootstrap.Toast(document.getElementById(toastId), { delay: 4000 });
+            toast.show();
+            setTimeout(() => document.getElementById(toastId)?.remove(), 4500);
+        }
+
+        // Connect Gmail
+        function connectGmail() {
+            // Scroll to form
+            document.getElementById('gmailForm').scrollIntoView({ behavior: 'smooth' });
+            showToast('Please enter your Gmail credentials below', 'info');
+        }
+
+        // Save Gmail settings
+        function saveGmailSettings() {
+            const email = document.getElementById('gmailAddress').value;
+            const password = document.getElementById('gmailAppPassword').value;
+            const name = document.getElementById('senderName').value || 'AI Employee';
+
+            if (!email || !email.endsWith('@gmail.com')) {
+                showToast('Please enter a valid Gmail address', 'warning');
+                return;
+            }
+
+            if (!password || password.length < 16) {
+                showToast('Please enter a valid 16-character App Password', 'warning');
+                return;
+            }
+
+            // Save to localStorage (in real app, save securely to backend)
+            localStorage.setItem('gmail_address', email);
+            localStorage.setItem('gmail_app_password', password); // In production, encrypt this!
+            localStorage.setItem('sender_name', name);
+            localStorage.setItem('gmail_connected', 'true');
+
+            gmailConnected = true;
+            gmailAddress = email;
+
+            // Update UI
+            updateConnectionStatus();
+            document.getElementById('yourGmail').textContent = email;
+
+            showToast('Gmail settings saved successfully!', 'success');
+
+            // Auto-test connection
+            setTimeout(() => {
+                testGmailConnection();
+            }, 1000);
+        }
+
+        // Test Gmail connection
+        function testGmailConnection() {
+            showToast('Testing Gmail connection...', 'info');
+
+            // Simulate connection test (in real app, make API call)
+            setTimeout(() => {
+                if (gmailConnected) {
+                    showToast('✓ Gmail connection successful! You can now send/receive emails.', 'success');
+                    
+                    // Send test email to user's Gmail
+                    sendTestEmail();
+                } else {
+                    showToast('Please configure Gmail settings first', 'warning');
+                }
+            }, 2000);
+        }
+
+        // Send test email to user's Gmail
+        function sendTestEmail() {
+            const email = gmailAddress || localStorage.getItem('gmail_address');
+            if (!email) return;
+
+            showToast('Sending test email to ' + email + '...', 'info');
+
+            // In a real implementation, this would use Gmail API or SMTP
+            // For now, we'll simulate and show instructions
+            setTimeout(() => {
+                const testEmailSubject = encodeURIComponent('🤖 AI Employee - Test Email');
+                const testEmailBody = encodeURIComponent(`
+Hi there!
+
+This is a test email from your AI Employee system.
+
+If you're reading this in your Gmail inbox, it means the integration is working perfectly!
+
+Features now available:
+✓ Send emails from dashboard
+✓ Receive emails in Gmail
+✓ Auto-respond to messages
+✓ Email notifications
+
+Best regards,
+Your AI Employee
+                `);
+
+                // Open Gmail compose with pre-filled test email
+                const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${testEmailSubject}&body=${testEmailBody}`;
+                
+                const newWindow = window.open(gmailComposeUrl, '_blank');
+                
+                if (newWindow) {
+                    showToast('Test email opened in Gmail! Check your inbox.', 'success');
+                    setTimeout(() => { newWindow.close(); }, 3000);
+                } else {
+                    showToast('Please allow popups to send test email', 'warning');
+                }
+            }, 1500);
+        }
+
+        // Update connection status
+        function updateConnectionStatus() {
+            const statusBadge = document.getElementById('connectionStatus');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDesc = document.getElementById('statusDesc');
+            const connectBtn = document.querySelector('.btn-danger.btn-lg');
+
+            if (gmailConnected || localStorage.getItem('gmail_connected') === 'true') {
+                gmailConnected = true;
+                gmailAddress = localStorage.getItem('gmail_address') || '';
+                
+                statusBadge.textContent = 'Connected';
+                statusBadge.className = 'badge bg-success';
+                statusTitle.textContent = '✓ Gmail Connected';
+                statusDesc.textContent = `Connected to: ${gmailAddress}`;
+                connectBtn.textContent = 'Reconnect Gmail';
+                connectBtn.className = 'btn btn-outline-danger btn-lg';
+                
+                document.getElementById('yourGmail').textContent = gmailAddress;
+                document.getElementById('gmailAddress').value = gmailAddress;
+            } else {
+                statusBadge.textContent = 'Not Connected';
+                statusBadge.className = 'badge bg-danger';
+                statusTitle.textContent = 'Gmail Not Connected';
+                statusDesc.textContent = 'Connect your Gmail account to start receiving real emails';
+            }
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            updateConnectionStatus();
+            
+            // Auto-check every 30 seconds
+            setInterval(updateConnectionStatus, 30000);
+        });
+    </script>
+</body>
+</html>

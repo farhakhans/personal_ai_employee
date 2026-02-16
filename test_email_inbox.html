@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Inbox Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f5f7fb; padding: 20px; }
+        .card { box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px; }
+        .toast-container { z-index: 1050; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">📧 Email Inbox Test</h1>
+        
+        <!-- Toast Container -->
+        <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+        
+        <!-- Email Stats -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 id="unread-count">0</h3>
+                        <p>Unread Emails</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 id="total-count">0</h3>
+                        <p>Total Emails</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3>Sound: <span id="sound-status">ON</span></h3>
+                        <p>Click to toggle</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Inbox Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-inbox me-2"></i> Inbox</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="simulateNewEmails()">
+                        <i class="fas fa-plus"></i> Add Test Email
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="updateInboxDisplay()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>From</th>
+                            <th>Subject</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inbox-tbody">
+                        <tr><td colspan="4" class="text-center text-muted">No emails yet. Click "Add Test Email"</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Email storage
+        let inboxEmails = [];
+        let nextEmailId = 1;
+        let soundEnabled = true;
+        let audioContext = null;
+
+        // Sample emails
+        const sampleEmails = [
+            { from: 'client@example.com', subject: 'Project Update Request', body: 'Could you provide an update on the current project status?' },
+            { from: 'manager@company.com', subject: 'Meeting Tomorrow', body: 'Don\'t forget about our team meeting tomorrow at 10am.' },
+            { from: 'support@vendor.com', subject: 'Invoice #12345', body: 'Your invoice is attached.' },
+            { from: 'team@company.com', subject: 'Weekly Report', body: 'Please submit your weekly report.' },
+            { from: 'hr@company.com', subject: 'Holiday Request Approved', body: 'Your holiday request has been approved.' }
+        ];
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toastId = `toast-${Date.now()}`;
+            const toastHTML = `
+                <div id="${toastId}" class="toast" role="alert">
+                    <div class="toast-header bg-${type} text-white">
+                        <strong class="me-auto">${message}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.toast-container').insertAdjacentHTML('beforeend', toastHTML);
+            const toast = new bootstrap.Toast(document.getElementById(toastId));
+            toast.show();
+            setTimeout(() => document.getElementById(toastId)?.remove(), 5000);
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            if (!soundEnabled) return;
+            
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const now = audioContext.currentTime;
+            
+            // First tone (high)
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+            osc1.frequency.value = 880;
+            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+            
+            // Second tone (low)
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = 660;
+            gain2.gain.setValueAtTime(0, now + 0.25);
+            gain2.gain.linearRampToValueAtTime(0.3, now + 0.3);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            osc2.start(now + 0.25);
+            osc2.stop(now + 0.6);
+            
+            console.log('🔔 Sound played');
+        }
+
+        // Add new email
+        function simulateNewEmails() {
+            const randomEmail = sampleEmails[Math.floor(Math.random() * sampleEmails.length)];
+            const inboxEntry = {
+                id: nextEmailId++,
+                from: randomEmail.from,
+                subject: randomEmail.subject,
+                body: randomEmail.body,
+                timestamp: new Date(),
+                read: false
+            };
+
+            inboxEmails.push(inboxEntry);
+            console.log('📧 Email added:', inboxEmails.length, 'total');
+
+            // Show toast
+            showToast(`📧 New email from ${randomEmail.from.split('@')[0]}`, 'success');
+            
+            // Play sound
+            playNotificationSound();
+
+            // Update display
+            updateInboxDisplay();
+            updateStats();
+        }
+
+        // Update inbox display
+        function updateInboxDisplay() {
+            const tbody = document.getElementById('inbox-tbody');
+            if (!tbody) return;
+
+            if (inboxEmails.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No emails yet. Click "Add Test Email"</td></tr>';
+            } else {
+                tbody.innerHTML = '';
+                inboxEmails.slice(-10).reverse().forEach(email => {
+                    const row = document.createElement('tr');
+                    row.style.cursor = 'pointer';
+                    row.innerHTML = `
+                        <td><span class="badge ${email.read ? 'bg-secondary' : 'bg-warning'}">${email.read ? 'Read' : 'Unread'}</span></td>
+                        <td>${email.from}</td>
+                        <td>${email.subject}</td>
+                        <td>${email.timestamp.toLocaleTimeString()}</td>
+                    `;
+                    row.addEventListener('click', () => viewEmail(email.id));
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('unread-count').textContent = inboxEmails.filter(e => !e.read).length;
+            document.getElementById('total-count').textContent = inboxEmails.length;
+        }
+
+        // View email
+        function viewEmail(id) {
+            const email = inboxEmails.find(e => e.id === id);
+            if (email) {
+                email.read = true;
+                updateInboxDisplay();
+                updateStats();
+                alert(`From: ${email.from}\nSubject: ${email.subject}\n\n${email.body}`);
+            }
+        }
+
+        // Toggle sound
+        document.querySelectorAll('.card.bg-warning').forEach(card => {
+            card.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                document.getElementById('sound-status').textContent = soundEnabled ? 'ON' : 'OFF';
+                showToast(`Sound notifications ${soundEnabled ? 'enabled' : 'disabled'}`, 'info');
+            });
+        });
+
+        // Initialize audio on first click
+        document.addEventListener('click', function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            console.log('🎵 Audio initialized');
+        }, { once: true });
+
+        // Auto-add emails every 5 seconds
+        setTimeout(simulateNewEmails, 1000);
+        setInterval(simulateNewEmails, 5000);
+
+        // Initial display
+        updateInboxDisplay();
+        updateStats();
+    </script>
+</body>
+</html>

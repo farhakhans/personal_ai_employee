@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Workflow - Personal AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --dark-color: #1d3557;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 50px;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 20px;
+            border-radius: 0;
+            margin: 5px 15px;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: none;
+            margin-bottom: 25px;
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .workflow-step {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 25px;
+        }
+        
+        .workflow-step:not(:last-child):after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 8px;
+            bottom: -20px;
+            width: 2px;
+            background: var(--primary-color);
+        }
+        
+        .step-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        
+        .status-pending { background-color: #ffedd5; color: #ea580c; }
+        .status-approved { background-color: #dcfce7; color: #16a34a; }
+        .status-rejected { background-color: #fee2e2; color: #dc2626; }
+        .status-processing { background-color: #dbeafe; color: #2563eb; }
+        
+        .priority-critical { background-color: #fee2e2; color: #dc2626; }
+        .priority-high { background-color: #ffedd5; color: #ea580c; }
+        .priority-medium { background-color: #fef3c7; color: #d97706; }
+        .priority-low { background-color: #dcfce7; color: #16a34a; }
+        
+        .table th {
+            border-top: none;
+        }
+        
+        .action-btn {
+            padding: 5px 12px;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="position-sticky pt-3">
+            <div class="text-center mb-4 p-3">
+                <h4><i class="fas fa-robot me-2"></i>AI Employee</h4>
+                <p class="small opacity-75">v1.0.0</p>
+            </div>
+            
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-home me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-envelope me-2"></i> Email Processing
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-tasks me-2"></i> Task Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="fas fa-user-check me-2"></i> Approvals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-chart-line me-2"></i> Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-shield-alt me-2"></i> Security
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="mt-4 px-3">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-light" type="button">
+                        <i class="fas fa-sync me-2"></i> Refresh System
+                    </button>
+                    <button class="btn btn-danger" type="button">
+                        <i class="fas fa-power-off me-2"></i> Shutdown
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-user-check me-2"></i>Approval Workflow</h2>
+                <p class="mb-0 text-muted">Human-in-the-Loop (HITL) approval system</p>
+            </div>
+            <div>
+                <button class="btn btn-primary"><i class="fas fa-bell me-2"></i>Alerts <span class="badge bg-danger">2</span></button>
+            </div>
+        </div>
+
+        <!-- Approval Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center py-3">
+                    <div class="card-body">
+                        <h3 class="text-success">8</h3>
+                        <p class="text-muted mb-0">Approved</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center py-3">
+                    <div class="card-body">
+                        <h3 class="text-warning">2</h3>
+                        <p class="text-muted mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center py-3">
+                    <div class="card-body">
+                        <h3 class="text-danger">1</h3>
+                        <p class="text-muted mb-0">Rejected</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center py-3">
+                    <div class="card-body">
+                        <h3 class="text-info">11</h3>
+                        <p class="text-muted mb-0">Total Actions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Workflow Process -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-project-diagram me-2 text-primary"></i> Approval Workflow Process</h5>
+            </div>
+            <div class="card-body">
+                <div class="workflow-step">
+                    <div class="step-icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <h5>1. Request Initiation</h5>
+                    <p class="text-muted">AI Employee identifies task requiring human approval based on business rules</p>
+                </div>
+                
+                <div class="workflow-step">
+                    <div class="step-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h5>2. Risk Assessment</h5>
+                    <p class="text-muted">System evaluates risk level and determines approval hierarchy</p>
+                </div>
+                
+                <div class="workflow-step">
+                    <div class="step-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h5>3. Notification</h5>
+                    <p class="text-muted">Stakeholders notified via email/dashboard alert</p>
+                </div>
+                
+                <div class="workflow-step">
+                    <div class="step-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <h5>4. Review & Decision</h5>
+                    <p class="text-muted">Human reviewer examines request and makes approval decision</p>
+                </div>
+                
+                <div class="workflow-step">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5>5. Action Execution</h5>
+                    <p class="text-muted">Approved requests executed by AI Employee, rejected requests logged</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Management Controls -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2 text-primary"></i> Approval Management</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary me-2" id="createApprovalBtn">Create Approval</button>
+                    <button class="btn btn-sm btn-primary">Refresh</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="filterStatus">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <label for="filterStatus">Filter by Status</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="filterPriority">
+                                <option value="all">All Priorities</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                            <label for="filterPriority">Filter by Priority</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="filterType">
+                                <option value="all">All Types</option>
+                                <option value="payment">Payment</option>
+                                <option value="project">Project</option>
+                                <option value="purchase">Purchase</option>
+                                <option value="access">Access</option>
+                            </select>
+                            <label for="filterType">Filter by Type</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success w-100 h-100" id="applyFiltersBtn">
+                            <i class="fas fa-filter me-1"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approvals Table -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2 text-warning"></i> Pending Approvals</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary me-2" id="selectAllBtn">Select All</button>
+                    <button class="btn btn-sm btn-success me-2" id="bulkApproveBtn">Bulk Approve</button>
+                    <button class="btn btn-sm btn-danger" id="bulkRejectBtn">Bulk Reject</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                                    </div>
+                                </th>
+                                <th>Request ID</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Priority</th>
+                                <th>Type</th>
+                                <th>Requested By</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input approval-checkbox" type="checkbox" value="1">
+                                    </div>
+                                </td>
+                                <td>#APP-2026-001</td>
+                                <td>Payment Request: Office Supplies</td>
+                                <td>$2,500.00</td>
+                                <td><span class="badge priority-high">High</span></td>
+                                <td><span class="badge bg-info">Payment</span></td>
+                                <td>AI Employee</td>
+                                <td>2 hours ago</td>
+                                <td><span class="badge status-pending">Pending</span></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-success approve-btn">Approve</button>
+                                        <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary details-btn">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input approval-checkbox" type="checkbox" value="2">
+                                    </div>
+                                </td>
+                                <td>#APP-2026-002</td>
+                                <td>Project Deadline Extension</td>
+                                <td>N/A</td>
+                                <td><span class="badge priority-medium">Medium</span></td>
+                                <td><span class="badge bg-warning">Project</span></td>
+                                <td>AI Employee</td>
+                                <td>5 hours ago</td>
+                                <td><span class="badge status-pending">Pending</span></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-success approve-btn">Approve</button>
+                                        <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary details-btn">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input approval-checkbox" type="checkbox" value="3">
+                                    </div>
+                                </td>
+                                <td>#APP-2026-003</td>
+                                <td>Software License Purchase</td>
+                                <td>$1,200.00</td>
+                                <td><span class="badge priority-high">High</span></td>
+                                <td><span class="badge bg-success">Purchase</span></td>
+                                <td>AI Employee</td>
+                                <td>1 day ago</td>
+                                <td><span class="badge status-pending">Pending</span></td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-success approve-btn">Approve</button>
+                                        <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary details-btn">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Approval Modal -->
+        <div class="modal fade" id="createApprovalModal" tabindex="-1" aria-labelledby="createApprovalModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createApprovalModalLabel">Create New Approval Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="approvalForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="approvalTitle" class="form-label">Request Title</label>
+                                        <input type="text" class="form-control" id="approvalTitle" placeholder="Enter request title" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="approvalType" class="form-label">Request Type</label>
+                                        <select class="form-select" id="approvalType" required>
+                                            <option value="">Select type</option>
+                                            <option value="payment">Payment</option>
+                                            <option value="project">Project</option>
+                                            <option value="purchase">Purchase</option>
+                                            <option value="access">Access</option>
+                                            <option value="contract">Contract</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="approvalAmount" class="form-label">Amount (if applicable)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="approvalAmount" placeholder="0.00">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="approvalPriority" class="form-label">Priority</label>
+                                        <select class="form-select" id="approvalPriority" required>
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="approvalDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="approvalDescription" rows="3" placeholder="Provide detailed description of the request" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="approver" class="form-label">Required Approver Level</label>
+                                <select class="form-select" id="approver" required>
+                                    <option value="manager">Manager</option>
+                                    <option value="director">Director</option>
+                                    <option value="executive">Executive</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="submitApprovalBtn">Submit Request</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Rules -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-gavel me-2 text-success"></i> Approval Rules Configuration</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Financial Approvals</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Amount > $1,000
+                                <span class="badge bg-primary">Manager Approval</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Amount > $5,000
+                                <span class="badge bg-primary">Director Approval</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Amount > $10,000
+                                <span class="badge bg-primary">Executive Approval</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Operational Approvals</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                New vendor setup
+                                <span class="badge bg-primary">Finance + Legal</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Contract extensions
+                                <span class="badge bg-primary">Legal Approval</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                System access changes
+                                <span class="badge bg-primary">IT Manager</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval History -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2 text-info"></i> Approval History</h5>
+                <div>
+                    <div class="btn-group me-2">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Export</button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item export-btn" href="#" data-format="csv">Export as CSV</a></li>
+                            <li><a class="dropdown-item export-btn" href="#" data-format="json">Export as JSON</a></li>
+                            <li><a class="dropdown-item export-btn" href="#" data-format="pdf">Export as PDF</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary me-2">Filter</button>
+                    <button class="btn btn-sm btn-primary">Refresh</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Approver</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#APP-2026-005</td>
+                                <td>Office Supplies Purchase</td>
+                                <td>$1,200.00</td>
+                                <td>John Smith</td>
+                                <td>Feb 14, 2026</td>
+                                <td><span class="badge status-approved">Approved</span></td>
+                                <td>Standard procurement</td>
+                            </tr>
+                            <tr>
+                                <td>#APP-2026-004</td>
+                                <td>Software License Renewal</td>
+                                <td>$850.00</td>
+                                <td>Sarah Johnson</td>
+                                <td>Feb 13, 2026</td>
+                                <td><span class="badge status-approved">Approved</span></td>
+                                <td>Required for operations</td>
+                            </tr>
+                            <tr>
+                                <td>#APP-2026-003</td>
+                                <td>Marketing Campaign Budget</td>
+                                <td>$5,000.00</td>
+                                <td>Michael Brown</td>
+                                <td>Feb 10, 2026</td>
+                                <td><span class="badge status-rejected">Rejected</span></td>
+                                <td>Budget exceeded limits</td>
+                            </tr>
+                            <tr>
+                                <td>#APP-2026-002</td>
+                                <td>Travel Expenses</td>
+                                <td>$1,200.00</td>
+                                <td>Emily Davis</td>
+                                <td>Feb 8, 2026</td>
+                                <td><span class="badge status-approved">Approved</span></td>
+                                <td>Client meeting approved</td>
+                            </tr>
+                            <tr>
+                                <td>#APP-2026-001</td>
+                                <td>Equipment Purchase</td>
+                                <td>$3,500.00</td>
+                                <td>Robert Wilson</td>
+                                <td>Feb 5, 2026</td>
+                                <td><span class="badge status-approved">Approved</span></td>
+                                <td>Needed for project</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-light action-btn w-100 h-100 d-flex flex-column align-items-center justify-content-center" data-action="create-approval">
+                            <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                            <span>Create Request</span>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-light action-btn w-100 h-100 d-flex flex-column align-items-center justify-content-center" data-action="bulk-approve">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <span>Bulk Approve</span>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-light action-btn w-100 h-100 d-flex flex-column align-items-center justify-content-center" data-action="export-data">
+                            <i class="fas fa-file-export fa-2x text-info mb-2"></i>
+                            <span>Export Data</span>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-light action-btn w-100 h-100 d-flex flex-column align-items-center justify-content-center" data-action="settings">
+                            <i class="fas fa-cog fa-2x text-secondary mb-2"></i>
+                            <span>Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Settings Modal -->
+        <div class="modal fade" id="approvalSettingsModal" tabindex="-1" aria-labelledby="approvalSettingsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="approvalSettingsModalLabel">Approval Settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Approval Rules</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Auto-approve requests under:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="autoApproveLimit" value="50">
+                                    </div>
+                                    <div class="form-text">Requests below this amount will be auto-approved</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Require manager approval for amounts:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="managerApprovalLimit" value="1000">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Require director approval for amounts:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="directorApprovalLimit" value="5000">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6>Notifications</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        Send email notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                                    <label class="form-check-label" for="pushNotifications">
+                                        Send push notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="slackNotifications">
+                                    <label class="form-check-label" for="slackNotifications">
+                                        Send Slack notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Notification frequency:</label>
+                                    <select class="form-select" id="notificationFrequency">
+                                        <option value="immediate">Immediate</option>
+                                        <option value="daily">Daily Digest</option>
+                                        <option value="weekly">Weekly Digest</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6>Workflow Settings</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="enableDelegation" checked>
+                                    <label class="form-check-label" for="enableDelegation">
+                                        Enable approval delegation
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="enableEscalation" checked>
+                                    <label class="form-check-label" for="enableEscalation">
+                                        Enable escalation for overdue approvals
+                                    </label>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Escalation timeframe (hours):</label>
+                                    <input type="number" class="form-control" id="escalationTimeframe" value="24">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6>Security Settings</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="requireTwoFactor" checked>
+                                    <label class="form-check-label" for="requireTwoFactor">
+                                        Require two-factor authentication for approvals
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="enableAuditTrail" checked>
+                                    <label class="form-check-label" for="enableAuditTrail">
+                                        Enable detailed audit trail
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="requireDigitalSignature">
+                                    <label class="form-check-label" for="requireDigitalSignature">
+                                        Require digital signature for high-value approvals
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="saveApprovalSettings">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer mt-5">
+            <p>Personal AI Employee System v1.0.0 | Enterprise-Grade Automation Platform</p>
+            <p class="mb-0">Powered by Claude AI | MCP Servers | Resilient Architecture</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simulate real-time updates
+        function updateApprovals() {
+            // In a real implementation, this would fetch data from your backend
+            console.log("Checking for new approval requests...");
+        }
+
+        // Update approvals every 30 seconds
+        setInterval(updateApprovals, 30000);
+
+        // Initialize
+        updateApprovals();
+
+        // Approval management system
+        let approvals = [
+            { id: 1, requestId: '#APP-2026-001', title: 'Payment Request: Office Supplies', description: 'Payment to vendor for office supplies', amount: 2500.00, type: 'payment', priority: 'high', requestedBy: 'AI Employee', submitted: '2 hours ago', status: 'pending' },
+            { id: 2, title: 'Project Deadline Extension', description: 'Request to extend deadline by 2 weeks', amount: null, type: 'project', priority: 'medium', requestedBy: 'AI Employee', submitted: '5 hours ago', status: 'pending' },
+            { id: 3, title: 'Software License Purchase', description: 'Purchase of new software license', amount: 1200.00, type: 'purchase', priority: 'high', requestedBy: 'AI Employee', submitted: '1 day ago', status: 'pending' }
+        ];
+
+        // Add click handlers for action buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Action buttons
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    switch(action) {
+                        case 'create-approval':
+                            openCreateApprovalModal();
+                            break;
+                        case 'bulk-approve':
+                            bulkApproveSelected();
+                            break;
+                        case 'export-data':
+                            alert('Exporting approval data...');
+                            break;
+                        case 'settings':
+                            alert('Opening approval settings...');
+                            break;
+                        default:
+                            alert('Action not implemented yet.');
+                    }
+                });
+            });
+
+            // Approval action buttons (Approve/Reject/Details)
+            const approveButtons = document.querySelectorAll('.approve-btn');
+            const rejectButtons = document.querySelectorAll('.reject-btn');
+            const detailsButtons = document.querySelectorAll('.details-btn');
+
+            // Add event listeners to approve buttons
+            approveButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const approvalId = row.querySelector('.approval-checkbox').value;
+                    approveRequest(parseInt(approvalId));
+                });
+            });
+
+            // Add event listeners to reject buttons
+            rejectButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const approvalId = row.querySelector('.approval-checkbox').value;
+                    rejectRequest(parseInt(approvalId));
+                });
+            });
+
+            // Add event listeners to details buttons
+            detailsButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const approvalId = row.querySelector('.approval-checkbox').value;
+                    showApprovalDetails(parseInt(approvalId));
+                });
+            });
+
+            // Create approval button
+            const createApprovalBtn = document.getElementById('createApprovalBtn');
+            if (createApprovalBtn) {
+                createApprovalBtn.addEventListener('click', openCreateApprovalModal);
+            }
+
+            // Submit approval button
+            const submitApprovalBtn = document.getElementById('submitApprovalBtn');
+            if (submitApprovalBtn) {
+                submitApprovalBtn.addEventListener('click', submitApprovalRequest);
+            }
+
+            // Select all checkbox
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.approval-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+            }
+
+            // Select all button
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', function() {
+                    const checkboxes = document.querySelectorAll('.approval-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                });
+            }
+
+            // Bulk approve button
+            const bulkApproveBtn = document.getElementById('bulkApproveBtn');
+            if (bulkApproveBtn) {
+                bulkApproveBtn.addEventListener('click', bulkApproveSelected);
+            }
+
+            // Bulk reject button
+            const bulkRejectBtn = document.getElementById('bulkRejectBtn');
+            if (bulkRejectBtn) {
+                bulkRejectBtn.addEventListener('click', bulkRejectSelected);
+            }
+
+            // Apply filters button
+            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+            if (applyFiltersBtn) {
+                applyFiltersBtn.addEventListener('click', applyFilters);
+            }
+
+            // Initialize approval event listeners
+            attachApprovalEventListeners();
+        });
+
+        // Function to attach approval event listeners
+        function attachApprovalEventListeners() {
+            // Reattach event listeners after any DOM updates
+            const approveButtons = document.querySelectorAll('.approve-btn');
+            const rejectButtons = document.querySelectorAll('.reject-btn');
+            const detailsButtons = document.querySelectorAll('.details-btn');
+
+            approveButtons.forEach(button => {
+                button.removeEventListener('click', handleApproveClick);
+                button.addEventListener('click', handleApproveClick);
+            });
+
+            rejectButtons.forEach(button => {
+                button.removeEventListener('click', handleRejectClick);
+                button.addEventListener('click', handleRejectClick);
+            });
+
+            detailsButtons.forEach(button => {
+                button.removeEventListener('click', handleDetailsClick);
+                button.addEventListener('click', handleDetailsClick);
+            });
+        }
+
+        // Handle approve button click
+        function handleApproveClick(event) {
+            const row = event.target.closest('tr');
+            const approvalId = row.querySelector('.approval-checkbox').value;
+            approveRequest(parseInt(approvalId));
+        }
+
+        // Handle reject button click
+        function handleRejectClick(event) {
+            const row = event.target.closest('tr');
+            const approvalId = row.querySelector('.approval-checkbox').value;
+            rejectRequest(parseInt(approvalId));
+        }
+
+        // Handle details button click
+        function handleDetailsClick(event) {
+            const row = event.target.closest('tr');
+            const approvalId = row.querySelector('.approval-checkbox').value;
+            showApprovalDetails(parseInt(approvalId));
+        }
+
+        // Approve a request
+        function approveRequest(approvalId) {
+            const approval = approvals.find(a => a.id === approvalId);
+            if (approval) {
+                approval.status = 'approved';
+                updateApprovalUI(approvalId, 'approved');
+                alert(`Request #${approval.requestId} has been approved`);
+            }
+        }
+
+        // Reject a request
+        function rejectRequest(approvalId) {
+            const approval = approvals.find(a => a.id === approvalId);
+            if (approval) {
+                approval.status = 'rejected';
+                updateApprovalUI(approvalId, 'rejected');
+                alert(`Request #${approval.requestId} has been rejected`);
+            }
+        }
+
+        // Show approval details
+        function showApprovalDetails(approvalId) {
+            const approval = approvals.find(a => a.id === approvalId);
+            if (approval) {
+                alert(`Details for Request #${approval.requestId}:\n\nTitle: ${approval.title}\nDescription: ${approval.description}\nAmount: $${approval.amount || 'N/A'}\nType: ${approval.type}\nPriority: ${approval.priority}\nStatus: ${approval.status}\nRequested by: ${approval.requestedBy}\nSubmitted: ${approval.submitted}`);
+            }
+        }
+
+        // Update approval UI after action
+        function updateApprovalUI(approvalId, status) {
+            const row = document.querySelector(`.approval-checkbox[value="${approvalId}"]`).closest('tr');
+            if (row) {
+                const statusCell = row.cells[8]; // Status column
+                statusCell.innerHTML = `<span class="badge status-${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+                
+                // Disable action buttons after approval/rejection
+                const actionCell = row.cells[9]; // Actions column
+                const approveBtn = actionCell.querySelector('.btn-success');
+                const rejectBtn = actionCell.querySelector('.btn-danger');
+                
+                if (approveBtn) approveBtn.disabled = true;
+                if (rejectBtn) rejectBtn.disabled = true;
+            }
+        }
+
+        // Open create approval modal
+        function openCreateApprovalModal() {
+            const modal = new bootstrap.Modal(document.getElementById('createApprovalModal'));
+            modal.show();
+        }
+
+        // Submit approval request
+        function submitApprovalRequest() {
+            const title = document.getElementById('approvalTitle').value;
+            const type = document.getElementById('approvalType').value;
+            const amount = document.getElementById('approvalAmount').value;
+            const priority = document.getElementById('approvalPriority').value;
+            const description = document.getElementById('approvalDescription').value;
+            const approver = document.getElementById('approver').value;
+
+            if (!title || !type || !priority || !description) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Create new approval object
+            const newApproval = {
+                id: approvals.length + 1,
+                requestId: `#APP-2026-${String(approvals.length + 1).padStart(3, '0')}`,
+                title: title,
+                description: description,
+                amount: amount ? parseFloat(amount) : null,
+                type: type,
+                priority: priority,
+                requestedBy: 'Current User',
+                submitted: 'Just now',
+                status: 'pending'
+            };
+
+            approvals.push(newApproval);
+            alert(`Approval request "${title}" has been submitted successfully`);
+
+            // Reset form and close modal
+            document.getElementById('approvalForm').reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createApprovalModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+
+        // Bulk approve selected requests
+        function bulkApproveSelected() {
+            const selectedIds = Array.from(document.querySelectorAll('.approval-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selectedIds.length === 0) {
+                alert('Please select at least one approval request');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to approve ${selectedIds.length} request(s)?`)) {
+                selectedIds.forEach(id => approveRequest(id));
+            }
+        }
+
+        // Bulk reject selected requests
+        function bulkRejectSelected() {
+            const selectedIds = Array.from(document.querySelectorAll('.approval-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selectedIds.length === 0) {
+                alert('Please select at least one approval request');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to reject ${selectedIds.length} request(s)?`)) {
+                selectedIds.forEach(id => rejectRequest(id));
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const priorityFilter = document.getElementById('filterPriority').value;
+            const typeFilter = document.getElementById('filterType').value;
+
+            // In a real implementation, this would filter the approval list
+            // For now, just show an alert
+            alert(`Applying filters:\nStatus: ${statusFilter}\nPriority: ${priorityFilter}\nType: ${typeFilter}`);
+        }
+
+        // Export data functions
+        function exportApprovals(format) {
+            if (approvals.length === 0) {
+                alert('No approvals to export');
+                return;
+            }
+
+            if (format === 'csv') {
+                exportApprovalsAsCSV();
+            } else if (format === 'json') {
+                exportApprovalsAsJSON();
+            } else if (format === 'pdf') {
+                alert('PDF export would be implemented with a library like jsPDF');
+            }
+        }
+
+        function exportApprovalsAsCSV() {
+            // Create CSV content
+            let csvContent = "Request ID,Title,Description,Amount,Type,Priority,Requested By,Submitted,Status\n";
+            
+            approvals.forEach(approval => {
+                const amount = approval.amount ? `$${approval.amount.toFixed(2)}` : 'N/A';
+                csvContent += `"${approval.requestId}","${approval.title}","${approval.description}","${amount}","${approval.type}","${approval.priority}","${approval.requestedBy}","${approval.submitted}","${approval.status}"\n`;
+            });
+
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `approvals_export_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportApprovalsAsJSON() {
+            const data = {
+                exportDate: new Date().toISOString(),
+                exportedBy: 'Current User',
+                approvals: approvals
+            };
+
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `approvals_export_${new Date().toISOString().slice(0,10)}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Settings functionality
+        function openApprovalSettings() {
+            // In a real implementation, this would open a settings modal
+            alert('Approval settings would open in a modal');
+        }
+
+        // Add event listener for export buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add export buttons if they exist
+            const exportButtons = document.querySelectorAll('.export-btn');
+            exportButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const format = this.getAttribute('data-format');
+                    exportApprovals(format);
+                });
+            });
+
+            // Add settings button listener if it exists
+            const settingsButton = document.querySelector('[data-action="settings"]');
+            if (settingsButton) {
+                settingsButton.addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('approvalSettingsModal'));
+                    modal.show();
+                });
+            }
+            
+            // Add save settings button listener
+            const saveSettingsBtn = document.getElementById('saveApprovalSettings');
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', function() {
+                    saveApprovalSettings();
+                });
+            }
+        });
+        
+        // Function to save approval settings
+        function saveApprovalSettings() {
+            // Get values from form
+            const autoApproveLimit = document.getElementById('autoApproveLimit').value;
+            const managerApprovalLimit = document.getElementById('managerApprovalLimit').value;
+            const directorApprovalLimit = document.getElementById('directorApprovalLimit').value;
+            const emailNotifications = document.getElementById('emailNotifications').checked;
+            const pushNotifications = document.getElementById('pushNotifications').checked;
+            const slackNotifications = document.getElementById('slackNotifications').checked;
+            const notificationFrequency = document.getElementById('notificationFrequency').value;
+            const enableDelegation = document.getElementById('enableDelegation').checked;
+            const enableEscalation = document.getElementById('enableEscalation').checked;
+            const escalationTimeframe = document.getElementById('escalationTimeframe').value;
+            const requireTwoFactor = document.getElementById('requireTwoFactor').checked;
+            const enableAuditTrail = document.getElementById('enableAuditTrail').checked;
+            const requireDigitalSignature = document.getElementById('requireDigitalSignature').checked;
+            
+            // In a real implementation, these values would be saved to a database or local storage
+            // For now, we'll just show an alert
+            alert('Approval settings saved successfully!');
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('approvalSettingsModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    </script>
+</body>
+</html>

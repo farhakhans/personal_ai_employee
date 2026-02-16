@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fb;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-btn {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #3f37c9;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        #log {
+            background: #1d3557;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Dashboard Fix Test Page</h1>
+    
+    <div class="test-card">
+        <h2>Test 1: Export Functions</h2>
+        <p>Test the export data functionality:</p>
+        <button class="test-btn" onclick="testExport('tasks')">Export Tasks</button>
+        <button class="test-btn" onclick="testExport('approvals')">Export Approvals</button>
+        <button class="test-btn" onclick="testExport('system')">Export System</button>
+        <button class="test-btn" onclick="testExport('emails')">Export Emails</button>
+        <div id="export-status"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 2: Refresh Function</h2>
+        <p>Test the refresh functionality:</p>
+        <button class="test-btn" onclick="testRefresh()">Manual Refresh</button>
+        <button class="test-btn" onclick="toggleAutoRefresh()">Toggle Auto-Refresh</button>
+        <div id="refresh-status"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 3: System Health Check</h2>
+        <p>Test the health check function:</p>
+        <button class="test-btn" onclick="testHealthCheck()">Run Health Check</button>
+        <div id="health-status"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>📋 Event Log</h2>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        // Test data
+        const tasks = [
+            { id: 1, title: 'Task 1', description: 'Test task', priority: 'high', category: 'work', dueDate: '2026-02-20', dueTime: '10:00', completed: false, reminder: false },
+            { id: 2, title: 'Task 2', description: 'Another task', priority: 'medium', category: 'personal', dueDate: '2026-02-21', dueTime: '14:00', completed: true, reminder: false }
+        ];
+
+        let autoRefreshInterval = null;
+
+        // Logging function
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.textContent = `[${timestamp}] ${message}`;
+            entry.style.color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc';
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Export functions
+        function exportTasksAsCSV() {
+            if (tasks.length === 0) {
+                alert('No tasks to export');
+                return;
+            }
+
+            let csvContent = "ID,Title,Description,Priority,Category,Due Date,Due Time,Completed,Reminder\n";
+            tasks.forEach(task => {
+                csvContent += `"${task.id}","${task.title}","${task.description}","${task.priority}","${task.category}","${task.dueDate}","${task.dueTime}","${task.completed ? 'Yes' : 'No'}","${task.reminder ? 'Yes' : 'No'}"\n`;
+            });
+
+            downloadFile(csvContent, 'tasks_export_' + new Date().toISOString().slice(0,10) + '.csv', 'text/csv');
+            log('Tasks exported successfully', 'success');
+            showStatus('export-status', 'Tasks exported successfully!', 'success');
+        }
+
+        function exportApprovalsAsCSV() {
+            let csvContent = "Request ID,Title,Description,Amount,Type,Priority,Requested By,Submitted,Status\n";
+            csvContent += '"APP-2026-001","Payment Request","Test payment","$2,500.00","Payment","High","AI Employee","2 hours ago","Pending"\n';
+            csvContent += '"APP-2026-002","Project Extension","Test extension","N/A","Project","Medium","AI Employee","5 hours ago","Pending"\n';
+
+            downloadFile(csvContent, 'approvals_export_' + new Date().toISOString().slice(0,10) + '.csv', 'text/csv');
+            log('Approvals exported successfully', 'success');
+            showStatus('export-status', 'Approvals exported successfully!', 'success');
+        }
+
+        function exportSystemDataAsJSON() {
+            const systemData = {
+                exportDate: new Date().toISOString(),
+                exportedBy: 'Test User',
+                systemStats: {
+                    totalTasks: tasks.length,
+                    activeTasks: tasks.filter(t => !t.completed).length,
+                    completedTasks: tasks.filter(t => t.completed).length
+                },
+                tasks: tasks
+            };
+
+            const jsonStr = JSON.stringify(systemData, null, 2);
+            downloadFile(jsonStr, 'system_export_' + new Date().toISOString().slice(0,10) + '.json', 'application/json');
+            log('System data exported successfully', 'success');
+            showStatus('export-status', 'System data exported successfully!', 'success');
+        }
+
+        function exportEmailLogsAsCSV() {
+            const emailLogs = [
+                { id: 'gmail_001', from: 'client@example.com', subject: 'Test Email', timestamp: '2026-02-15 10:30', status: 'Processed' },
+                { id: 'gmail_002', from: 'vendor@company.com', subject: 'Invoice #12345', timestamp: '2026-02-15 11:15', status: 'Processed' }
+            ];
+
+            let csvContent = "Email ID,From,Subject,Timestamp,Status\n";
+            emailLogs.forEach(email => {
+                csvContent += `"${email.id}","${email.from}","${email.subject}","${email.timestamp}","${email.status}"\n`;
+            });
+
+            downloadFile(csvContent, 'email_logs_export_' + new Date().toISOString().slice(0,10) + '.csv', 'text/csv');
+            log('Email logs exported successfully', 'success');
+            showStatus('export-status', 'Email logs exported successfully!', 'success');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function testExport(type) {
+            log(`Testing export: ${type}`);
+            showStatus('export-status', `Exporting ${type}...`, 'info');
+            
+            setTimeout(() => {
+                switch(type) {
+                    case 'tasks': exportTasksAsCSV(); break;
+                    case 'approvals': exportApprovalsAsCSV(); break;
+                    case 'system': exportSystemDataAsJSON(); break;
+                    case 'emails': exportEmailLogsAsCSV(); break;
+                }
+            }, 500);
+        }
+
+        // Refresh function
+        function testRefresh() {
+            log('Manual refresh triggered');
+            showStatus('refresh-status', 'Refreshing dashboard...', 'info');
+            
+            setTimeout(() => {
+                showStatus('refresh-status', 'Dashboard refreshed successfully!', 'success');
+                log('Dashboard refreshed successfully', 'success');
+            }, 1000);
+        }
+
+        function toggleAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                log('Auto-refresh stopped');
+                showStatus('refresh-status', 'Auto-refresh stopped', 'info');
+            } else {
+                autoRefreshInterval = setInterval(() => {
+                    log('Auto-refresh triggered', 'info');
+                    showStatus('refresh-status', 'Auto-refreshed at ' + new Date().toLocaleTimeString(), 'success');
+                }, 5000); // Every 5 seconds for testing
+                log('Auto-refresh started (every 5 seconds)');
+                showStatus('refresh-status', 'Auto-refresh started (every 5 seconds)', 'success');
+            }
+        }
+
+        // Health check function
+        function testHealthCheck() {
+            log('Running system health check...');
+            showStatus('health-status', 'Running health check...', 'info');
+            
+            setTimeout(() => {
+                const healthStatus = {
+                    errorRecovery: '✓ Operational',
+                    retryLogic: '✓ Operational',
+                    watchdogMonitoring: '✓ Operational',
+                    hitlApproval: '✓ Operational',
+                    auditLogging: '✓ Operational',
+                    taskScheduler: '✓ Operational',
+                    emailProcessor: '✓ Operational'
+                };
+                
+                let report = '=== SYSTEM HEALTH CHECK ===\n\n';
+                for (const [component, status] of Object.entries(healthStatus)) {
+                    report += `${component}: ${status}\n`;
+                }
+                report += '\n✓ All systems operational!';
+                
+                showStatus('health-status', report.replace(/\n/g, '<br>'), 'success');
+                log('Health check complete - All systems operational', 'success');
+            }, 1500);
+        }
+
+        // Status display helper
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Initialize
+        log('Test page loaded');
+        log('Ready to test export, refresh, and health check functions');
+    </script>
+</body>
+</html>

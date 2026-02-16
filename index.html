@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 900px;
+            width: 90%;
+        }
+        
+        .login-left {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .login-right {
+            padding: 60px 40px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .remember-me input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .login-left {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="row g-0">
+            <!-- Left Side - Features -->
+            <div class="col-md-6 login-left d-none d-md-flex">
+                <div>
+                    <div class="logo">
+                        <i class="fas fa-robot fa-3x"></i>
+                    </div>
+                    <h1 class="mb-3">AI Employee System</h1>
+                    <p class="lead">Your intelligent automation assistant</p>
+                    
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check-circle"></i> Automated Email Processing</li>
+                        <li><i class="fas fa-check-circle"></i> WhatsApp Integration</li>
+                        <li><i class="fas fa-check-circle"></i> Task Management</li>
+                        <li><i class="fas fa-check-circle"></i> Approval Workflows</li>
+                        <li><i class="fas fa-check-circle"></i> Real-time Analytics</li>
+                        <li><i class="fas fa-check-circle"></i> 24/7 Automation</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Right Side - Login Form -->
+            <div class="col-md-6">
+                <div class="login-right">
+                    <h2 class="mb-2">Welcome Back!</h2>
+                    <p class="text-muted mb-4">Sign in to access your AI Employee</p>
+                    
+                    <!-- Error Message -->
+                    <div class="error-message" id="errorMessage">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span id="errorText">Invalid credentials</span>
+                    </div>
+                    
+                    <!-- Success Message -->
+                    <div class="success-message" id="successMessage">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span id="successText">Login successful! Redirecting...</span>
+                    </div>
+                    
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" placeholder="your.email@gmail.com" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="remember-me">
+                            <input type="checkbox" id="rememberMe">
+                            <label for="rememberMe">Remember me for 30 days</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                        
+                        <div class="text-center">
+                            <a href="#" class="forgot-password" onclick="showForgotPassword()">Forgot Password?</a>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="text-muted mb-0">Demo Credentials:</p>
+                        <small class="text-muted">Email: <strong>any@gmail.com</strong></small><br>
+                        <small class="text-muted">Password: <strong>admin123</strong></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Default credentials (in production, use backend authentication)
+        const DEFAULT_CREDENTIALS = {
+            email: 'any@gmail.com',
+            password: 'admin123'
+        };
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const loginTime = localStorage.getItem('loginTime');
+            
+            if (isLoggedIn === 'true' && loginTime) {
+                // Check if session is still valid (24 hours)
+                const now = new Date().getTime();
+                const hoursSinceLogin = (now - parseInt(loginTime)) / (1000 * 60 * 60);
+                
+                if (hoursSinceLogin < 24) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Session expired
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('loginTime');
+                    localStorage.removeItem('userRole');
+                }
+            }
+        });
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // Handle login
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            // Hide previous messages
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Validate email format
+            if (!email || !email.includes('@') || !email.includes('.')) {
+                document.getElementById('errorText').textContent = 'Please enter a valid email address';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
+            // Validate password (any password works for demo)
+            if (password.length < 1) {
+                document.getElementById('errorText').textContent = 'Please enter your password';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
+            // Login successful (in production, verify against backend)
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // Set session
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('loginTime', new Date().getTime());
+            localStorage.setItem('email', email);
+            localStorage.setItem('username', email.split('@')[0]); // Use email prefix as username
+            localStorage.setItem('userRole', 'user');
+            
+            if (rememberMe) {
+                localStorage.setItem('rememberMe', 'true');
+            }
+            
+            // Log the login event
+            logLoginEvent(email);
+            
+            // Redirect to dashboard after 1.5 seconds
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+        }
+
+        // Log login event
+        function logLoginEvent(email) {
+            const loginLog = {
+                email: email,
+                timestamp: new Date().toISOString(),
+                ip: 'N/A',
+                userAgent: navigator.userAgent
+            };
+            
+            // Save to localStorage
+            const loginHistory = JSON.parse(localStorage.getItem('loginHistory') || '[]');
+            loginHistory.push(loginLog);
+            localStorage.setItem('loginHistory', JSON.stringify(loginHistory.slice(-10)));
+        }
+
+        // Show forgot password
+        function showForgotPassword() {
+            alert('Password reset functionality would be implemented here.\n\nFor demo, use:\nEmail: any@gmail.com\nPassword: admin123');
+        }
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
