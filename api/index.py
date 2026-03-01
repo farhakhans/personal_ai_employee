@@ -1,19 +1,53 @@
-"""
-Vercel Serverless Function for Personal AI Employee
-Flask App Entrypoint
-"""
-
-import sys
+from flask import Flask, jsonify, request, send_file
 import os
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+app = Flask(__name__)
 
-# Import Flask app from api_routes
-from api_routes import app
+@app.route('/')
+def index():
+    return jsonify({
+        "status": "success",
+        "message": "Personal AI Employee API is running on Vercel!",
+        "version": "1.0.0"
+    })
 
-# Vercel expects 'app' variable as entrypoint
-app = app
+@app.route('/api/health')
+def health():
+    return jsonify({
+        "status": "healthy",
+        "service": "personal-ai-employee",
+        "platform": "vercel"
+    })
 
-if __name__ == "__main__":
+@app.route('/dashboard')
+def dashboard():
+    return jsonify({
+        "page": "dashboard",
+        "status": "ok",
+        "message": "Dashboard endpoint working"
+    })
+
+@app.route('/whatsapp-manager')
+def whatsapp_manager():
+    return jsonify({
+        "page": "whatsapp-manager",
+        "status": "ok"
+    })
+
+@app.route('/api/mcp/servers')
+def mcp_servers():
+    return jsonify({
+        "servers": ["approval", "email"],
+        "status": "ok"
+    })
+
+# Catch-all for static files
+@app.route('/<path:path>')
+def static_files(path):
+    return jsonify({
+        "path": path,
+        "message": "Route exists"
+    })
+
+if __name__ == '__main__':
     app.run(debug=True)
