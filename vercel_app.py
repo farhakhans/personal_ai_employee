@@ -1,19 +1,27 @@
-from flask import Flask, jsonify
+"""
+Personal AI Employee - Vercel Serverless Entry Point
+Simplified for Vercel deployment
+"""
 
-app = Flask(__name__)
+import sys
+import os
+from pathlib import Path
 
-@app.route('/')
-def index():
-    return jsonify({
-        "status": "success",
-        "message": "Personal AI Employee API is running!",
-        "timestamp": "2026-03-01"
-    })
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-@app.route('/api/health')
-def health():
-    return jsonify({"status": "healthy", "service": "personal-ai-employee"})
+# Set environment for Vercel
+os.environ['VERCEL'] = '1'
+os.environ['VAULT_PATH'] = '/tmp/vault'
 
-@app.route('/dashboard')
-def dashboard():
-    return jsonify({"page": "dashboard", "status": "ok"})
+# Import Flask app
+from api_routes import app
+
+# Vercel serverless handler
+def handler(request):
+    """Vercel serverless handler for Python"""
+    return app(request.environ, lambda *args: None)
+
+# For local testing
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=8080)

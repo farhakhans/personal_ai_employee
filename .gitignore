@@ -66,3 +66,4 @@ htmlcov/
 *.key
 secret*
 config*.json
+.vercel

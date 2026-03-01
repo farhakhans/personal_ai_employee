@@ -2398,16 +2398,28 @@ try:
 except Exception as e:
     print(f"Social media integration not available: {e}")
 
-# Initialize database on startup
-with app.app_context():
-    init_db()
+# Database initialization flag
+_db_initialized = False
 
+def ensure_db_initialized():
+    """Ensure database is initialized (lazy loading for serverless)"""
+    global _db_initialized
+    if not _db_initialized:
+        with app.app_context():
+            init_db()
+        _db_initialized = True
+
+# For local development only - Vercel will lazy load
 if __name__ == '__main__':
+    # Initialize database on startup for local dev
+    with app.app_context():
+        init_db()
+    
     import sys
     # Set UTF-8 encoding for Windows console
     if sys.platform == 'win32':
         sys.stdout.reconfigure(encoding='utf-8')
-    
+
     print("=" * 70)
     print("PERSONAL AI EMPLOYEE - COMPLETE UNIFIED SYSTEM")
     print("=" * 70)
