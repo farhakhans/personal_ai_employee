@@ -1,14 +1,22 @@
-from flask import Flask, jsonify, send_file, request
+from flask import Flask, jsonify, send_file, request, make_response
 import os
+import mimetypes
 
 app = Flask(__name__)
 
 # Get the directory where this file is located
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Set proper MIME types
+mimetypes.add_type('text/html', '.html')
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('application/javascript', '.js')
+
 @app.route('/')
 def index():
-    return send_file(os.path.join(BASE_DIR, 'dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/api/health')
 def health():
@@ -20,43 +28,63 @@ def health():
 
 @app.route('/dashboard')
 def dashboard():
-    return send_file(os.path.join(BASE_DIR, 'dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/whatsapp-manager')
 def whatsapp_manager():
-    return send_file(os.path.join(BASE_DIR, 'whatsapp_manager.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'whatsapp_manager.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/whatsapp_analysis.html')
 def whatsapp_analysis():
-    return send_file(os.path.join(BASE_DIR, 'whatsapp_analysis.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'whatsapp_analysis.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/banking_system.html')
 def banking_system():
-    return send_file(os.path.join(BASE_DIR, 'banking_system.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'banking_system.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/analytics.html')
 def analytics():
-    return send_file(os.path.join(BASE_DIR, 'analytics.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'analytics.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/bronze_dashboard.html')
 def bronze_dashboard():
-    return send_file(os.path.join(BASE_DIR, 'bronze_dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'bronze_dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/silver_dashboard.html')
 def silver_dashboard():
-    return send_file(os.path.join(BASE_DIR, 'silver_dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'silver_dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/gold_dashboard.html')
 def gold_dashboard():
-    return send_file(os.path.join(BASE_DIR, 'gold_dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'gold_dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/platinum_dashboard.html')
 def platinum_dashboard():
-    return send_file(os.path.join(BASE_DIR, 'platinum_dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'platinum_dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/complete_dashboard.html')
 def complete_dashboard():
-    return send_file(os.path.join(BASE_DIR, 'complete_dashboard.html'))
+    response = make_response(send_file(os.path.join(BASE_DIR, 'complete_dashboard.html')))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/agent-skills')
 def agent_skills():
@@ -78,7 +106,9 @@ def serve_html(filename):
     if filename.endswith('.html'):
         filepath = os.path.join(BASE_DIR, filename)
         if os.path.exists(filepath):
-            return send_file(filepath)
+            response = make_response(send_file(filepath))
+            response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            return response
     
     return jsonify({
         "error": "Not found",
