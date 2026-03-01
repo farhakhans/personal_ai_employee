@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
+        .box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #5568d3; }
+        .output { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 20px; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { background: #d1ecf1; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>🔐 Test Login</h2>
+        
+        <div class="info">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Click "Login" button below</li>
+                <li>If successful, token will be saved</li>
+                <li>Click "Go to Dashboard" to access protected pages</li>
+            </ol>
+        </div>
+
+        <label><strong>Email:</strong></label>
+        <input type="email" id="email" value="admin@employee.ai">
+
+        <label><strong>Password:</strong></label>
+        <input type="password" id="password" value="Admin@2026!">
+
+        <button onclick="doLogin()" id="loginBtn">🔑 Login</button>
+
+        <div id="output" class="output" style="display:none;"></div>
+
+        <div id="dashboardBtn" style="display:none; margin-top: 20px;">
+            <button onclick="goToDashboard()" style="background: #28a745;">✅ Go to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        function doLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const output = document.getElementById('output');
+            
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Logging in...';
+            output.style.display = 'block';
+            output.innerHTML = 'Connecting to server...';
+
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.access_token) {
+                    // Save token
+                    localStorage.setItem('accessToken', data.access_token);
+                    localStorage.setItem('refreshToken', data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    output.innerHTML = '<span class="success">✅ LOGIN SUCCESSFUL!</span>\n\n' +
+                                       'Token saved to localStorage:\n' +
+                                       'User: ' + data.user.username + '\n' +
+                                       'Role: ' + data.user.role + '\n' +
+                                       'Tier: ' + data.user.tier + '\n\n' +
+                                       'Click "Go to Dashboard" to continue!';
+                    
+                    document.getElementById('dashboardBtn').style.display = 'block';
+                } else {
+                    output.innerHTML = '<span class="error">❌ ERROR: ' + (data.error || 'Unknown error') + '</span>';
+                }
+            })
+            .catch(err => {
+                output.innerHTML = '<span class="error">❌ CONNECTION ERROR: ' + err.message + '</span>\n\nMake sure server is running on http://localhost:5000';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '🔑 Login';
+            });
+        }
+
+        function goToDashboard() {
+            window.location.href = '/status';
+        }
+
+        // Check if already logged in
+        window.onload = function() {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                document.getElementById('output').style.display = 'block';
+                document.getElementById('output').innerHTML = '<span class="success">✅ Already logged in!</span>';
+                document.getElementById('dashboardBtn').style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

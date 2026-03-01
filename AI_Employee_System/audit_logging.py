@@ -227,7 +227,7 @@ class AuditLogging:
                 records.append(json.loads(line))
         
         # Generate report
-        report = f\"\"\"
+        report = f"""
 # DAILY AUDIT REPORT
 **Date:** {date.strftime('%Y-%m-%d')}
 **Generated:** {datetime.now().isoformat()}
@@ -241,7 +241,7 @@ class AuditLogging:
 
 ## Actions by Component
 
-\"\"\"
+"""
         
         # Group by component
         by_component = {}
@@ -304,7 +304,7 @@ class AuditLogging:
         
         # Generate report
         week_end = week_start + timedelta(days=7)
-        report = f\"\"\"
+        report = f"""
 # WEEKLY AUDIT REPORT
 **Week of:** {week_start.strftime('%Y-%m-%d')} to {week_end.strftime('%Y-%m-%d')}
 **Generated:** {datetime.now().isoformat()}
@@ -326,36 +326,36 @@ class AuditLogging:
 
 ## Actions by Day
 
-\"\"\"
-        
+"""
+
         for i in range(7):
             date = week_start + timedelta(days=i)
             daily_records = [r for r in all_records if r.get('timestamp', '').startswith(date.strftime('%Y-%m-%d'))]
             report += f"**{date.strftime('%A, %Y-%m-%d')}:** {len(daily_records)} actions\n"
-        
+
         report += f"\n---\n**Report generated:** {datetime.now().isoformat()}\n"
-        
+
         return report
-    
+
     def generate_monthly_report(self, year: int, month: int) -> str:
         """Generate monthly compliance report for SOX/GDPR."""
-        
+
         # Collect all records for the month
         all_records = []
         for day in range(1, 32):
             try:
                 date = datetime(year, month, day)
                 filepath = self.audit_dir / f"{date.strftime('%Y_%m_%d')}.jsonl"
-                
+
                 if filepath.exists():
                     with filepath.open('r') as f:
                         for line in f:
                             all_records.append(json.loads(line))
             except ValueError:  # Invalid date (e.g., Feb 30)
                 pass
-        
+
         # Generate comprehensive report
-        report = f\"\"\"
+        report = f"""
 # MONTHLY COMPLIANCE REPORT
 **Period:** {datetime(year, month, 1).strftime('%B %Y')}
 **Generated:** {datetime.now().isoformat()}
@@ -393,8 +393,8 @@ class AuditLogging:
 
 ## Security Incidents
 
-\"\"\"
-        
+"""
+
         # Find critical events
         critical_events = [r for r in all_records if r.get('level') == 'critical']
         if critical_events:

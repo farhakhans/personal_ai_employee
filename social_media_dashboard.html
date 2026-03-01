@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Dashboard - Personal AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --linkedin-color: #0077b5;
+            --facebook-color: #1877f2;
+            --instagram-color: #e4405f;
+            --twitter-color: #000000;
+        }
+        body { background-color: #f5f7fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Sidebar Styles */
+        .sidebar { background: linear-gradient(180deg, var(--primary-color), var(--secondary-color)); color: white; height: 100vh; position: fixed; padding-top: 20px; }
+        .sidebar .nav-link { color: rgba(255, 255, 255, 0.7); padding: 12px 20px; margin: 5px 15px; border-radius: 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255, 255, 255, 0.1); }
+        .main-content { margin-left: 250px; padding: 20px; }
+        
+        /* Header */
+        .header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 30px; border-radius: 8px; margin-bottom: 25px; }
+        
+        /* Platform Cards */
+        .platform-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        .platform-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .platform-card.linkedin { border-top: 4px solid var(--linkedin-color); }
+        .platform-card.facebook { border-top: 4px solid var(--facebook-color); }
+        .platform-card.instagram { border-top: 4px solid var(--instagram-color); }
+        .platform-card.twitter { border-top: 4px solid var(--twitter-color); }
+        
+        .platform-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 15px;
+        }
+        .platform-icon.linkedin { background: rgba(0, 119, 181, 0.1); color: var(--linkedin-color); }
+        .platform-icon.facebook { background: rgba(24, 119, 242, 0.1); color: var(--facebook-color); }
+        .platform-icon.instagram { background: rgba(228, 64, 95, 0.1); color: var(--instagram-color); }
+        .platform-icon.twitter { background: rgba(0, 0, 0, 0.1); color: var(--twitter-color); }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Stats Cards */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Post Composer */
+        .composer-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        /* Scheduled Posts */
+        .post-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .live-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; margin-bottom: 25px; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar col-md-3 col-lg-2 d-md-block">
+        <div class="text-center mb-4 p-3 border-bottom">
+            <div class="avatar bg-gradient rounded-circle d-flex align-items-center justify-content-center shadow-lg mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-share-alt fa-2x text-white"></i>
+            </div>
+            <h4 class="text-white mb-1">Social Media Hub</h4>
+            <p class="text-light opacity-75" style="font-size: 12px;">Multi-Platform Management</p>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" onclick="showSection('overview'); return false;">
+                    <i class="fas fa-home me-2"></i>Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('composer'); return false;">
+                    <i class="fas fa-pen-fancy me-2"></i>Post Composer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('scheduled'); return false;">
+                    <i class="fas fa-calendar-alt me-2"></i>Scheduled Posts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('analytics'); return false;">
+                    <i class="fas fa-chart-line me-2"></i>Analytics
+                </a>
+            </li>
+            <li class="nav-item" style="margin-top: 20px;">
+                <div style="color: #718096; font-size: 11px; text-transform: uppercase; font-weight: bold; padding: 0 15px; margin-bottom: 5px;">
+                    <i class="fas fa-layer-group me-1"></i> Tiers
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-share-alt me-2"></i>Social Media Dashboard</h2>
+                <p class="mb-0 text-muted">Manage LinkedIn, Facebook, Instagram & Twitter from one place</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="refreshDashboard()">
+                    <i class="fas fa-sync me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overview-section">
+            <!-- Platform Stats -->
+            <div class="row">
+                <!-- LinkedIn -->
+                <div class="col-md-3">
+                    <div class="platform-card linkedin card">
+                        <div class="card-body text-center">
+                            <div class="platform-icon linkedin">
+                                <i class="fab fa-linkedin-in"></i>
+                            </div>
+                            <h5>LinkedIn</h5>
+                            <p class="text-muted mb-3">Professional Network</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Posts:</span>
+                                <strong>24</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Engagement:</span>
+                                <strong class="text-success">+15%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Status:</span>
+                                <span class="status-badge bg-success">✓ Active</span>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openPlatform('linkedin')">
+                                <i class="fas fa-external-link-alt me-1"></i>Open LinkedIn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facebook -->
+                <div class="col-md-3">
+                    <div class="platform-card facebook card">
+                        <div class="card-body text-center">
+                            <div class="platform-icon facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </div>
+                            <h5>Facebook</h5>
+                            <p class="text-muted mb-3">Social Network</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Posts:</span>
+                                <strong>18</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Engagement:</span>
+                                <strong class="text-success">+22%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Status:</span>
+                                <span class="status-badge bg-success">✓ Active</span>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openPlatform('facebook')">
+                                <i class="fas fa-external-link-alt me-1"></i>Open Facebook
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instagram -->
+                <div class="col-md-3">
+                    <div class="platform-card instagram card">
+                        <div class="card-body text-center">
+                            <div class="platform-icon instagram">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <h5>Instagram</h5>
+                            <p class="text-muted mb-3">Visual Content</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Posts:</span>
+                                <strong>32</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Engagement:</span>
+                                <strong class="text-success">+28%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Status:</span>
+                                <span class="status-badge bg-success">✓ Active</span>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openPlatform('instagram')">
+                                <i class="fas fa-external-link-alt me-1"></i>Open Instagram
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Twitter/X -->
+                <div class="col-md-3">
+                    <div class="platform-card twitter card">
+                        <div class="card-body text-center">
+                            <div class="platform-icon twitter">
+                                <i class="fab fa-x-twitter"></i>
+                            </div>
+                            <h5>Twitter/X</h5>
+                            <p class="text-muted mb-3">Micro-blogging</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Posts:</span>
+                                <strong>45</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Engagement:</span>
+                                <strong class="text-success">+18%</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Status:</span>
+                                <span class="status-badge bg-success">✓ Active</span>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openPlatform('twitter')">
+                                <i class="fas fa-external-link-alt me-1"></i>Open Twitter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Posts</h6>
+                                <h3 class="mb-0">119</h3>
+                            </div>
+                            <i class="fas fa-file-alt fa-3x text-primary opacity-25"></i>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fas fa-arrow-up me-1"></i>12% this week</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Engagement</h6>
+                                <h3 class="mb-0">8,542</h3>
+                            </div>
+                            <i class="fas fa-heart fa-3x text-danger opacity-25"></i>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fas fa-arrow-up me-1"></i>21% this week</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Scheduled Posts</h6>
+                                <h3 class="mb-0">12</h3>
+                            </div>
+                            <i class="fas fa-calendar-check fa-3x text-success opacity-25"></i>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Next in 2h</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Platform</th>
+                                    <th>Content</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                    <th>Engagement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fab fa-linkedin text-primary me-2"></i>LinkedIn</td>
+                                    <td>"Excited to announce our new product launch..."</td>
+                                    <td><span class="badge bg-success">Published</span></td>
+                                    <td>2 hours ago</td>
+                                    <td><i class="fas fa-heart text-danger me-1"></i>234 <i class="fas fa-comment ms-3 me-1"></i>45</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fab fa-facebook text-primary me-2"></i>Facebook</td>
+                                    <td>"Join us for our upcoming webinar on AI..."</td>
+                                    <td><span class="badge bg-success">Published</span></td>
+                                    <td>4 hours ago</td>
+                                    <td><i class="fas fa-heart text-danger me-1"></i>189 <i class="fas fa-share ms-3 me-1"></i>32</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fab fa-instagram text-danger me-2"></i>Instagram</td>
+                                    <td>"Behind the scenes at our office..."</td>
+                                    <td><span class="badge bg-success">Published</span></td>
+                                    <td>6 hours ago</td>
+                                    <td><i class="fas fa-heart text-danger me-1"></i>567 <i class="fas fa-comment ms-3 me-1"></i>78</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fab fa-x-twitter text-dark me-2"></i>Twitter</td>
+                                    <td>"Quick tip: Productivity hack for remote teams..."</td>
+                                    <td><span class="badge bg-success">Published</span></td>
+                                    <td>8 hours ago</td>
+                                    <td><i class="fas fa-heart text-danger me-1"></i>312 <i class="fas fa-retweet ms-3 me-1"></i>89</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post Composer Section -->
+        <div id="composer-section" style="display: none;">
+            <div class="composer-card">
+                <h4 class="mb-4"><i class="fas fa-pen-fancy me-2"></i>Create New Post</h4>
+                
+                <!-- Platform Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Select Platforms</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="platform-linkedin" checked>
+                            <label class="form-check-label" for="platform-linkedin">
+                                <i class="fab fa-linkedin text-primary"></i> LinkedIn
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="platform-facebook" checked>
+                            <label class="form-check-label" for="platform-facebook">
+                                <i class="fab fa-facebook text-primary"></i> Facebook
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="platform-instagram">
+                            <label class="form-check-label" for="platform-instagram">
+                                <i class="fab fa-instagram text-danger"></i> Instagram
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="platform-twitter">
+                            <label class="form-check-label" for="platform-twitter">
+                                <i class="fab fa-x-twitter text-dark"></i> Twitter
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Post Content</label>
+                    <textarea class="form-control" id="post-content" rows="5" placeholder="Write your post content here..."></textarea>
+                    <div class="form-text">Maximum 3000 characters for LinkedIn, 2200 for Facebook, 2200 for Instagram, 280 for Twitter</div>
+                </div>
+
+                <!-- Media Upload -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Add Media</label>
+                    <input type="file" class="form-control" id="post-media" accept="image/*,video/*" multiple>
+                    <div class="form-text">Supported formats: JPG, PNG, GIF, MP4</div>
+                </div>
+
+                <!-- Scheduling -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Schedule</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-select" id="schedule-type">
+                                <option value="now">Post Now</option>
+                                <option value="scheduled">Schedule for Later</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="schedule-datetime" style="display: none;">
+                            <input type="datetime-local" class="form-control" id="schedule-time">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="publishPost()">
+                        <i class="fas fa-paper-plane me-2"></i>Publish Now
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="schedulePost()">
+                        <i class="fas fa-calendar me-2"></i>Schedule
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearComposer()">
+                        <i class="fas fa-eraser me-2"></i>Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Posts Section -->
+        <div id="scheduled-section" style="display: none;">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Scheduled Posts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="post-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">"5 Tips for Remote Team Management"</h6>
+                                <p class="text-muted mb-2 small">
+                                    <i class="fab fa-linkedin text-primary me-1"></i>
+                                    <i class="fab fa-facebook text-primary me-1"></i>
+                                    <i class="fab fa-twitter text-dark me-1"></i>
+                                </p>
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>Scheduled for: Tomorrow, 10:00 AM</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-success me-2"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">"Product Launch Announcement - Join Us!"</h6>
+                                <p class="text-muted mb-2 small">
+                                    <i class="fab fa-linkedin text-primary me-1"></i>
+                                    <i class="fab fa-instagram text-danger me-1"></i>
+                                    <i class="fab fa-facebook text-primary me-1"></i>
+                                </p>
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>Scheduled for: Dec 28, 2025 - 2:00 PM</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-success me-2"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">"Year End Review - Thank You 2025!"</h6>
+                                <p class="text-muted mb-2 small">
+                                    <i class="fab fa-linkedin text-primary me-1"></i>
+                                    <i class="fab fa-facebook text-primary me-1"></i>
+                                    <i class="fab fa-twitter text-dark me-1"></i>
+                                    <i class="fab fa-instagram text-danger me-1"></i>
+                                </p>
+                                <small class="text-muted"><i class="fas fa-clock me-1"></i>Scheduled for: Dec 31, 2025 - 6:00 PM</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-success me-2"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics-section" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Platform Performance</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><i class="fab fa-linkedin text-primary me-2"></i>LinkedIn</div>
+                                    <strong>85%</strong>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 85%; background: #0077b5;"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><i class="fab fa-facebook text-primary me-2"></i>Facebook</div>
+                                    <strong>78%</strong>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 78%; background: #1877f2;"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><i class="fab fa-instagram text-danger me-2"></i>Instagram</div>
+                                    <strong>92%</strong>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 92%; background: #e4405f;"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><i class="fab fa-x-twitter text-dark me-2"></i>Twitter/X</div>
+                                    <strong>71%</strong>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 71%; background: #000;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Posts</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>#1</strong>
+                                    <span class="text-success"><i class="fas fa-heart me-1"></i>1,234</span>
+                                </div>
+                                <p class="mb-1 small">"Announcing our Q4 results - Record growth!"</p>
+                                <small class="text-muted"><i class="fab fa-linkedin text-primary"></i> LinkedIn • 3 days ago</small>
+                            </div>
+                            <hr>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>#2</strong>
+                                    <span class="text-success"><i class="fas fa-heart me-1"></i>987</span>
+                                </div>
+                                <p class="mb-1 small">"Team building event highlights"</p>
+                                <small class="text-muted"><i class="fab fa-instagram text-danger"></i> Instagram • 1 week ago</small>
+                            </div>
+                            <hr>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>#3</strong>
+                                    <span class="text-success"><i class="fas fa-heart me-1"></i>756</span>
+                                </div>
+                                <p class="mb-1 small">"Customer success story: How ABC Corp..."</p>
+                                <small class="text-muted"><i class="fab fa-facebook text-primary"></i> Facebook • 5 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Section navigation
+        function showSection(section) {
+            document.getElementById('overview-section').style.display = 'none';
+            document.getElementById('composer-section').style.display = 'none';
+            document.getElementById('scheduled-section').style.display = 'none';
+            document.getElementById('analytics-section').style.display = 'none';
+            
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            
+            if (section === 'overview') {
+                document.getElementById('overview-section').style.display = 'block';
+                event.target.closest('.nav-link').classList.add('active');
+            } else if (section === 'composer') {
+                document.getElementById('composer-section').style.display = 'block';
+                event.target.closest('.nav-link').classList.add('active');
+            } else if (section === 'scheduled') {
+                document.getElementById('scheduled-section').style.display = 'block';
+                event.target.closest('.nav-link').classList.add('active');
+            } else if (section === 'analytics') {
+                document.getElementById('analytics-section').style.display = 'block';
+                event.target.closest('.nav-link').classList.add('active');
+            }
+        }
+
+        // Open platform in new tab
+        function openPlatform(platform) {
+            const urls = {
+                linkedin: 'https://www.linkedin.com',
+                facebook: 'https://www.facebook.com',
+                instagram: 'https://www.instagram.com',
+                twitter: 'https://twitter.com'
+            };
+            window.open(urls[platform], '_blank');
+            showToast(`Opening ${platform}...`, 'info');
+        }
+
+        // Schedule type toggle
+        document.getElementById('schedule-type')?.addEventListener('change', function() {
+            document.getElementById('schedule-datetime').style.display = 
+                this.value === 'scheduled' ? 'block' : 'none';
+        });
+
+        // Publish post
+        function publishPost() {
+            const content = document.getElementById('post-content').value;
+            if (!content) {
+                showToast('Please enter post content', 'warning');
+                return;
+            }
+            
+            const platforms = [];
+            if (document.getElementById('platform-linkedin').checked) platforms.push('LinkedIn');
+            if (document.getElementById('platform-facebook').checked) platforms.push('Facebook');
+            if (document.getElementById('platform-instagram').checked) platforms.push('Instagram');
+            if (document.getElementById('platform-twitter').checked) platforms.push('Twitter');
+            
+            if (platforms.length === 0) {
+                showToast('Please select at least one platform', 'warning');
+                return;
+            }
+            
+            showToast(`Publishing to ${platforms.join(', ')}...`, 'info');
+            setTimeout(() => {
+                showToast('✓ Post published successfully!', 'success');
+                clearComposer();
+            }, 1500);
+        }
+
+        // Schedule post
+        function schedulePost() {
+            const content = document.getElementById('post-content').value;
+            const scheduleTime = document.getElementById('schedule-time').value;
+            
+            if (!content) {
+                showToast('Please enter post content', 'warning');
+                return;
+            }
+            
+            if (!scheduleTime) {
+                showToast('Please select a schedule time', 'warning');
+                return;
+            }
+            
+            showToast('Post scheduled successfully!', 'success');
+            clearComposer();
+        }
+
+        // Clear composer
+        function clearComposer() {
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-media').value = '';
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('schedule-type').value = 'now';
+            document.getElementById('schedule-datetime').style.display = 'none';
+        }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            showToast('Refreshing dashboard...', 'info');
+            setTimeout(() => {
+                showToast('Dashboard refreshed!', 'success');
+            }, 1000);
+        }
+
+        // Show toast
+        function showToast(message, type = 'info') {
+            const colors = { success: 'bg-success', danger: 'bg-danger', warning: 'bg-warning', info: 'bg-info' };
+            const icons = { success: '✓', danger: '!', warning: '⚠', info: 'ℹ' };
+            const toastId = `toast-${Date.now()}`;
+            const toastHTML = `
+                <div id="${toastId}" class="toast" role="alert">
+                    <div class="toast-header ${colors[type]} text-white">
+                        <strong class="me-auto">${icons[type]} ${message}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            document.querySelector('.toast-container').insertAdjacentHTML('beforeend', toastHTML);
+            const toast = new bootstrap.Toast(document.getElementById(toastId), { delay: 3000 });
+            toast.show();
+            setTimeout(() => document.getElementById(toastId)?.remove(), 3500);
+        }
+    </script>
+</body>
+</html>

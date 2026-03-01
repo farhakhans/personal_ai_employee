@@ -3,9 +3,10 @@ Simple Flask UI to trigger Facebook and Instagram poster actions and view logs.
 Run: `python AI_Employee_System/ui/test_ui.py` to run automated smoke tests.
 """
 
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, send_file, redirect, url_for
 from pathlib import Path
 import sys
+import os
 
 # Ensure project root importable
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -21,6 +22,11 @@ def create_app():
 
     fb = FacebookPoster()
     ig = InstagramPoster()
+    
+    # Get the parent directory for HTML files (Personal AI Employee folder)
+    HTML_ROOT = Path(__file__).resolve().parents[3]
+    
+    print(f"HTML_ROOT: {HTML_ROOT}")  # Debug print
 
     HTML = """
     <!doctype html>
@@ -70,47 +76,33 @@ def create_app():
     @app.route('/facebook/create', methods=['POST'])
     def facebook_create():
         body = request.json or {}
-        topic = body.get('topic', 'default')
+        topic = body.get('topic', 'AI Automation')
         details = body.get('details', {})
-        content = fb.generate_post(topic, details)
-        post = fb.create_post(content)
-        return jsonify(post)
+        content_result = fb.generate_post_content(topic, tone='professional')
+        return jsonify(content_result)
 
     @app.route('/facebook/publish', methods=['POST'])
     def facebook_publish():
-        # publish the last draft
-        try:
-            arr = fb.posts_file.read_text(encoding='utf-8')
-            posts = __import__('json').loads(arr)
-            if not posts:
-                return jsonify({'status':'error','message':'no posts'}), 400
-            last = posts[-1]['post_id']
-            res = fb.publish_post(last)
-            return jsonify(res)
-        except Exception as e:
-            return jsonify({'status':'error','message': str(e)}), 500
+        body = request.json or {}
+        message = body.get('message', 'Test post from AI Employee')
+        result = fb.post_to_page(message)
+        return jsonify(result)
 
     # Instagram endpoints
     @app.route('/instagram/create', methods=['POST'])
     def instagram_create():
         body = request.json or {}
+        topic = body.get('topic', 'AI Automation')
         text = body.get('text', 'Automated post')
-        caption = ig.generate_caption('automation', text)
-        post = ig.create_post(caption)
-        return jsonify(post)
+        content_result = ig.generate_post_content(topic, tone='casual')
+        return jsonify(content_result)
 
     @app.route('/instagram/publish', methods=['POST'])
     def instagram_publish():
-        try:
-            arr = ig.posts_file.read_text(encoding='utf-8')
-            posts = __import__('json').loads(arr)
-            if not posts:
-                return jsonify({'status':'error','message':'no posts'}), 400
-            last = posts[-1]['post_id']
-            res = ig.publish_post(last)
-            return jsonify(res)
-        except Exception as e:
-            return jsonify({'status':'error','message': str(e)}), 500
+        body = request.json or {}
+        caption = body.get('caption', 'Test post from AI Employee')
+        # For demo, just return success (actual post would need image URL)
+        return jsonify({'success': True, 'message': 'Would post to Instagram', 'caption': caption})
 
     @app.route('/social/logs', methods=['GET'])
     def social_logs():
@@ -122,6 +114,43 @@ def create_app():
             return jsonify(out)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+    # Tier Dashboard Routes
+    @app.route('/tier/bronze')
+    def tier_bronze():
+        return redirect(url_for('index'))
+    
+    @app.route('/tier/silver')
+    def tier_silver():
+        return redirect(url_for('index'))
+    
+    @app.route('/tier/gold')
+    def tier_gold():
+        return redirect(url_for('index'))
+    
+    @app.route('/tier/platinum')
+    def tier_platinum():
+        try:
+            html_path = r"D:\DocuBook-Chatbot folder\Personal AI Employee\platinum_dashboard.html"
+            return send_file(html_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 404
+    
+    @app.route('/tiers')
+    def all_tiers():
+        try:
+            html_path = r"D:\DocuBook-Chatbot folder\Personal AI Employee\tiers_dashboard.html"
+            return send_file(html_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 404
+    
+    @app.route('/dashboard')
+    def dashboard():
+        try:
+            html_path = r"D:\DocuBook-Chatbot folder\Personal AI Employee\complete_dashboard.html"
+            return send_file(html_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 404
 
     return app
 

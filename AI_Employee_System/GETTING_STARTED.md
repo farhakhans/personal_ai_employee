@@ -72,8 +72,11 @@ AI_Employee_System/
 
 ├── Watchers/
 │   ├── gmail_watcher.py             ✅ Email monitoring (Bronze)
-│   ├── multi_watchers.py            ✅ Multi-channel (Silver+)
-│   └── linkedin_poster.py           ✅ LinkedIn automation (Silver+)
+│   ├── multi_watchers.py            ✅ Multi-channel orchestrator (Silver+)
+│   ├── whatsapp_watcher.py          ✅ WhatsApp Web monitoring (Silver+)
+│   ├── linkedin_poster.py           ✅ LinkedIn automation (Silver+)
+│   ├── facebook_poster.py           ✅ Facebook posting (Gold+)
+│   └── integration_workflow.py      ✅ Central workflow coordinating all services
 
 ├── MCP_Servers/
 │   └── mcp_server_framework.py      ✅ Extension points (Silver+)
@@ -115,6 +118,16 @@ STEP 2: Edit .env and add your credentials
 
 STEP 3: Run Bronze tier
    python start_bronze.py
+
+(Introducing integrations)
+
+Once you have a user account (signup/login) open the web GUI and visit
+**Settings → Integrations** to enter credentials for Gmail, WhatsApp,
+LinkedIn, or Facebook.  The UI respects your account tier and will only allow
+features you are eligible for.  The Python orchestrator will automatically
+pick up these settings and run the appropriate watchers/posters via the
+`integration_workflow.py` module.
+
 
 STEP 4: See results
    cat Vault/Dashboard.md

@@ -19,19 +19,32 @@ logger = logging.getLogger("GmailWatcher")
 
 
 class GmailWatcher:
-    """Watches Gmail inbox for new emails"""
-    
-    def __init__(self, email_addr: str, app_password: str, vault_path: str, poll_interval: int = 300):
+    """Watches Gmail inbox for new emails
+
+    This integration is available to all tiers (bronze+).  The constructor
+    accepts an optional ``user_tier`` value and will refuse to initialize if
+    the tier is not allowed.
+    """
+
+    ALLOWED_TIERS = ['bronze', 'silver', 'gold', 'platinum']
+
+    def __init__(self, email_addr: str, app_password: str, vault_path: str,
+                 poll_interval: int = 300, user_tier: str = 'bronze'):
         """
         email_addr: Gmail address
         app_password: Gmail app password (from 2FA settings)
         vault_path: Path to Obsidian vault
         poll_interval: Seconds between polls (default 5 min)
+        user_tier: Tier of the user/organization (used for gating)
         """
+        if user_tier not in self.ALLOWED_TIERS:
+            raise ValueError(f"GmailWatcher is not permitted for tier {user_tier}")
+
         self.email_addr = email_addr
         self.app_password = app_password
         self.vault_path = vault_path
         self.poll_interval = poll_interval
+        self.user_tier = user_tier
         self.processed_emails = set()
         self.load_processed_emails()
     

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Analysis - AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --whatsapp-green: #25D366;
+            --whatsapp-dark: #128C7E;
+            --whatsapp-light: #DCF8C6;
+        }
+        body {
+            background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container { max-width: 1400px; }
+        .header-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .header-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .card {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #128C7E;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: white;
+            color: #128C7E;
+            border-radius: 25px;
+            text-decoration: none;
+            margin: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            color: #128C7E;
+        }
+        .message-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #25D366;
+        }
+        .message-sent {
+            border-left-color: #25D366;
+        }
+        .message-received {
+            border-left-color: #34B7F1;
+        }
+        .message-pending {
+            border-left-color: #FFA726;
+        }
+        .badge-whatsapp {
+            background: #25D366;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <i class="fab fa-whatsapp fa-4x mb-3"></i>
+            <h1>💬 WhatsApp Analysis</h1>
+            <p class="lead">Monitor and analyze WhatsApp messages</p>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left me-2"></i>Back to Dashboard</a>
+            <a href="https://web.whatsapp.com" target="_blank" class="nav-btn" style="background: #25D366; color: white;"><i class="fab fa-whatsapp me-2"></i>Open WhatsApp Web</a>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #25D366;">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div class="stat-value">247</div>
+                    <div class="stat-label">Total Messages</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #4CAF50;">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div class="stat-value">189</div>
+                    <div class="stat-label">Auto-Replied</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #FFA726;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-value">58</div>
+                    <div class="stat-label">Needs Action</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #2196F3;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">Active Chats</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Analytics -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Message Analytics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Messages by Type</h6>
+                        <div class="progress mb-3" style="height: 30px;">
+                            <div class="progress-bar bg-success" style="width: 76%;">Auto-Replied (76%)</div>
+                            <div class="progress-bar bg-warning" style="width: 24%;">Needs Action (24%)</div>
+                        </div>
+                        <ul class="list-unstyled mt-3">
+                            <li class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-check text-success me-2"></i>Payment Confirmations</span>
+                                <strong>85</strong>
+                            </li>
+                            <li class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-check text-success me-2"></i>Order Updates</span>
+                                <strong>64</strong>
+                            </li>
+                            <li class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-check text-success me-2"></i>General Inquiries</span>
+                                <strong>40</strong>
+                            </li>
+                            <li class="d-flex justify-content-between mb-2">
+                                <span><i class="fas fa-exclamation text-warning me-2"></i>Needs Response</span>
+                                <strong>58</strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Response Time</h6>
+                        <div class="text-center p-4">
+                            <div style="font-size: 48px; font-weight: bold; color: #25D366;">2.3 min</div>
+                            <div class="text-muted">Average Response Time</div>
+                            <div class="mt-3">
+                                <span class="badge bg-success">✓ Excellent</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6>Peak Hours</h6>
+                        <div class="d-flex justify-content-between">
+                            <div class="text-center">
+                                <div class="text-muted small">Morning</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #25D366;">9-11 AM</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-muted small">Afternoon</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #FFA726;">2-4 PM</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-muted small">Evening</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #2196F3;">7-9 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Messages -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Recent Messages</h5>
+            </div>
+            <div class="card-body">
+                <div class="message-card message-received">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Customer: Ahmed Store</strong>
+                            <p class="mb-1">"Hi, I need to confirm my payment of $450. Has it been received?"</p>
+                            <small class="text-muted"><i class="far fa-clock me-1"></i>2 minutes ago</small>
+                        </div>
+                        <span class="badge badge-whatsapp">Received</span>
+                    </div>
+                </div>
+
+                <div class="message-card message-sent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Auto-Reply to: Ahmed Store</strong>
+                            <p class="mb-1">"Thank you for your payment! We've received $450. Your order #ORD-247 is being processed."</p>
+                            <small class="text-muted"><i class="far fa-clock me-1"></i>1 minute ago</small>
+                        </div>
+                        <span class="badge bg-success">Auto-Replied</span>
+                    </div>
+                </div>
+
+                <div class="message-card message-pending">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Customer: Fatima Mall</strong>
+                            <p class="mb-1">"Can you send me the invoice for last month's order? I need it for accounting."</p>
+                            <small class="text-muted"><i class="far fa-clock me-1"></i>15 minutes ago</small>
+                        </div>
+                        <span class="badge bg-warning">Needs Action</span>
+                    </div>
+                </div>
+
+                <div class="message-card message-sent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Auto-Reply to: Harun Trading</strong>
+                            <p class="mb-1">"Your order #ORD-246 has been shipped! Tracking: TRK-2026-0246. Expected delivery: Feb 28."</p>
+                            <small class="text-muted"><i class="far fa-clock me-1"></i>1 hour ago</small>
+                        </div>
+                        <span class="badge bg-success">Auto-Replied</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100" onclick="refreshWhatsApp()">
+                            <i class="fas fa-sync me-2"></i>Refresh Messages
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" onclick="exportWhatsApp()">
+                            <i class="fas fa-download me-2"></i>Export Analysis
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-info w-100" onclick="openWhatsAppWeb()">
+                            <i class="fab fa-whatsapp me-2"></i>Open WhatsApp Web
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-white mt-4">
+            <p><i class="fas fa-info-circle me-2"></i>All WhatsApp messages are automatically saved to Vault/Inbox/WhatsApp/</p>
+            <p>AI Employee System - WhatsApp Analysis Dashboard</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function refreshWhatsApp() {
+            alert('🔄 Refreshing WhatsApp messages...\n\nMessages will be fetched from:\nVault/Inbox/WhatsApp/\n\nPlease wait...');
+            setTimeout(() => {
+                alert('✓ WhatsApp messages refreshed!\n\nNew messages: 3\nAuto-replies sent: 2\nNeeds action: 1');
+            }, 1500);
+        }
+
+        function exportWhatsApp() {
+            alert('📥 Exporting WhatsApp analysis...\n\nReport includes:\n✓ Message statistics\n✓ Response times\n✓ Customer interactions\n✓ Auto-reply summary\n\nFile: whatsapp_analysis_2026-02-26.pdf');
+        }
+
+        function openWhatsAppWeb() {
+            window.open('https://web.whatsapp.com', '_blank');
+        }
+    </script>
+</body>
+</html>

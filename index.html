@@ -3,356 +3,640 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - AI Employee</title>
+    <title>Personal AI Employee - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --warning-color: #f72585;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
+
         body {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
         }
-        
+
         .login-container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
-            max-width: 900px;
-            width: 90%;
+            width: 100%;
+            max-width: 450px;
         }
-        
-        .login-left {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 60px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            padding: 40px 30px;
+            text-align: center;
         }
-        
-        .login-right {
-            padding: 60px 40px;
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
         }
-        
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .tabs {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #f8f9fa;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .form-container {
+            padding: 40px 30px;
+        }
+
+        .form-group {
             margin-bottom: 20px;
         }
-        
-        .feature-list {
-            list-style: none;
-            padding: 0;
-            margin-top: 30px;
-        }
-        
-        .feature-list li {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .feature-list li i {
-            margin-right: 10px;
-            width: 20px;
-        }
-        
-        .form-control {
-            border-radius: 10px;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
-        }
-        
-        .btn-login {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: 600;
-            transition: transform 0.2s;
+            color: #2d3748;
+            font-size: 14px;
         }
-        
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle .toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
-        
-        .remember-me {
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .demo-accounts {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .demo-accounts h6 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .demo-account {
             display: flex;
-            align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #e2e8f0;
         }
-        
-        .remember-me input {
-            margin-right: 10px;
-            width: 18px;
-            height: 18px;
+
+        .demo-account:last-child {
+            border-bottom: none;
         }
-        
-        .forgot-password {
-            color: var(--primary-color);
-            text-decoration: none;
+
+        .demo-account code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
-        
-        .forgot-password:hover {
-            text-decoration: underline;
-        }
-        
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+
+        .form-section {
             display: none;
         }
-        
-        .success-message {
-            background: #efe;
-            color: #3c3;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
+
+        .form-section.active {
+            display: block;
         }
-        
-        @media (max-width: 768px) {
-            .login-left {
-                display: none;
-            }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .password-requirements ul {
+            margin: 5px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            font-size: 13px;
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="row g-0">
-            <!-- Left Side - Features -->
-            <div class="col-md-6 login-left d-none d-md-flex">
-                <div>
-                    <div class="logo">
-                        <i class="fas fa-robot fa-3x"></i>
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-robot me-2"></i>Personal AI Employee</h1>
+            <p>Complete Business Automation System</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">
+                <i class="fas fa-sign-in-alt me-1"></i>Login
+            </button>
+            <button class="tab-btn" onclick="switchTab('register')">
+                <i class="fas fa-user-plus me-1"></i>Register
+            </button>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Login Form -->
+            <div id="login-form" class="form-section active">
+                <div id="login-alert"></div>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">
+                            <i class="fas fa-envelope me-1"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="login-email" 
+                            placeholder="your.email@example.com"
+                            required
+                        >
                     </div>
-                    <h1 class="mb-3">AI Employee System</h1>
-                    <p class="lead">Your intelligent automation assistant</p>
-                    
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Automated Email Processing</li>
-                        <li><i class="fas fa-check-circle"></i> WhatsApp Integration</li>
-                        <li><i class="fas fa-check-circle"></i> Task Management</li>
-                        <li><i class="fas fa-check-circle"></i> Approval Workflows</li>
-                        <li><i class="fas fa-check-circle"></i> Real-time Analytics</li>
-                        <li><i class="fas fa-check-circle"></i> 24/7 Automation</li>
-                    </ul>
+
+                    <div class="form-group">
+                        <label for="login-password">
+                            <i class="fas fa-lock me-1"></i>Password
+                        </label>
+                        <div class="password-toggle">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="login-password" 
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button type="button" class="toggle-btn" onclick="togglePassword('login-password')">
+                                <i class="fas fa-eye" id="login-eye-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-login" id="login-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>OR USE DEMO ACCOUNTS</span>
                 </div>
-            </div>
-            
-            <!-- Right Side - Login Form -->
-            <div class="col-md-6">
-                <div class="login-right">
-                    <h2 class="mb-2">Welcome Back!</h2>
-                    <p class="text-muted mb-4">Sign in to access your AI Employee</p>
-                    
-                    <!-- Error Message -->
-                    <div class="error-message" id="errorMessage">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <span id="errorText">Invalid credentials</span>
+
+                <div class="demo-accounts">
+                    <h6><i class="fas fa-user-shield me-1"></i>Demo Credentials:</h6>
+                    <div class="demo-account">
+                        <span><i class="fas fa-crown" style="color: #ffd700;"></i> Admin</span>
+                        <span><code>admin@employee.ai</code> / <code>Admin@2026!</code></span>
                     </div>
-                    
-                    <!-- Success Message -->
-                    <div class="success-message" id="successMessage">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <span id="successText">Login successful! Redirecting...</span>
+                    <div class="demo-account">
+                        <span><i class="fas fa-user-tie" style="color: #c0c0c0;"></i> Manager</span>
+                        <span><code>manager@employee.ai</code> / <code>Manager@2026!</code></span>
                     </div>
-                    
-                    <form id="loginForm" onsubmit="handleLogin(event)">
-                        <div class="mb-3">
-                            <label class="form-label">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                <input type="email" class="form-control" id="email" placeholder="your.email@gmail.com" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
-                                    <i class="fas fa-eye" id="toggleIcon"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="remember-me">
-                            <input type="checkbox" id="rememberMe">
-                            <label for="rememberMe">Remember me for 30 days</label>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
-                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                        </button>
-                        
-                        <div class="text-center">
-                            <a href="#" class="forgot-password" onclick="showForgotPassword()">Forgot Password?</a>
-                        </div>
-                    </form>
-                    
-                    <hr class="my-4">
-                    
-                    <div class="text-center">
-                        <p class="text-muted mb-0">Demo Credentials:</p>
-                        <small class="text-muted">Email: <strong>any@gmail.com</strong></small><br>
-                        <small class="text-muted">Password: <strong>admin123</strong></small>
+                    <div class="demo-account">
+                        <span><i class="fas fa-user" style="color: #cd7f32;"></i> User</span>
+                        <span><code>user@employee.ai</code> / <code>User@2026!</code></span>
                     </div>
                 </div>
             </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="form-section">
+                <div id="register-alert"></div>
+                
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="register-fullname">
+                            <i class="fas fa-user me-1"></i>Full Name
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="register-fullname" 
+                            placeholder="John Doe"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">
+                            <i class="fas fa-envelope me-1"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="register-email" 
+                            placeholder="your.email@example.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-username">
+                            <i class="fas fa-at me-1"></i>Username
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="register-username" 
+                            placeholder="johndoe (3-20 chars, letters/numbers/underscore)"
+                            pattern="[a-zA-Z0-9_]{3,20}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">
+                            <i class="fas fa-lock me-1"></i>Password
+                        </label>
+                        <div class="password-toggle">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="register-password" 
+                                placeholder="Create a strong password"
+                                required
+                            >
+                            <button type="button" class="toggle-btn" onclick="togglePassword('register-password')">
+                                <i class="fas fa-eye" id="register-eye-icon"></i>
+                            </button>
+                        </div>
+                        <div class="password-requirements">
+                            <small>Password must contain:</small>
+                            <ul>
+                                <li>At least 8 characters</li>
+                                <li>One uppercase letter (A-Z)</li>
+                                <li>One lowercase letter (a-z)</li>
+                                <li>One number (0-9)</li>
+                                <li>One special character (!@#$%^&*)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-confirm">
+                            <i class="fas fa-lock me-1"></i>Confirm Password
+                        </label>
+                        <div class="password-toggle">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="register-confirm" 
+                                placeholder="Re-enter your password"
+                                required
+                            >
+                            <button type="button" class="toggle-btn" onclick="togglePassword('register-confirm')">
+                                <i class="fas fa-eye" id="confirm-eye-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-login" id="register-btn">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><i class="fas fa-shield-alt me-1"></i>Secure authentication with JWT tokens</p>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        // Default credentials (in production, use backend authentication)
-        const DEFAULT_CREDENTIALS = {
-            email: 'any@gmail.com',
-            password: 'admin123'
-        };
-
         // Check if already logged in
         window.addEventListener('DOMContentLoaded', function() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            const loginTime = localStorage.getItem('loginTime');
-            
-            if (isLoggedIn === 'true' && loginTime) {
-                // Check if session is still valid (24 hours)
-                const now = new Date().getTime();
-                const hoursSinceLogin = (now - parseInt(loginTime)) / (1000 * 60 * 60);
-                
-                if (hoursSinceLogin < 24) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    // Session expired
-                    localStorage.removeItem('isLoggedIn');
-                    localStorage.removeItem('loginTime');
-                    localStorage.removeItem('userRole');
-                }
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                // Verify token is still valid
+                fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Token is valid, redirect to status page
+                        window.location.href = '/status';
+                    } else {
+                        // Token invalid, clear it
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('refreshToken');
+                        localStorage.removeItem('user');
+                    }
+                })
+                .catch(() => {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('user');
+                });
             }
         });
 
-        // Toggle password visibility
-        function togglePassword() {
-            const passwordField = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                toggleIcon.className = 'fas fa-eye-slash';
+        // Switch between login and register tabs
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const tabs = document.querySelectorAll('.tab-btn');
+
+            if (tab === 'login') {
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+                clearAlerts();
             } else {
-                passwordField.type = 'password';
-                toggleIcon.className = 'fas fa-eye';
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+                clearAlerts();
             }
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const iconId = inputId.replace('password', 'password') + '-icon';
+            const icon = document.getElementById(iconId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Show alert message
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        // Clear all alerts
+        function clearAlerts() {
+            document.getElementById('login-alert').innerHTML = '';
+            document.getElementById('register-alert').innerHTML = '';
         }
 
         // Handle login
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const loginBtn = document.getElementById('login-btn');
             
-            // Hide previous messages
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'none';
+            // Disable button during request
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
             
-            // Validate email format
-            if (!email || !email.includes('@') || !email.includes('.')) {
-                document.getElementById('errorText').textContent = 'Please enter a valid email address';
-                document.getElementById('errorMessage').style.display = 'block';
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store tokens
+                    localStorage.setItem('accessToken', data.access_token);
+                    localStorage.setItem('refreshToken', data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showAlert('login-alert', '✅ Login successful! Redirecting...', 'success');
+                    
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        window.location.href = '/status';
+                    }, 1000);
+                } else {
+                    showAlert('login-alert', '❌ ' + data.error, 'danger');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In';
+                }
+            } catch (error) {
+                showAlert('login-alert', '❌ Connection error. Please make sure the server is running.', 'danger');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Sign In';
+            }
+        }
+
+        // Handle registration
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const fullName = document.getElementById('register-fullname').value;
+            const email = document.getElementById('register-email').value;
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm').value;
+            const registerBtn = document.getElementById('register-btn');
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showAlert('register-alert', '❌ Passwords do not match!', 'danger');
                 return;
             }
             
-            // Validate password (any password works for demo)
-            if (password.length < 1) {
-                document.getElementById('errorText').textContent = 'Please enter your password';
-                document.getElementById('errorMessage').style.display = 'block';
+            // Validate password strength
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                showAlert('register-alert', '❌ Password does not meet requirements. Please check the guidelines below.', 'danger');
                 return;
             }
             
-            // Login successful (in production, verify against backend)
-            document.getElementById('successMessage').style.display = 'block';
+            // Disable button during request
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating account...';
             
-            // Set session
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('loginTime', new Date().getTime());
-            localStorage.setItem('email', email);
-            localStorage.setItem('username', email.split('@')[0]); // Use email prefix as username
-            localStorage.setItem('userRole', 'user');
-            
-            if (rememberMe) {
-                localStorage.setItem('rememberMe', 'true');
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        full_name: fullName,
+                        email, 
+                        username, 
+                        password 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 201) {
+                    showAlert('register-alert', '✅ Account created successfully! Redirecting to login...', 'success');
+                    
+                    // Clear form
+                    document.getElementById('register-form').reset();
+                    
+                    // Switch to login tab after delay
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('login-email').value = email;
+                        document.getElementById('login-password').focus();
+                    }, 1500);
+                } else {
+                    showAlert('register-alert', '❌ ' + data.error, 'danger');
+                    registerBtn.disabled = false;
+                    registerBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create Account';
+                }
+            } catch (error) {
+                showAlert('register-alert', '❌ Connection error. Please make sure the server is running.', 'danger');
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create Account';
             }
-            
-            // Log the login event
-            logLoginEvent(email);
-            
-            // Redirect to dashboard after 1.5 seconds
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
         }
-
-        // Log login event
-        function logLoginEvent(email) {
-            const loginLog = {
-                email: email,
-                timestamp: new Date().toISOString(),
-                ip: 'N/A',
-                userAgent: navigator.userAgent
-            };
-            
-            // Save to localStorage
-            const loginHistory = JSON.parse(localStorage.getItem('loginHistory') || '[]');
-            loginHistory.push(loginLog);
-            localStorage.setItem('loginHistory', JSON.stringify(loginHistory.slice(-10)));
-        }
-
-        // Show forgot password
-        function showForgotPassword() {
-            alert('Password reset functionality would be implemented here.\n\nFor demo, use:\nEmail: any@gmail.com\nPassword: admin123');
-        }
-
-        // Add shake animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-                20%, 40%, 60%, 80% { transform: translateX(10px); }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>

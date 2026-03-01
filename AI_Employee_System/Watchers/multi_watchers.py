@@ -9,6 +9,11 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
 
+# import other watcher classes to allow multi-user orchestration
+from AI_Employee_System.Watchers.gmail_watcher import GmailWatcher
+from AI_Employee_System.Watchers.whatsapp_watcher import WhatsAppWatcher
+from AI_Employee_System.Watchers.linkedin_poster import LinkedInWatcher
+
 logger = logging.getLogger("WhatsAppWatcher")
 
 
@@ -119,12 +124,54 @@ class TwitterWatcher:
 
 
 class MultiWatcherOrchestrator:
-    """Silver Tier: Manages multiple watchers"""
+    """Silver Tier: Manages multiple watchers
+
+    This orchestrator reads the user database and creates per-user watchers
+    according to their configured integrations.  It uses the same watcher
+    classes defined in this module but passes credentials from the database.
+    """
     
     def __init__(self, vault_path: str):
         self.vault_path = vault_path
-        self.watchers = {}
-        
+        self.watchers = {}  # key: user_{id}_{integration}
+
+        # load users and their integrations
+        try:
+            from auth_db import db
+            users = db.get_all_users(limit=1000)
+            for u in users:
+                if not u['is_active']:
+                    continue
+                user_id = u['id']
+                integr = db.get_user_integrations(user_id)
+                tier = u.get('tier', 'bronze')
+                # Gmail
+                if 'gmail' in integr and tier in ['bronze','silver','gold','platinum']:
+                    cfg = integr['gmail']
+                    try:
+                        watcher = GmailWatcher(cfg.get('email',''), cfg.get('app_password',''), vault_path, user_tier=tier)
+                        self.register_watcher(f"user_{user_id}_gmail", watcher)
+                    except Exception as e:
+                        logger.warning(f"Skipping gmail watcher for user {user_id}: {e}")
+                # WhatsApp (playwright)
+                if 'whatsapp' in integr and tier in ['bronze','silver','gold','platinum']:
+                    try:
+                        watcher = WhatsAppWatcher(vault_path, user_tier=tier)
+                        self.register_watcher(f"user_{user_id}_whatsapp", watcher)
+                    except Exception as e:
+                        logger.warning(f"Skipping whatsapp watcher for user {user_id}: {e}")
+                # LinkedIn
+                if 'linkedin' in integr and tier in ['silver','gold','platinum']:
+                    cfg = integr['linkedin']
+                    try:
+                        watcher = LinkedInWatcher(cfg.get('token',''), vault_path)
+                        self.register_watcher(f"user_{user_id}_linkedin", watcher)
+                    except Exception as e:
+                        logger.warning(f"Skipping linkedin watcher for user {user_id}: {e}")
+                # Facebook and others would have their own watchers if defined
+        except Exception as e:
+            logger.error(f"Error initializing MultiWatcherOrchestrator: {e}")
+
         logger.info("✅ Multi-Watcher Orchestrator initialized (Silver Tier)")
     
     def register_watcher(self, name: str, watcher: Any):

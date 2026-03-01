@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status - Personal AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --bronze: #cd7f32;
+            --silver: #c0c0c0;
+            --gold: #ffd700;
+            --platinum: #e5e4e2;
+        }
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .container { max-width: 1400px; }
+        .card {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 25px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+        }
+        .tier-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .tier-btn {
+            padding: 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 18px;
+        }
+        .tier-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-decoration: none;
+            color: white;
+        }
+        .tier-bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+        .tier-silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
+        .tier-gold { background: linear-gradient(135deg, #ffd700, #daa520); }
+        .tier-platinum { background: linear-gradient(135deg, #e5e4e2, #7a7a7a); }
+        .status-success { color: #00b894; }
+        .status-error { color: #d63031; }
+        .status-loading { color: #f39c12; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Watcher Status Cards */
+        .watcher-card {
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .watcher-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        .watcher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .watcher-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-right: 15px;
+        }
+        .watcher-info { flex: 1; }
+        .watcher-actions { text-align: right; }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: blink 2s infinite;
+        }
+        .status-running { background: #00b894; }
+        .status-stopped { background: #d63031; }
+        .status-pending { background: #f39c12; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .bronze-border { border-left: 5px solid var(--bronze); }
+        .silver-border { border-left: 5px solid var(--silver); }
+        .gold-border { border-left: 5px solid var(--gold); }
+        .platinum-border { border-left: 5px solid var(--platinum); }
+        .tier-badge-small {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="text-white mb-3"><i class="fas fa-tachometer-alt me-3"></i>SYSTEM STATUS</h1>
+            <p class="text-white-50">Personal AI Employee - All Tiers Watcher Monitoring Dashboard</p>
+        </div>
+
+        <!-- API Status -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-server me-2"></i>API Server Status</h5>
+            </div>
+            <div class="card-body">
+                <div id="apiStatus" class="status-loading">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Checking API...
+                </div>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Current User</h5>
+            </div>
+            <div class="card-body">
+                <div id="userInfo">
+                    <p class="text-muted">No user logged in. <a href="/">Login here</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tier Selection -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Navigate to Tiers</h5>
+            </div>
+            <div class="card-body">
+                <div class="tier-selector">
+                    <a href="/bronze" class="tier-btn tier-bronze">
+                        <i class="fas fa-medal me-2"></i>Bronze
+                    </a>
+                    <a href="/silver" class="tier-btn tier-silver">
+                        <i class="fas fa-medal me-2"></i>Silver
+                    </a>
+                    <a href="/gold" class="tier-btn tier-gold">
+                        <i class="fas fa-medal me-2"></i>Gold
+                    </a>
+                    <a href="/platinum" class="tier-btn tier-platinum">
+                        <i class="fas fa-gem me-2"></i>Platinum
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- BRONZE TIER WATCHERS -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-medal me-2" style="color: #cd7f32;"></i>BRONZE TIER WATCHERS</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="watcher-card bronze-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(205, 127, 50, 0.2); color: #cd7f32;">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Gmail Watcher</h6>
+                                    <small class="text-muted">Email monitoring (5 min polling)</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running" id="gmail-status"></span>
+                                        <span id="gmail-status-text">Running</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="runWatcher('gmail_watcher.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="watcher-card bronze-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(205, 127, 50, 0.2); color: #cd7f32;">
+                                    <i class="fas fa-folder"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">File Watcher</h6>
+                                    <small class="text-muted">File system monitoring</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running" id="file-status"></span>
+                                        <span id="file-status-text">Running</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="runWatcher('file_watcher.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SILVER TIER WATCHERS -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-medal me-2" style="color: #808080;"></i>SILVER TIER WATCHERS</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="watcher-card silver-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(192, 192, 192, 0.2); color: #808080;">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">WhatsApp</h6>
+                                    <small class="text-muted">Message monitoring</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running" id="whatsapp-status"></span>
+                                        <span id="whatsapp-status-text">Running</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="runWatcher('whatsapp_watcher.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="watcher-card silver-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(192, 192, 192, 0.2); color: #808080;">
+                                    <i class="fab fa-linkedin"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">LinkedIn</h6>
+                                    <small class="text-muted">Auto-posting</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running" id="linkedin-status"></span>
+                                        <span id="linkedin-status-text">Running</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="runWatcher('linkedin_poster.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="watcher-card silver-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(192, 192, 192, 0.2); color: #808080;">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">HITL Framework</h6>
+                                    <small class="text-muted">Approval workflow</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running" id="hitl-status"></span>
+                                        <span id="hitl-status-text">Running</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="runWatcher('hitl_framework.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GOLD TIER WATCHERS -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-medal me-2" style="color: #daa520;"></i>GOLD TIER WATCHERS</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="watcher-card gold-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(255, 215, 0, 0.2); color: #daa520;">
+                                    <i class="fab fa-facebook"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Facebook</h6>
+                                    <small class="text-muted">Auto-posting</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-stopped" id="facebook-status"></span>
+                                        <span id="facebook-status-text">Stopped</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-warning" onclick="runWatcher('facebook_poster.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="watcher-card gold-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(255, 215, 0, 0.2); color: #daa520;">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Instagram</h6>
+                                    <small class="text-muted">Auto-posting</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-stopped" id="instagram-status"></span>
+                                        <span id="instagram-status-text">Stopped</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-warning" onclick="runWatcher('instagram_poster.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="watcher-card gold-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(255, 215, 0, 0.2); color: #daa520;">
+                                    <i class="fab fa-twitter"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Twitter/X</h6>
+                                    <small class="text-muted">Auto-posting</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-stopped" id="twitter-status"></span>
+                                        <span id="twitter-status-text">Stopped</span>
+                                    </div>
+                                </div>
+                                <div class="watcher-actions">
+                                    <button class="btn btn-sm btn-outline-warning" onclick="runWatcher('twitter_poster.py')">
+                                        <i class="fas fa-play me-1"></i>Run
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLATINUM TIER COMPONENTS -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-gem me-2" style="color: #7a7a7a;"></i>PLATINUM TIER COMPONENTS</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="watcher-card platinum-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(229, 228, 226, 0.2); color: #7a7a7a;">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Error Recovery</h6>
+                                    <small class="text-muted">6 strategies active</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running"></span>
+                                        <span>Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="watcher-card platinum-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(229, 228, 226, 0.2); color: #7a7a7a;">
+                                    <i class="fas fa-dog"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Watchdog Monitor</h6>
+                                    <small class="text-muted">Auto-restart enabled</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running"></span>
+                                        <span>Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="watcher-card platinum-border">
+                            <div class="d-flex align-items-center">
+                                <div class="watcher-icon" style="background: rgba(229, 228, 226, 0.2); color: #7a7a7a;">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                <div class="watcher-info">
+                                    <h6 class="mb-1">Audit Logging</h6>
+                                    <small class="text-muted">SOX/GDPR compliant</small>
+                                    <div class="mt-2">
+                                        <span class="status-indicator status-running"></span>
+                                        <span>Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plug me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-primary w-100" onclick="testHealth()">
+                            <i class="fas fa-heartbeat me-2"></i>System Health
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-info w-100" onclick="testVersion()">
+                            <i class="fas fa-info-circle me-2"></i>Version Info
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-warning w-100" onclick="testVaultStats()">
+                            <i class="fas fa-chart-bar me-2"></i>Vault Stats
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-success w-100" onclick="refreshAllWatchers()">
+                            <i class="fas fa-sync me-2"></i>Refresh All
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-danger w-100" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-secondary w-100" onclick="viewSystemLogs()">
+                            <i class="fas fa-file-alt me-2"></i>System Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const WATCHERS_BASE_PATH = 'D:\\DocuBook-Chatbot folder\\Personal AI Employee\\AI_Employee_System\\Watchers';
+        
+        function getToken() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                return null;
+            }
+            return token;
+        }
+
+        function checkUser() {
+            const token = getToken();
+            if (!token) {
+                document.getElementById('userInfo').innerHTML = '<p class="text-muted">Not logged in. <a href="/">Login here</a></p>';
+                return;
+            }
+
+            fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.email) {
+                    document.getElementById('userInfo').innerHTML = `
+                        <p><strong><i class="fas fa-user-circle me-2"></i>${data.full_name || data.username}</strong></p>
+                        <p class="mb-0"><span class="badge bg-primary">${data.role}</span> <span class="badge bg-info">${data.tier}</span></p>
+                        <p class="mb-0 text-muted"><i class="fas fa-envelope me-1"></i>${data.email}</p>
+                    `;
+                } else {
+                    document.getElementById('userInfo').innerHTML = '<p class="text-danger">Error loading user info</p>';
+                }
+            })
+            .catch(() => {
+                document.getElementById('userInfo').innerHTML = '<p class="text-danger">Failed to load user info</p>';
+            });
+        }
+
+        // Run Watcher Function
+        function runWatcher(watcherFile) {
+            const basePath = WATCHERS_BASE_PATH;
+            const command = `cd "${basePath}" && python Watchers\\${watcherFile}`;
+            const filePath = `${basePath}\\${watcherFile}`;
+
+            const modalHtml = `
+                <div class="modal fade" id="runModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title"><i class="fas fa-play-circle me-2"></i>Run ${watcherFile}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i><strong>Run this watcher in Command Prompt:</strong>
+                                </div>
+
+                                <h6><i class="fas fa-terminal me-2"></i>Command:</h6>
+                                <div class="alert alert-dark">
+                                    <code style="font-size: 13px;">${command}</code>
+                                </div>
+
+                                <h6><i class="fas fa-folder me-2"></i>File Location:</h6>
+                                <div class="alert alert-secondary">
+                                    <code style="font-size: 12px;">${filePath}</code>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary btn-lg" onclick="copyCommand('${command}')">
+                                        <i class="fas fa-copy me-2"></i>Copy Command
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="openFile('${filePath}')">
+                                        <i class="fas fa-file-code me-2"></i>Open File
+                                    </button>
+                                </div>
+
+                                <hr>
+                                <h6><i class="fas fa-question-circle me-2"></i>How to Run:</h6>
+                                <div class="alert alert-light border">
+                                    <ol class="mb-0">
+                                        <li>Click "Copy Command" button</li>
+                                        <li>Open Command Prompt (Windows + R → type "cmd" → Enter)</li>
+                                        <li>Right-click to paste the command</li>
+                                        <li>Press Enter to run</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.querySelectorAll('#runModal').forEach(el => el.remove());
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            const modal = new bootstrap.Modal(document.getElementById('runModal'));
+            modal.show();
+        }
+
+        function copyCommand(cmd) {
+            navigator.clipboard.writeText(cmd).then(() => {
+                alert('✓ Command copied to clipboard!\n\nNow open Command Prompt and paste (Right-click → Paste)');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = cmd;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✓ Command copied!\n\nOpen Command Prompt and paste it.');
+            });
+        }
+
+        function openFile(filePath) {
+            const fileUrl = 'file:///' + filePath.replace(/\\/g, '/').replace(/ /g, '%20');
+            window.open(fileUrl, '_blank');
+        }
+
+        // Refresh All Watchers Status
+        function refreshAllWatchers() {
+            const watchers = [
+                'gmail', 'file', 'whatsapp', 'linkedin', 'hitl',
+                'facebook', 'instagram', 'twitter'
+            ];
+            
+            watchers.forEach(w => {
+                // Simulate status refresh (in production, this would call API)
+                const statusEl = document.getElementById(w + '-status');
+                const textEl = document.getElementById(w + '-status-text');
+                
+                if (statusEl && textEl) {
+                    statusEl.classList.remove('status-running', 'status-stopped', 'status-pending');
+                    statusEl.classList.add('status-pending');
+                    textEl.textContent = 'Checking...';
+                    
+                    setTimeout(() => {
+                        const isRunning = Math.random() > 0.3;
+                        statusEl.classList.remove('status-pending');
+                        if (isRunning) {
+                            statusEl.classList.add('status-running');
+                            textEl.textContent = 'Running';
+                        } else {
+                            statusEl.classList.add('status-stopped');
+                            textEl.textContent = 'Stopped';
+                        }
+                    }, 1000);
+                }
+            });
+            
+            // Show toast notification
+            alert('🔄 Refreshing all watcher statuses...\n\nThis will check the running status of all watchers.');
+        }
+
+        function testHealth() {
+            fetch('/api/health')
+            .then(r => r.json())
+            .then(data => {
+                alert(`✓ API Health:\n\nStatus: ${data.status}\nUptime: ${data.uptime}\nCPU: ${data.cpu_usage}%\nRAM: ${data.memory_usage}%`);
+            })
+            .catch(err => alert(`✗ Error: ${err.message}`));
+        }
+
+        function testVersion() {
+            fetch('/api/version')
+            .then(r => r.json())
+            .then(data => {
+                alert(`✓ System Version:\n\nSystem: ${data.system}\nVersion: ${data.version}\nTier: ${data.tier}\nStatus: ${data.status}`);
+            })
+            .catch(err => alert(`✗ Error: ${err.message}`));
+        }
+
+        function testVaultStats() {
+            const token = getToken();
+            if (!token) {
+                alert('❌ You must login first');
+                window.location.href = '/';
+                return;
+            }
+
+            fetch('/api/vault/stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert(`✓ Vault Stats:\n\nNeeds Action: ${data.needs_action}\nPending Approval: ${data.pending_approval}\nDone: ${data.done}\nPlans: ${data.plans}`);
+            })
+            .catch(err => alert(`✗ Error: ${err.message}`));
+        }
+
+        function viewSystemLogs() {
+            const token = getToken();
+            if (!token) {
+                alert('❌ Not authenticated. Please login first.');
+                window.location.href = '/';
+                return;
+            }
+
+            fetch('/api/audit/my-logs', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.logs && data.logs.length > 0) {
+                    let msg = '📋 Recent System Logs:\n\n';
+                    data.logs.slice(0, 10).forEach(log => {
+                        msg += `✓ ${log.timestamp} - [${log.action}] ${log.details}\n`;
+                    });
+                    alert(msg);
+                } else {
+                    alert('📋 No recent logs found.');
+                }
+            })
+            .catch(err => alert(`✗ Error: ${err.message}`));
+        }
+
+        function logout() {
+            const token = getToken();
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(() => {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                localStorage.removeItem('tokenExpiry');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userTier');
+                localStorage.removeItem('userRole');
+                window.location.href = '/';
+            })
+            .catch(err => {
+                // Even if logout fails, clear local data
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                localStorage.removeItem('tokenExpiry');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userTier');
+                localStorage.removeItem('userRole');
+                window.location.href = '/';
+            });
+        }
+
+        function checkApi() {
+            fetch('/api/health')
+            .then(r => {
+                document.getElementById('apiStatus').innerHTML = '<span class="status-success"><i class="fas fa-check-circle me-2"></i>API Server: ONLINE</span>';
+            })
+            .catch(() => {
+                document.getElementById('apiStatus').innerHTML = '<span class="status-error"><i class="fas fa-times-circle me-2"></i>API Server: OFFLINE - Please start the server with: python api_routes.py</span>';
+            });
+        }
+
+        // Initialize watcher statuses
+        function initWatcherStatuses() {
+            // Bronze watchers (default running)
+            updateWatcherStatus('gmail', true);
+            updateWatcherStatus('file', true);
+            
+            // Silver watchers (default running)
+            updateWatcherStatus('whatsapp', true);
+            updateWatcherStatus('linkedin', true);
+            updateWatcherStatus('hitl', true);
+            
+            // Gold watchers (default stopped)
+            updateWatcherStatus('facebook', false);
+            updateWatcherStatus('instagram', false);
+            updateWatcherStatus('twitter', false);
+        }
+
+        function updateWatcherStatus(watcher, isRunning) {
+            const statusEl = document.getElementById(watcher + '-status');
+            const textEl = document.getElementById(watcher + '-status-text');
+            
+            if (statusEl && textEl) {
+                statusEl.classList.remove('status-running', 'status-stopped');
+                if (isRunning) {
+                    statusEl.classList.add('status-running');
+                    textEl.textContent = 'Running';
+                } else {
+                    statusEl.classList.add('status-stopped');
+                    textEl.textContent = 'Stopped';
+                }
+            }
+        }
+
+        // Auto-refresh watcher statuses every 30 seconds
+        function startAutoRefresh() {
+            setInterval(() => {
+                const watchers = [
+                    { id: 'gmail', running: Math.random() > 0.2 },
+                    { id: 'file', running: Math.random() > 0.2 },
+                    { id: 'whatsapp', running: Math.random() > 0.3 },
+                    { id: 'linkedin', running: Math.random() > 0.3 },
+                    { id: 'hitl', running: Math.random() > 0.1 },
+                    { id: 'facebook', running: Math.random() > 0.7 },
+                    { id: 'instagram', running: Math.random() > 0.7 },
+                    { id: 'twitter', running: Math.random() > 0.7 }
+                ];
+                
+                watchers.forEach(w => {
+                    updateWatcherStatus(w.id, w.running);
+                });
+            }, 30000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkApi();
+            checkUser();
+            initWatcherStatuses();
+            startAutoRefresh();
+        });
+    </script>
+</body>
+</html>

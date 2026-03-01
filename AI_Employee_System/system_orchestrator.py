@@ -137,6 +137,13 @@ class SystemOrchestrator:
         self.last_status = SystemHealth.HEALTHY
         self.degraded_features: List[str] = []
         self.active_interventions: Dict[str, Any] = {}
+
+        # optional integration workflow module
+        try:
+            from AI_Employee_System.integration_workflow import IntegrationWorkflow
+            self.IntegrationWorkflow = IntegrationWorkflow
+        except ImportError:
+            self.IntegrationWorkflow = None
         
         # Logging
         self.logger = logging.getLogger('SystemOrchestrator')
@@ -144,6 +151,34 @@ class SystemOrchestrator:
         
         # Lock for thread safety
         self._lock = threading.Lock()
+
+    # ----------------------------------------------------------------------
+    # Integration helpers
+    # ----------------------------------------------------------------------
+    def run_integrations_for_user(self, user_id: int):
+        """Run integration workflow for a single user."""
+        if not self.IntegrationWorkflow:
+            self.logger.warning("IntegrationWorkflow module not available")
+            return
+        try:
+            wf = self.IntegrationWorkflow(user_id)
+            wf.run()
+            self.logger.info(f"Ran integrations for user {user_id}")
+        except Exception as e:
+            self.logger.error(f"Integration workflow error for user {user_id}: {e}")
+
+    def run_integrations_all_users(self):
+        """Loop through all active users and execute their workflows."""
+        conn = None
+        try:
+            # direct DB access for simplicity
+            from auth_db import db
+            users = db.get_all_users(limit=1000)
+            for u in users:
+                if u['is_active']:
+                    self.run_integrations_for_user(u['id'])
+        except Exception as e:
+            self.logger.error(f"Failed to run integrations for all users: {e}")
     
     def _setup_logging(self):
         """Setup logging."""

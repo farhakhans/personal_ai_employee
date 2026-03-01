@@ -38,6 +38,11 @@ class MCPServerType(Enum):
     WHATSAPP = "whatsapp"
     PAYMENT = "payment"
     APPROVAL = "approval"
+    SOCIAL_MEDIA = "social_media"
+    FACEBOOK = "facebook"
+    INSTAGRAM = "instagram"
+    LINKEDIN = "linkedin"
+    TWITTER = "twitter"
 
 
 @dataclass
@@ -579,20 +584,124 @@ Add your notes here before approving/rejecting.
         return self.capabilities
 
 
+class SocialMediaMCP(MCPServer):
+    """Social Media MCP - Post to Facebook, Instagram, LinkedIn, Twitter."""
+
+    def __init__(self, vault_path: Path):
+        super().__init__(MCPServerType.SOCIAL_MEDIA, {'vault_path': str(vault_path)})
+        self.vault_path = Path(vault_path)
+        self.capabilities = [
+            'post_facebook',
+            'post_instagram',
+            'post_linkedin',
+            'post_twitter',
+            'generate_facebook_content',
+            'generate_instagram_content',
+            'generate_linkedin_content',
+            'generate_twitter_content',
+            'get_facebook_insights',
+            'get_instagram_insights',
+            'schedule_post',
+        ]
+
+    def invoke(self, capability: str, params: Dict) -> MCPResponse:
+        """Invoke social media capability."""
+        try:
+            from Watchers.facebook_poster import FacebookPoster
+            from Watchers.instagram_poster import InstagramPoster
+            from Watchers.linkedin_poster import LinkedInPoster
+            from Watchers.twitter_poster import TwitterPoster
+
+            if capability == 'post_facebook':
+                poster = FacebookPoster(self.vault_path)
+                result = poster.post_to_page(
+                    message=params.get('message', ''),
+                    photo_url=params.get('photo_url'),
+                    link=params.get('link')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'post_instagram':
+                poster = InstagramPoster(self.vault_path)
+                result = poster.post_image(
+                    image_url=params.get('image_url', ''),
+                    caption=params.get('caption', '')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'post_linkedin':
+                poster = LinkedInPoster(self.vault_path)
+                result = poster.create_post(
+                    text=params.get('text', ''),
+                    image_url=params.get('image_url')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'post_twitter':
+                poster = TwitterPoster(self.vault_path)
+                result = poster.create_tweet(
+                    text=params.get('text', '')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'generate_facebook_content':
+                poster = FacebookPoster(self.vault_path)
+                result = poster.generate_post_content(
+                    topic=params.get('topic', ''),
+                    tone=params.get('tone', 'professional')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'generate_instagram_content':
+                poster = InstagramPoster(self.vault_path)
+                result = poster.generate_post_content(
+                    topic=params.get('topic', ''),
+                    tone=params.get('tone', 'casual')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'generate_linkedin_content':
+                poster = LinkedInPoster(self.vault_path)
+                result = poster.generate_post_content(
+                    topic=params.get('topic', ''),
+                    tone=params.get('tone', 'professional')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            elif capability == 'generate_twitter_content':
+                poster = TwitterPoster(self.vault_path)
+                result = poster.generate_tweet_content(
+                    topic=params.get('topic', ''),
+                    tone=params.get('tone', 'casual')
+                )
+                return MCPResponse(result.get('success', False), result=result)
+
+            else:
+                return MCPResponse(False, error=f"Unknown capability: {capability}")
+
+        except Exception as e:
+            return MCPResponse(False, error=str(e))
+
+    def get_capabilities(self) -> List[str]:
+        """Return available capabilities."""
+        return self.capabilities
+
+
 class MCPCoordinator:
     """Coordinator for all MCP servers."""
-    
+
     def __init__(self, vault_path: Path):
         """Initialize MCP coordinator with vault."""
         self.vault_path = Path(vault_path)
         self.logger = logging.getLogger("MCPCoordinator")
-        
+
         # Initialize all MCP servers
         self.servers: Dict[MCPServerType, MCPServer] = {
             MCPServerType.FILESYSTEM: FilesystemMCP(vault_path),
             MCPServerType.EMAIL: EmailMCP(),
             MCPServerType.BROWSER: BrowserMCP(),
             MCPServerType.CALENDAR: CalendarMCP(),
+            MCPServerType.SOCIAL_MEDIA: SocialMediaMCP(vault_path),
             MCPServerType.APPROVAL: ApprovalMCP(vault_path),
         }
         

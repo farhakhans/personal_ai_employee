@@ -48,15 +48,15 @@ class AgentSkill(ABC):
 
 class VaultReadSkill(AgentSkill):
     """Read files from Obsidian vault"""
-    
+
     def __init__(self, vault_path: str):
         super().__init__(
             name="VaultRead",
             description="Read markdown files from Obsidian vault",
-            requires_approval=False
+            requires_approval=True  # Manual approval required
         )
         self.vault_path = vault_path
-    
+
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         context: {file_path: str}
@@ -65,12 +65,12 @@ class VaultReadSkill(AgentSkill):
             file_path = context.get("file_path")
             if not file_path:
                 return {"success": False, "error": "file_path required"}
-            
+
             full_path = f"{self.vault_path}/{file_path}"
-            
+
             with open(full_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             self.log_execution(True, f"Read {file_path}")
             return {
                 "success": True,
@@ -90,12 +90,12 @@ class VaultReadSkill(AgentSkill):
 
 class VaultWriteSkill(AgentSkill):
     """Write files to Obsidian vault"""
-    
+
     def __init__(self, vault_path: str):
         super().__init__(
             name="VaultWrite",
             description="Write markdown files to Obsidian vault",
-            requires_approval=False
+            requires_approval=True  # Manual approval required
         )
         self.vault_path = vault_path
     
@@ -139,7 +139,7 @@ class EmailTriageSkill(AgentSkill):
         super().__init__(
             name="EmailTriage",
             description="Analyze emails and categorize by priority/action",
-            requires_approval=False
+            requires_approval=True  # Manual approval required
         )
     
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -196,7 +196,7 @@ class DraftResponseSkill(AgentSkill):
         super().__init__(
             name="DraftResponse",
             description="Generate draft email responses for human review",
-            requires_approval=True  # Always requires human approval
+            requires_approval=True  # Manual approval required
         )
     
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -300,7 +300,7 @@ class CreatePlanSkill(AgentSkill):
         super().__init__(
             name="CreatePlan",
             description="Generate Plan.md files for multi-step tasks",
-            requires_approval=False
+            requires_approval=True  # Manual approval required
         )
         self.vault_path = vault_path
     
@@ -382,11 +382,44 @@ class SkillRegistry:
         logger.info(f"Registered skill: {skill.name}")
     
     def execute_skill(self, skill_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a skill - requires manual approval for skills that need it"""
         if skill_name not in self.skills:
             return {"success": False, "error": f"Skill '{skill_name}' not found"}
         
         skill = self.skills[skill_name]
+        
+        # Check if skill requires manual approval
+        if skill.requires_approval:
+            # Create approval request instead of executing
+            approval_request = {
+                "success": True,
+                "requires_approval": True,
+                "status": "pending_approval",
+                "skill_name": skill.name,
+                "skill_description": skill.description,
+                "context": context,
+                "message": f"⚠️ Manual approval required for '{skill.name}'. Please review and approve before execution.",
+                "timestamp": datetime.now().isoformat()
+            }
+            return approval_request
+        
+        # Only execute if no approval required
         return skill.execute(context)
+    
+    def approve_and_execute(self, skill_name: str, context: Dict[str, Any], approval_code: str = None) -> Dict[str, Any]:
+        """Execute a skill after manual approval"""
+        if skill_name not in self.skills:
+            return {"success": False, "error": f"Skill '{skill_name}' not found"}
+        
+        skill = self.skills[skill_name]
+        
+        # Log the approval
+        logger.info(f"[{skill.name}] Manual approval granted. Executing...")
+        
+        # Execute the skill
+        result = skill.execute(context)
+        result["manually_approved"] = True
+        return result
     
     def list_skills(self) -> Dict[str, Any]:
         return {name: skill.to_dict() for name, skill in self.skills.items()}

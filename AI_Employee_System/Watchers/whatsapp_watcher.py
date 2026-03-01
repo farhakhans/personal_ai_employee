@@ -33,9 +33,16 @@ class WhatsAppWatcher:
     3. Monitor for new messages
     4. Save to Vault/Inbox/
     5. Mark as processed
+
+    The watcher is available from bronze tier onward; provide an optional
+    ``user_tier`` when constructing to enforce that.
     """
-    
-    def __init__(self, vault_path: str = "../vault"):
+
+    ALLOWED_TIERS = ['bronze', 'silver', 'gold', 'platinum']
+
+    def __init__(self, vault_path: str = "../vault", user_tier: str = 'bronze'):
+        if user_tier not in self.ALLOWED_TIERS:
+            raise ValueError(f"WhatsAppWatcher not permitted for tier {user_tier}")
         self.vault_path = Path(vault_path)
         self.browser = None
         self.page = None
@@ -386,14 +393,19 @@ async def main():
 
 
 if __name__ == "__main__":
+    import sys
+    import io
+    # Fix Windows console encoding
+    if sys.platform == 'win32':
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n✅ WhatsApp Watcher stopped")
+        print("\nWhatsApp Watcher stopped")
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         print("\nTroubleshooting:")
         print("1. Install Playwright: pip install playwright")
         print("2. Install Chrome: playwright install chromium")
-        print("3. Ensure selenium and/or browser automation tools are working")
-        print("4. Check WhatsApp Web loads correctly at https://web.whatsapp.com")
+        print("3. Check WhatsApp Web loads correctly")

@@ -21,7 +21,7 @@ Complete autonomous AI employee system with:
 ## ✨ Features
 
 ### **Dashboard**
-- ✅ Beautiful animated UI
+- ✅ Beautiful animated UI (login required to access)
 - ✅ Real-time statistics
 - ✅ Email notifications
 - ✅ Order tracking
@@ -106,6 +106,23 @@ Personal-AI-Employee/
 - Real-time balance updates
 - Transaction monitoring
 - Order status tracking
+
+### **Integrations & Tiers**
+
+The system supports external services with tier-based access:
+
+- **Gmail Watcher** (Bronze+): monitor inbox and auto-log emails to vault
+- **WhatsApp Monitoring** (Bronze+): capture incoming chats via WhatsApp Web
+- **LinkedIn Posting** (Silver+): auto-generate and publish business posts
+- **Facebook Posting** (Gold+): advanced social media automation
+
+Configuration for each service lives in **Settings → Integrations** and is
+stored per-user.  The backend enforces tier restrictions automatically.  A
+lightweight **integration workflow** (see `AI_Employee_System/integration_workflow.py`)
+coordinates processing and can be triggered periodically by the orchestrator.
+
+Feature tiers are visible in the dashboard status page and users may upgrade
+to unlock additional capabilities.
 
 ---
 

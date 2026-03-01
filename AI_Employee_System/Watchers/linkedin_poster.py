@@ -13,13 +13,21 @@ logger = logging.getLogger("LinkedInPoster")
 
 
 class LinkedInPoster:
-    """Posts business content to LinkedIn"""
-    
-    def __init__(self, access_token: str, business_profile_id: str):
+    """Posts business content to LinkedIn
+
+    Silver tier feature – check tier before using in workflows.
+    """
+
+    ALLOWED_TIERS = ['silver', 'gold', 'platinum']
+
+    def __init__(self, access_token: str, business_profile_id: str, user_tier: str = 'silver'):
         """
         access_token: LinkedIn API token
         business_profile_id: LinkedIn page/profile ID
+        user_tier: tier string for gating
         """
+        if user_tier not in self.ALLOWED_TIERS:
+            raise ValueError(f"LinkedInPoster disabled for tier {user_tier}")
         self.access_token = access_token
         self.profile_id = business_profile_id
         self.posts = []
@@ -133,6 +141,7 @@ class LinkedInScheduler:
     """Silver Tier: Schedule LinkedIn posts"""
     
     def __init__(self, poster: LinkedInPoster):
+        # poster already enforces tier
         self.poster = poster
         self.schedule = []
         logger.info("✅ LinkedIn Scheduler initialized")

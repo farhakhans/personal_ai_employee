@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Manager - AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --whatsapp-green: #25D366;
+            --whatsapp-dark: #128C7E;
+            --whatsapp-light: #DCF8C6;
+        }
+        body {
+            background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container { max-width: 1200px; }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #128C7E, #25D366);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stat-card i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #128C7E, #25D366);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .message-box {
+            background: #DCF8C6;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .message-box.received {
+            background: white;
+            border-left: 4px solid #25D366;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .auto-reply-card {
+            background: linear-gradient(135deg, #128C7E15, #25D36615);
+            border: 2px solid #25D366;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .phone-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #25D366;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+            color: white;
+        }
+        .chat-preview {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #ECE5DD;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <button class="btn btn-light back-btn" onclick="window.location.href='/main-dashboard'">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </button>
+
+    <div class="container mt-5">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <i class="fab fa-whatsapp fa-4x text-white mb-3"></i>
+            <h1 class="text-white">WhatsApp Business Manager</h1>
+            <p class="text-white-50">Auto-Reply & Message Management System</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-comments"></i>
+                    <h3 id="total-messages">247</h3>
+                    <p class="text-muted">Total Messages</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-robot"></i>
+                    <h3 id="auto-replied">189</h3>
+                    <p class="text-muted">Auto-Replied</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <h3 id="pending">58</h3>
+                    <p class="text-muted">Needs Action</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h3 id="response-rate">98%</h3>
+                    <p class="text-muted">Response Rate</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Settings -->
+            <div class="col-md-6">
+                <!-- Phone Number Setup -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-phone me-2"></i>WhatsApp Number Setup</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="phone-input-group">
+                            <input type="text" id="whatsappNumber" placeholder="+92 300 1234567" value="+92 300 1234567">
+                            <button class="btn btn-whatsapp" onclick="savePhoneNumber()">
+                                <i class="fas fa-save me-2"></i>Save
+                            </button>
+                        </div>
+                        <div class="alert alert-success" id="connectionStatus">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Connected:</strong> <span id="connected-number">+92 300 1234567</span>
+                        </div>
+                        
+                        <!-- Start WhatsApp Receiver Button -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-whatsapp" id="startReceiverBtn" onclick="startWhatsAppReceiver()">
+                                <i class="fas fa-play me-2"></i>START WHATSAPP RECEIVER
+                            </button>
+                            <button class="btn btn-outline-danger" id="stopReceiverBtn" onclick="stopWhatsAppReceiver()" style="display:none;">
+                                <i class="fas fa-stop me-2"></i>STOP RECEIVER
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info mt-2" id="receiverStatus" style="display:none;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="receiverStatusText">Receiver is running...</span>
+                        </div>
+                        
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="openWhatsAppWeb()">
+                            <i class="fab fa-whatsapp me-2"></i>Open WhatsApp Web
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Auto-Reply Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Auto-Reply Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="auto-reply-card">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="autoReplyEnabled" checked onchange="toggleAutoReply()">
+                                <label class="form-check-label fw-bold" for="autoReplyEnabled">
+                                    <i class="fas fa-bolt me-2"></i>Enable Auto-Reply
+                                </label>
+                            </div>
+
+                            <label class="form-label fw-bold">Greeting Message</label>
+                            <textarea class="form-control mb-3" id="greetingMessage" rows="3">Assalam-o-Alaikum! Thank you for contacting AI Employee System. How can we help you today?</textarea>
+
+                            <label class="form-label fw-bold">Business Hours Message</label>
+                            <textarea class="form-control mb-3" id="businessHoursMessage" rows="2">We're currently away but will respond within 24 hours. For urgent matters, please call us.</textarea>
+
+                            <label class="form-label fw-bold">Quick Replies</label>
+                            <div class="mb-2">
+                                <input type="text" class="form-control mb-2" id="quickReply1" value="/payment - Payment received confirmation">
+                                <input type="text" class="form-control mb-2" id="quickReply2" value="/order - Order confirmation message">
+                                <input type="text" class="form-control mb-2" id="quickReply3" value="/reminder - Payment reminder message">
+                                <input type="text" class="form-control" id="quickReply4" value="/thanks - Thank you message">
+                            </div>
+
+                            <button class="btn btn-whatsapp w-100" onclick="saveAutoReplySettings()">
+                                <i class="fas fa-save me-2"></i>Save Auto-Reply Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keywords & Triggers -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-key me-2"></i>Smart Keywords & Auto-Responses</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Add Keyword Trigger</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="keywordInput" placeholder="e.g., price, cost, rates">
+                                <input type="text" class="form-control" id="keywordResponse" placeholder="Auto-response message">
+                                <button class="btn btn-whatsapp" onclick="addKeyword()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="keywords-list">
+                            <!-- Keywords will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Messages -->
+            <div class="col-md-6">
+                <!-- Live Chat Preview -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Live Messages</h5>
+                        <button class="btn btn-sm btn-light" onclick="refreshMessages()">
+                            <i class="fas fa-sync me-1"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="chat-preview" id="chatPreview">
+                            <!-- Messages will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="quickMessage" placeholder="Type a message...">
+                            <button class="btn btn-whatsapp" onclick="sendQuickMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Templates -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Message Templates</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <button class="list-group-item list-group-item-action" onclick="useTemplate('payment')">
+                                <i class="fas fa-dollar-sign me-2 text-success"></i>Payment Received
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="useTemplate('order')">
+                                <i class="fas fa-shopping-cart me-2 text-primary"></i>Order Confirmation
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="useTemplate('reminder')">
+                                <i class="fas fa-bell me-2 text-warning"></i>Payment Reminder
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="useTemplate('thanks')">
+                                <i class="fas fa-heart me-2 text-danger"></i>Thank You
+                            </button>
+                            <button class="list-group-item list-group-item-action" onclick="useTemplate('welcome')">
+                                <i class="fas fa-smile me-2 text-info"></i>Welcome Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Today's Analytics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Messages Received</span>
+                                    <strong>47</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Auto-Replies Sent</span>
+                                    <strong>38</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 8px;">
+                                    <div class="progress-bar bg-info" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Avg Response Time</span>
+                                    <strong>2.3 min</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Customer Satisfaction</span>
+                                    <strong>96%</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" style="width: 96%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // WhatsApp Data
+        let whatsappData = {
+            phoneNumber: '+92 300 1234567',
+            autoReplyEnabled: true,
+            messages: [],
+            keywords: [],
+            receiverRunning: false
+        };
+
+        // Initialize - Load from backend
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfigFromBackend();
+            loadMessagesFromBackend();
+            checkReceiverStatus();
+
+            // Auto-refresh every 3 seconds for live updates
+            setInterval(() => {
+                loadMessagesFromBackend();
+                checkReceiverStatus();
+            }, 3000);
+        });
+
+        // Load configuration from backend
+        async function loadConfigFromBackend() {
+            try {
+                const response = await fetch('/api/whatsapp/config');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    whatsappData.phoneNumber = data.config.phone_number || '+92 300 1234567';
+                    whatsappData.autoReplyEnabled = data.auto_reply_enabled !== false;
+                    whatsappData.keywords = data.keywords || [];
+                    
+                    // Update UI
+                    document.getElementById('whatsappNumber').value = whatsappData.phoneNumber;
+                    document.getElementById('connected-number').textContent = whatsappData.phoneNumber;
+                    document.getElementById('autoReplyEnabled').checked = whatsappData.autoReplyEnabled;
+                    document.getElementById('greetingMessage').value = data.config.greeting_message || '';
+                    
+                    renderKeywords();
+                    updateStats();
+                }
+            } catch (error) {
+                console.log('Using local config (backend not available)');
+                loadLocalConfig();
+            }
+        }
+
+        // Load local config (fallback)
+        function loadLocalConfig() {
+            const saved = localStorage.getItem('whatsappAutoReply');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('greetingMessage').value = settings.greeting || '';
+                document.getElementById('businessHoursMessage').value = settings.businessHours || '';
+            }
+            const savedNumber = localStorage.getItem('whatsappNumber');
+            if (savedNumber) {
+                whatsappData.phoneNumber = savedNumber;
+                document.getElementById('whatsappNumber').value = savedNumber;
+                document.getElementById('connected-number').textContent = savedNumber;
+            }
+        }
+
+        // Load messages from backend
+        async function loadMessagesFromBackend() {
+            try {
+                const response = await fetch('/api/whatsapp/messages');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Convert backend messages to UI format
+                    whatsappData.messages = data.messages.map(msg => ({
+                        id: msg.timestamp || Date.now(),
+                        from: msg.from || msg.to,
+                        fromName: msg.from_name || '',
+                        message: msg.message,
+                        time: new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        type: msg.type,
+                        autoReplied: msg.auto_replied || false,
+                        autoReply: msg.auto_reply || false,
+                        read: msg.status === 'delivered'
+                    }));
+                    
+                    renderMessages();
+                    updateStats();
+                }
+            } catch (error) {
+                console.log('Backend messages not available');
+            }
+        }
+
+        // Simulate incoming message and auto-reply
+        function simulateNewMessage() {
+            if (!whatsappData.autoReplyEnabled) return;
+            
+            // 30% chance of new message every 5 seconds
+            if (Math.random() > 0.7) {
+                const senders = [
+                    { number: '+92 321 7654321', name: 'Ahmed Hassan' },
+                    { number: '+92 333 1234567', name: 'Fatima Store' },
+                    { number: '+92 345 9876543', name: 'Ali Enterprises' },
+                    { number: '+92 300 1111111', name: 'John Consulting' },
+                    { number: '+92 312 5556666', name: 'New Customer' }
+                ];
+                
+                const messages = [
+                    'Hi, what is the price?',
+                    'I want to make a payment',
+                    'Can I place an order?',
+                    'Hello, I need help with my account',
+                    'Do you offer delivery services?',
+                    'What are your business hours?',
+                    'I received a damaged product',
+                    'Can you send me the invoice?'
+                ];
+                
+                const sender = senders[Math.floor(Math.random() * senders.length)];
+                const messageText = messages[Math.floor(Math.random() * messages.length)];
+                
+                const newMessage = {
+                    id: Date.now(),
+                    from: sender.number,
+                    fromName: sender.name,
+                    message: messageText,
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    type: 'received',
+                    autoReplied: false,
+                    read: false
+                };
+                
+                whatsappData.messages.push(newMessage);
+                
+                showToast(`📱 New message from ${sender.name}`, 'info');
+                
+                // Trigger auto-reply after 1.5 seconds
+                setTimeout(() => {
+                    processAutoReply(newMessage);
+                }, 1500);
+                
+                renderMessages();
+                updateStats();
+            }
+        }
+
+        // Process auto-reply for incoming message
+        function processAutoReply(message) {
+            if (!whatsappData.autoReplyEnabled) return;
+            
+            const messageLower = message.message.toLowerCase();
+            let response = null;
+            let matchedKeyword = null;
+            
+            // Check for keywords first
+            for (const item of whatsappData.keywords) {
+                if (messageLower.includes(item.keyword.toLowerCase())) {
+                    response = item.response;
+                    matchedKeyword = item.keyword;
+                    break;
+                }
+            }
+            
+            // Use greeting if no keyword match
+            if (!response) {
+                response = document.getElementById('greetingMessage').value;
+                if (!response || response.trim() === '') {
+                    response = 'Assalam-o-Alaikum! Thank you for contacting AI Employee System. How can we help you today?';
+                }
+            }
+            
+            // Add auto-reply to messages
+            const autoReplyMessage = {
+                id: Date.now() + 1,
+                from: 'System',
+                message: response + (matchedKeyword ? `\n\n(Auto-reply triggered by keyword: "${matchedKeyword}")` : ''),
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'sent',
+                autoReply: true
+            };
+            
+            whatsappData.messages.push(autoReplyMessage);
+            
+            // Mark original message as auto-replied
+            const originalMsg = whatsappData.messages.find(m => m.id === message.id);
+            if (originalMsg) {
+                originalMsg.autoReplied = true;
+                originalMsg.read = true;
+            }
+            
+            showToast('🤖 Auto-reply sent!', 'success');
+            renderMessages();
+            updateStats();
+        }
+
+        // Save phone number to backend
+        async function savePhoneNumber() {
+            const number = document.getElementById('whatsappNumber').value;
+            
+            try {
+                const response = await fetch('/api/whatsapp/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: number })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    whatsappData.phoneNumber = number;
+                    document.getElementById('connected-number').textContent = number;
+                    showToast('✓ Phone number saved to backend!', 'success');
+                }
+            } catch (error) {
+                // Fallback to local storage
+                localStorage.setItem('whatsappNumber', number);
+                document.getElementById('connected-number').textContent = number;
+                showToast('✓ Phone number saved locally', 'success');
+            }
+        }
+
+        function loadPhoneNumber() {
+            const saved = localStorage.getItem('whatsappNumber');
+            if (saved) {
+                document.getElementById('whatsappNumber').value = saved;
+                document.getElementById('connected-number').textContent = saved;
+            }
+        }
+
+        function openWhatsAppWeb() {
+            window.open('https://web.whatsapp.com', '_blank');
+        }
+
+        // Auto-Reply Functions
+        function toggleAutoReply() {
+            whatsappData.autoReplyEnabled = document.getElementById('autoReplyEnabled').checked;
+            showToast(whatsappData.autoReplyEnabled ? '✓ Auto-reply enabled' : '⚠ Auto-reply disabled', 'info');
+        }
+
+        function saveAutoReplySettings() {
+            const settings = {
+                greeting: document.getElementById('greetingMessage').value,
+                businessHours: document.getElementById('businessHoursMessage').value,
+                quickReplies: [
+                    document.getElementById('quickReply1').value,
+                    document.getElementById('quickReply2').value,
+                    document.getElementById('quickReply3').value,
+                    document.getElementById('quickReply4').value
+                ]
+            };
+            localStorage.setItem('whatsappAutoReply', JSON.stringify(settings));
+            showToast('✓ Auto-reply settings saved!', 'success');
+        }
+
+        function loadAutoReplySettings() {
+            const saved = localStorage.getItem('whatsappAutoReply');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('greetingMessage').value = settings.greeting || '';
+                document.getElementById('businessHoursMessage').value = settings.businessHours || '';
+                if (settings.quickReplies) {
+                    document.getElementById('quickReply1').value = settings.quickReplies[0] || '';
+                    document.getElementById('quickReply2').value = settings.quickReplies[1] || '';
+                    document.getElementById('quickReply3').value = settings.quickReplies[2] || '';
+                    document.getElementById('quickReply4').value = settings.quickReplies[3] || '';
+                }
+            }
+        }
+
+        // Keyword Functions
+        function addKeyword() {
+            const keyword = document.getElementById('keywordInput').value.toLowerCase().trim();
+            const response = document.getElementById('keywordResponse').value.trim();
+            
+            if (!keyword || !response) {
+                showToast('⚠ Please enter both keyword and response', 'warning');
+                return;
+            }
+            
+            whatsappData.keywords.push({ keyword, response });
+            document.getElementById('keywordInput').value = '';
+            document.getElementById('keywordResponse').value = '';
+            renderKeywords();
+            showToast('✓ Keyword added successfully!', 'success');
+        }
+
+        function removeKeyword(index) {
+            whatsappData.keywords.splice(index, 1);
+            renderKeywords();
+            showToast('Keyword removed', 'info');
+        }
+
+        function renderKeywords() {
+            const list = document.getElementById('keywords-list');
+            if (whatsappData.keywords.length === 0) {
+                list.innerHTML = '<p class="text-muted text-center">No keywords added</p>';
+                return;
+            }
+            
+            let html = '';
+            whatsappData.keywords.forEach((item, index) => {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                        <div>
+                            <strong class="text-success">${item.keyword}</strong>
+                            <p class="mb-0 small text-muted">${item.response}</p>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeKeyword(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        // Message Functions
+        function renderMessages() {
+            const preview = document.getElementById('chatPreview');
+            if (!preview) return;
+            
+            let html = '';
+            
+            // Show last 20 messages
+            const recentMessages = whatsappData.messages.slice(-20);
+            
+            recentMessages.forEach(msg => {
+                if (msg.type === 'received') {
+                    html += `
+                        <div class="message-box received mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <strong class="text-success">${msg.fromName || msg.from}</strong>
+                                <small class="text-muted">${msg.time}</small>
+                            </div>
+                            <p class="mb-1">${msg.message}</p>
+                            ${msg.autoReplied ? '<small class="text-success"><i class="fas fa-robot me-1"></i>Auto-replied</small>' : ''}
+                            ${msg.read ? '<small class="text-muted"><i class="fas fa-check me-1"></i>Read</small>' : ''}
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-success me-1" onclick="replyToMessage(${msg.id})">
+                                    <i class="fas fa-reply me-1"></i>Reply
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="markAsRead(${msg.id})">
+                                    <i class="fas fa-check me-1"></i>Mark Read
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="message-box mb-3" style="text-align: right; background: ${msg.autoReply ? '#E8F5E9' : '#DCF8C6'};">
+                            <p class="mb-1">${msg.message}</p>
+                            <small class="text-muted">${msg.time} ${msg.autoReply ? '<i class="fas fa-robot ms-2" title="Auto-reply"></i>' : '<i class="fas fa-check-double ms-2"></i>'}</small>
+                        </div>
+                    `;
+                }
+            });
+            
+            preview.innerHTML = html;
+            preview.scrollTop = preview.scrollHeight;
+        }
+
+        function refreshMessages() {
+            renderMessages();
+            updateStats();
+        }
+
+        function replyToMessage(id) {
+            const msg = whatsappData.messages.find(m => m.id === id);
+            if (!msg) return;
+            
+            const reply = prompt(`Reply to ${msg.fromName || msg.from}:`, '');
+            if (reply) {
+                whatsappData.messages.push({
+                    id: Date.now(),
+                    from: 'You',
+                    message: reply,
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    type: 'sent',
+                    autoReply: false
+                });
+                renderMessages();
+                showToast('✓ Message sent!', 'success');
+            }
+        }
+
+        function markAsRead(id) {
+            const msg = whatsappData.messages.find(m => m.id === id);
+            if (msg) {
+                msg.read = true;
+                renderMessages();
+                showToast('Marked as read', 'info');
+            }
+        }
+
+        function sendQuickMessage() {
+            const message = document.getElementById('quickMessage').value;
+            if (!message) return;
+            
+            whatsappData.messages.push({
+                id: Date.now(),
+                from: 'You',
+                message: message,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'sent',
+                autoReply: false
+            });
+            
+            document.getElementById('quickMessage').value = '';
+            renderMessages();
+            showToast('✓ Message sent!', 'success');
+        }
+
+        function useTemplate(type) {
+            const templates = {
+                payment: '✓ Payment Received!\nThank you for your payment of $[AMOUNT]. Your transaction ID is #[ID].',
+                order: '📦 Order Confirmation\nThank you for your order! Order #[NUMBER] will be processed within 24 hours.',
+                reminder: '⏰ Payment Reminder\nThis is a friendly reminder that your payment of $[AMOUNT] is due on [DATE].',
+                thanks: '❤️ Thank You!\nThank you for choosing AI Employee System. We appreciate your business!',
+                welcome: '👋 Welcome!\nThank you for contacting us. How can we help you today?'
+            };
+            
+            const message = templates[type] || '';
+            document.getElementById('quickMessage').value = message;
+            showToast('Template loaded! Edit and send.', 'info');
+        }
+
+        function updateStats() {
+            document.getElementById('total-messages').textContent = whatsappData.messages.length;
+            document.getElementById('auto-replied').textContent = whatsappData.messages.filter(m => m.autoReply).length;
+            document.getElementById('pending').textContent = whatsappData.messages.filter(m => m.type === 'received' && !m.autoReplied && !m.read).length;
+        }
+
+        // WhatsApp Receiver Functions
+        async function startWhatsAppReceiver() {
+            try {
+                // Show loading state
+                const btn = document.getElementById('startReceiverBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Starting...';
+                btn.disabled = true;
+
+                // Open WhatsApp Web in new window
+                window.open('https://web.whatsapp.com', '_blank');
+
+                // Show status
+                document.getElementById('receiverStatus').style.display = 'block';
+                document.getElementById('receiverStatusText').innerHTML = 
+                    '<i class="fas fa-info-circle me-2"></i>WhatsApp Web opened. Please scan QR code and run receiver script.';
+                document.getElementById('receiverStatus').className = 'alert alert-info mt-2';
+
+                // Show instructions
+                setTimeout(() => {
+                    alert('WhatsApp Web has opened in a new window.\n\n' +
+                          'NEXT STEPS:\n' +
+                          '1. Scan the QR code with your phone\n' +
+                          '2. Keep the WhatsApp Web window open\n' +
+                          '3. Messages will be monitored automatically\n\n' +
+                          'For full auto-reply functionality, run: START_WHATSAPP_REAL.bat');
+                    
+                    btn.innerHTML = '<i class="fas fa-check me-2"></i>STARTED';
+                    btn.className = 'btn btn-success';
+                    document.getElementById('stopReceiverBtn').style.display = 'inline-block';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error starting receiver:', error);
+                showToast('Error starting WhatsApp receiver', 'danger');
+                btn.innerHTML = '<i class="fas fa-play me-2"></i>START WHATSAPP RECEIVER';
+                btn.disabled = false;
+            }
+        }
+
+        function stopWhatsAppReceiver() {
+            document.getElementById('receiverStatus').style.display = 'block';
+            document.getElementById('receiverStatusText').innerHTML = 
+                '<i class="fas fa-stop me-2"></i>Receiver stopped. Close WhatsApp Web window.';
+            document.getElementById('receiverStatus').className = 'alert alert-warning mt-2';
+            
+            const btn = document.getElementById('startReceiverBtn');
+            btn.innerHTML = '<i class="fas fa-play me-2"></i>START WHATSAPP RECEIVER';
+            btn.className = 'btn btn-whatsapp';
+            btn.disabled = false;
+            document.getElementById('stopReceiverBtn').style.display = 'none';
+            
+            showToast('WhatsApp receiver stopped', 'info');
+        }
+
+        function checkReceiverStatus() {
+            // Check receiver status from backend
+            fetch('/api/whatsapp/status')
+                .then(response => response.json())
+                .then(data => {
+                    whatsappData.receiverRunning = data.is_running || false;
+                    updateReceiverUI();
+                })
+                .catch(error => {
+                    console.log('Receiver status check failed');
+                    whatsappData.receiverRunning = false;
+                    updateReceiverUI();
+                });
+        }
+
+        function updateReceiverUI() {
+            const statusDiv = document.getElementById('receiverStatus');
+            const statusText = document.getElementById('receiverStatusText');
+            const startBtn = document.getElementById('startReceiverBtn');
+            const stopBtn = document.getElementById('stopReceiverBtn');
+            
+            if (whatsappData.receiverRunning) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'alert alert-success mt-2';
+                statusText.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Receiver is RUNNING - Monitoring messages...';
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+            } else {
+                statusDiv.style.display = 'none';
+                startBtn.style.display = 'inline-block';
+                stopBtn.style.display = 'none';
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+            toast.style.zIndex = '9999';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

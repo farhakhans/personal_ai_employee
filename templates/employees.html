@@ -8,260 +8,479 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            color: #333;
+            background: #f0f4f8; color: #333;
         }
-        
-        .page-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-        
+        .page-container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
         .page-header {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
+            background: white; padding: 30px; border-radius: 12px;
+            margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 20px;
         }
-        
-        .page-header h1 {
-            font-size: 28px;
-            color: #2d3748;
-        }
-        
+        .page-header h1 { font-size: 28px; color: #2d3748; }
+        .actions { display: flex; gap: 10px; }
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
+            padding: 10px 20px; border: none; border-radius: 8px;
+            cursor: pointer; font-size: 14px; font-weight: 600;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .btn-success { background: #48bb78; color: white; }
+        .btn-danger { background: #f56565; color: white; }
+        .btn-warning { background: #ed8936; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-bottom: 30px;
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
+        .stat-card {
+            background: white; padding: 25px; border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
         }
-        
+        .stat-label { font-size: 12px; color: #718096; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 32px; font-weight: bold; color: #2d3748; }
+        .card {
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px;
+        }
         .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2d3748;
+            font-size: 18px; font-weight: bold; margin-bottom: 20px;
+            color: #2d3748; display: flex; justify-content: space-between; align-items: center;
         }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
+        table { width: 100%; border-collapse: collapse; }
         th {
-            background: #f7fafc;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: #4a5568;
-            border-bottom: 2px solid #e2e8f0;
+            background: #f7fafc; padding: 15px; text-align: left;
+            font-weight: 600; color: #4a5568; border-bottom: 2px solid #e2e8f0;
         }
-        
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        tr:hover {
-            background: #f7fafc;
-        }
-        
+        td { padding: 15px; border-bottom: 1px solid #e2e8f0; }
+        tr:hover { background: #f7fafc; }
         .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
         }
-        
-        .badge-success {
-            background: #c6f6d5;
-            color: #22543d;
+        .badge-success { background: #c6f6d5; color: #22543d; }
+        .badge-warning { background: #feebc8; color: #7c2d12; }
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: center; justify-content: center;
         }
-        
-        .badge-pending {
-            background: #feebc8;
-            color: #7c2d12;
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px;
+            max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;
         }
-        
-        .action-btns {
-            display: flex;
-            gap: 8px;
+        .modal-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 20px;
         }
-        
-        .action-btns button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            background: #e2e8f0;
-            color: #2d3748;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
+        .modal-header h2 { font-size: 20px; color: #2d3748; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #718096; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2d3748; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 15px; border: 2px solid #e2e8f0;
+            border-radius: 8px; font-size: 14px;
         }
-        
-        .action-btns button:hover {
-            background: #cbd5e0;
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .loading { text-align: center; padding: 40px; color: #718096; }
+        .alert {
+            padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; display: none;
         }
-        
+        .alert-success { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+        .alert-error { background: #fed7d7; color: #742a2a; border: 1px solid #feb2b2; }
+        .payroll-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; padding: 20px; border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .payroll-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .payroll-item { text-align: center; }
+        .payroll-value { font-size: 24px; font-weight: bold; }
+        .payroll-label { font-size: 12px; opacity: 0.9; }
         @media (max-width: 768px) {
-            table {
-                font-size: 12px;
-            }
-            
-            th, td {
-                padding: 10px;
-            }
-            
-            .action-btns {
-                flex-direction: column;
-            }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .actions { width: 100%; flex-direction: column; }
+            .actions .btn { width: 100%; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="page-container">
-        <!-- PAGE HEADER -->
         <div class="page-header">
             <h1>👨‍💼 Employees & Payroll</h1>
-            <button class="btn btn-primary">+ Add Employee</button>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="openAddModal()">+ Add Employee</button>
+                <button class="btn btn-success" onclick="processAllPayroll()">💰 Pay All</button>
+                <button class="btn" style="background: #e2e8f0; color: #2d3748;" onclick="loadEmployees()">🔄 Refresh</button>
+            </div>
         </div>
-        
+        <div id="alertBox" class="alert"></div>
+
         <!-- PAYROLL SUMMARY -->
-        <div class="card">
-            <div class="card-title">📊 Payroll Summary</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Role</th>
-                        <th>Hours Today</th>
-                        <th>Rate</th>
-                        <th>Pay</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>👨 Harun</td>
-                        <td>Manager</td>
-                        <td>8h</td>
-                        <td>$5/hr</td>
-                        <td style="color: #48bb78; font-weight: 600;">$40</td>
-                        <td><span class="badge badge-success">Paid ✅</span></td>
-                        <td>
-                            <div class="action-btns">
-                                <button>View</button>
-                                <button>Receipt</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>👩 Zainab</td>
-                        <td>Sales</td>
-                        <td>6h</td>
-                        <td>$5/hr</td>
-                        <td style="color: #ed8936; font-weight: 600;">$30</td>
-                        <td><span class="badge badge-pending">Pending</span></td>
-                        <td>
-                            <div class="action-btns">
-                                <button class="btn" style="background: #667eea; color: white; border: none; cursor: pointer;">Pay Now</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>👨 Ali</td>
-                        <td>Delivery</td>
-                        <td>7h</td>
-                        <td>$5/hr</td>
-                        <td style="color: #48bb78; font-weight: 600;">$35</td>
-                        <td><span class="badge badge-success">Paid ✅</span></td>
-                        <td>
-                            <div class="action-btns">
-                                <button>View</button>
-                                <button>Receipt</button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="payroll-card">
+            <div class="payroll-grid">
+                <div class="payroll-item">
+                    <div class="payroll-value" id="totalEmployees">0</div>
+                    <div class="payroll-label">Total Employees</div>
+                </div>
+                <div class="payroll-item">
+                    <div class="payroll-value" id="totalHours">0h</div>
+                    <div class="payroll-label">Total Hours (This Week)</div>
+                </div>
+                <div class="payroll-item">
+                    <div class="payroll-value" id="totalPayroll">$0</div>
+                    <div class="payroll-label">Total Payroll</div>
+                </div>
+                <div class="payroll-item">
+                    <div class="payroll-value" id="activeEmployees">0</div>
+                    <div class="payroll-label">Active Now</div>
+                </div>
+            </div>
         </div>
-        
-        <!-- ATTENDANCE -->
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Employees</div>
+                <div class="stat-value" id="statTotal">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Employees</div>
+                <div class="stat-value" id="statActive">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Monthly Payroll</div>
+                <div class="stat-value" id="statPayroll">$0</div>
+            </div>
+        </div>
+
         <div class="card">
-            <div class="card-title">📅 Attendance This Week</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Mon</th>
-                        <th>Tue</th>
-                        <th>Wed</th>
-                        <th>Thu</th>
-                        <th>Fri</th>
-                        <th>Total Hours</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Harun</td>
-                        <td>8h</td>
-                        <td>8h</td>
-                        <td>8h</td>
-                        <td>8h</td>
-                        <td>8h</td>
-                        <td style="font-weight: bold;">40h</td>
-                    </tr>
-                    <tr>
-                        <td>Zainab</td>
-                        <td>6h</td>
-                        <td>6h</td>
-                        <td>6h</td>
-                        <td>6h</td>
-                        <td>6h</td>
-                        <td style="font-weight: bold;">30h</td>
-                    </tr>
-                    <tr>
-                        <td>Ali</td>
-                        <td>7h</td>
-                        <td>7h</td>
-                        <td>7h</td>
-                        <td>7h</td>
-                        <td>7h</td>
-                        <td style="font-weight: bold;">35h</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="card-title">
+                <span>📋 All Employees</span>
+                <span id="employeeCount" style="font-size: 14px; color: #718096;">0 employees</span>
+            </div>
+            <div id="employeesTable">
+                <div class="loading">Loading employees...</div>
+            </div>
         </div>
     </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">👨‍💼 Add Employee</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="employeeForm" onsubmit="saveEmployee(event)">
+                <input type="hidden" id="employeeId">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="empName" required placeholder="Employee name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="empEmail" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="empPhone" placeholder="+1 234 567 8900">
+                </div>
+                <div class="form-group">
+                    <label>Role *</label>
+                    <input type="text" id="empRole" required placeholder="e.g., Manager, Developer">
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="empDepartment">
+                        <option value="">Select Department</option>
+                        <option value="Administration">Administration</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="IT">IT</option>
+                        <option value="Logistics">Logistics</option>
+                        <option value="HR">HR</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monthly Salary ($)</label>
+                    <input type="number" id="empSalary" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Hourly Pay Rate ($)</label>
+                    <input type="number" id="empPayRate" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payroll Modal -->
+    <div id="payrollModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💰 Process Payroll</h2>
+                <button class="close-btn" onclick="document.getElementById('payrollModal').classList.remove('active')">&times;</button>
+            </div>
+            <div id="payrollForm">
+                <input type="hidden" id="payrollEmployeeId">
+                <div class="form-group">
+                    <label>Employee</label>
+                    <input type="text" id="payrollEmployeeName" readonly style="background: #f7fafc;">
+                </div>
+                <div class="form-group">
+                    <label>Hours Worked</label>
+                    <input type="number" id="payrollHours" step="0.5" min="0" value="0" onchange="calculatePay()">
+                </div>
+                <div class="form-group">
+                    <label>Pay Rate ($/hour)</label>
+                    <input type="number" id="payrollRate" step="0.01" min="0" value="0" onchange="calculatePay()">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 18px; font-weight: bold;">Total Pay: $<span id="totalPay">0.00</span></label>
+                </div>
+                <button class="btn btn-success" style="width: 100%;" onclick="submitPayroll()">Process Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allEmployees = [];
+        let editingId = null;
+
+        document.addEventListener('DOMContentLoaded', loadEmployees);
+
+        function getToken() { return localStorage.getItem('accessToken'); }
+
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type}`;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+        }
+
+        async function loadEmployees() {
+            try {
+                const token = getToken();
+                const response = await fetch('/api/employees', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                allEmployees = data.employees || [];
+                renderEmployees();
+                calculateStats();
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                document.getElementById('employeesTable').innerHTML = '<div class="loading">Error loading employees</div>';
+            }
+        }
+
+        function renderEmployees() {
+            const tableDiv = document.getElementById('employeesTable');
+            if (allEmployees.length === 0) {
+                tableDiv.innerHTML = '<div class="loading">No employees found</div>';
+                return;
+            }
+            document.getElementById('employeeCount').textContent = `${allEmployees.length} employees`;
+            let html = `<div style="overflow-x: auto;"><table>
+                <thead><tr>
+                    <th>ID</th><th>Name</th><th>Role</th><th>Department</th>
+                    <th>Hours</th><th>Pay Rate</th><th>Salary</th><th>Status</th><th>Actions</th>
+                </tr></thead><tbody>`;
+            allEmployees.forEach(emp => {
+                const weeklyPay = emp.hours_worked * emp.pay_rate;
+                html += `<tr>
+                    <td>#${emp.id}</td>
+                    <td><strong>${emp.name}</strong></td>
+                    <td>${emp.role || 'N/A'}</td>
+                    <td>${emp.department || 'N/A'}</td>
+                    <td>${emp.hours_worked || 0}h</td>
+                    <td>$${parseFloat(emp.pay_rate || 0).toFixed(2)}/h</td>
+                    <td>$${parseFloat(emp.salary || 0).toFixed(2)}</td>
+                    <td><span class="badge badge-${emp.status === 'active' ? 'success' : 'warning'}">${emp.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="openPayrollModal(${emp.id})">💰 Pay</button>
+                        <button class="btn btn-sm btn-primary" onclick="editEmployee(${emp.id})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteEmployee(${emp.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            tableDiv.innerHTML = html;
+        }
+
+        function calculateStats() {
+            const total = allEmployees.length;
+            const active = allEmployees.filter(e => e.status === 'active').length;
+            const totalHours = allEmployees.reduce((sum, e) => sum + parseFloat(e.hours_worked || 0), 0);
+            const totalPayroll = allEmployees.reduce((sum, e) => sum + (e.hours_worked * e.pay_rate) + e.salary, 0);
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statActive').textContent = active;
+            document.getElementById('statPayroll').textContent = `$${totalPayroll.toFixed(2)}`;
+            
+            document.getElementById('totalEmployees').textContent = total;
+            document.getElementById('totalHours').textContent = `${totalHours.toFixed(1)}h`;
+            document.getElementById('totalPayroll').textContent = `$${totalPayroll.toFixed(2)}`;
+            document.getElementById('activeEmployees').textContent = active;
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = '👨‍💼 Add Employee';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeId').value = '';
+            document.getElementById('employeeModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('employeeModal').classList.remove('active');
+        }
+
+        function editEmployee(id) {
+            const emp = allEmployees.find(e => e.id === id);
+            if (!emp) return;
+            editingId = id;
+            document.getElementById('modalTitle').textContent = '✏️ Edit Employee';
+            document.getElementById('employeeId').value = emp.id;
+            document.getElementById('empName').value = emp.name;
+            document.getElementById('empEmail').value = emp.email || '';
+            document.getElementById('empPhone').value = emp.phone || '';
+            document.getElementById('empRole').value = emp.role || '';
+            document.getElementById('empDepartment').value = emp.department || '';
+            document.getElementById('empSalary').value = emp.salary || 0;
+            document.getElementById('empPayRate').value = emp.pay_rate || 0;
+            document.getElementById('employeeModal').classList.add('active');
+        }
+
+        async function saveEmployee(event) {
+            event.preventDefault();
+            const empData = {
+                name: document.getElementById('empName').value,
+                email: document.getElementById('empEmail').value,
+                phone: document.getElementById('empPhone').value,
+                role: document.getElementById('empRole').value,
+                department: document.getElementById('empDepartment').value,
+                salary: parseFloat(document.getElementById('empSalary').value) || 0,
+                pay_rate: parseFloat(document.getElementById('empPayRate').value) || 0
+            };
+            try {
+                const token = getToken();
+                const url = editingId ? `/api/employees/${editingId}` : '/api/employees';
+                const method = editingId ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(empData)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert(editingId ? 'Employee updated successfully!' : 'Employee added successfully!');
+                    closeModal();
+                    loadEmployees();
+                } else {
+                    showAlert(data.error || 'Error saving employee', 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving employee', 'error');
+                console.error(error);
+            }
+        }
+
+        async function deleteEmployee(id) {
+            if (!confirm('Are you sure you want to delete this employee?')) return;
+            try {
+                const token = getToken();
+                const response = await fetch(`/api/employees/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert('Employee deleted successfully!');
+                    loadEmployees();
+                } else {
+                    showAlert(data.error || 'Error deleting employee', 'error');
+                }
+            } catch (error) {
+                showAlert('Error deleting employee', 'error');
+                console.error(error);
+            }
+        }
+
+        function openPayrollModal(id) {
+            const emp = allEmployees.find(e => e.id === id);
+            if (!emp) return;
+            document.getElementById('payrollEmployeeId').value = emp.id;
+            document.getElementById('payrollEmployeeName').value = emp.name;
+            document.getElementById('payrollHours').value = emp.hours_worked || 0;
+            document.getElementById('payrollRate').value = emp.pay_rate || 0;
+            calculatePay();
+            document.getElementById('payrollModal').classList.add('active');
+        }
+
+        function calculatePay() {
+            const hours = parseFloat(document.getElementById('payrollHours').value) || 0;
+            const rate = parseFloat(document.getElementById('payrollRate').value) || 0;
+            const total = hours * rate;
+            document.getElementById('totalPay').textContent = total.toFixed(2);
+        }
+
+        async function submitPayroll() {
+            const empId = parseInt(document.getElementById('payrollEmployeeId').value);
+            const hours = parseFloat(document.getElementById('payrollHours').value);
+            const rate = parseFloat(document.getElementById('payrollRate').value);
+            
+            try {
+                const token = getToken();
+                const response = await fetch(`/api/employees/${empId}/payroll`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ hours, pay_rate: rate })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert(`Payroll processed! Amount: $${data.amount.toFixed(2)}`);
+                    document.getElementById('payrollModal').classList.remove('active');
+                    loadEmployees();
+                } else {
+                    showAlert(data.error || 'Error processing payroll', 'error');
+                }
+            } catch (error) {
+                showAlert('Error processing payroll', 'error');
+                console.error(error);
+            }
+        }
+
+        async function processAllPayroll() {
+            const activeEmps = allEmployees.filter(e => e.status === 'active');
+            if (activeEmps.length === 0) {
+                showAlert('No active employees to pay', 'error');
+                return;
+            }
+            
+            let total = 0;
+            for (const emp of activeEmps) {
+                const pay = emp.hours_worked * emp.pay_rate;
+                total += pay;
+            }
+            
+            if (confirm(`Process payroll for ${activeEmps.length} employees? Total: $${total.toFixed(2)}`)) {
+                showAlert(`Processing payroll for ${activeEmps.length} employees...`, 'success');
+                // In production, you would call an API endpoint to process all
+                loadEmployees();
+            }
+        }
+    </script>
 </body>
 </html>
