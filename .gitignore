@@ -29,7 +29,8 @@ instance/
 
 # Environment
 .env
-.venv
+.env.local
+.env.*.local
 .flaskenv
 
 # IDE
@@ -47,6 +48,7 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+auth_database.db
 
 # Logs
 *.log
@@ -58,3 +60,9 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Sensitive files
+*.pem
+*.key
+secret*
+config*.json

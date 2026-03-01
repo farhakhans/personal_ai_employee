@@ -10,10 +10,13 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import Flask app from api_routes
-from api_routes import app as flask_app
+from api_routes import app as flask_app, init_db
 
 # Vercel expects 'app' variable
 app = flask_app
+
+# Initialize database on startup
+init_db()
 
 # For Vercel serverless
 def handler(request):
