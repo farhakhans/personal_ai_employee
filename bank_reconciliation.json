@@ -1,0 +1,13 @@
+[
+  {
+    "timestamp": "2026-02-15T13:02:06.253572",
+    "account_id": "chase_001",
+    "bank_balance": 52500.0,
+    "calculated_balance": 52500.0,
+    "difference": 0.0,
+    "total_income": 5000.0,
+    "total_expenses": 2500.0,
+    "transaction_count": 2,
+    "status": "RECONCILED"
+  }
+]

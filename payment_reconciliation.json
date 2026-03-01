@@ -1,0 +1,13 @@
+[
+  {
+    "timestamp": "2026-02-15T13:05:35.193303",
+    "starting_balance": 50000.0,
+    "total_sent": 4000.0,
+    "total_received": 8000.0,
+    "calculated_balance": 54000.0,
+    "actual_balance": 54000.0,
+    "difference": 0.0,
+    "status": "RECONCILED",
+    "transaction_count": 4
+  }
+]

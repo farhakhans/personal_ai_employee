@@ -1,0 +1,34 @@
+{
+  "platform": "WhatsApp",
+  "business_account": "Business AI Employee",
+  "connection_status": "CONNECTED",
+  "total_messages": 3,
+  "messages": [
+    {
+      "timestamp": "2026-02-15T13:14:04.645027",
+      "type": "OTP",
+      "to": "+1-234-567-8900",
+      "message": "\ud83d\udd10 Payment Authorization Required\n\nAmount: $2,500.00\nTo: Vendor ABC Inc.\n\nYour OTP: 689501\nValid for: 5 minutes\n\n\u26a0\ufe0f Do NOT share this code!\n\nTap here to authorize: https://app.employee.ai/auth/689501",
+      "otp": "689501",
+      "amount": 2500.0,
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:14:04.650472",
+      "type": "NOTIFICATION",
+      "to": "+1-234-567-8900",
+      "tx_type": "SENT",
+      "amount": 2500.0,
+      "message": "\u2705 Payment Sent!\n\nAmount: $2,500.00\nTo: Vendor ABC Inc.\nDescription: Invoice #INV-2026-001\n\nTransaction ID: SEND_20260215_131215\nStatus: SUBMITTED_TO_BANK\n\nExpected Settlement: 1-2 business days",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:14:04.651187",
+      "type": "ALERT",
+      "to": "+1-234-567-8900",
+      "alert_type": "SUSPICIOUS",
+      "message": "\ud83d\udea8 Suspicious activity detected. Review: Login from new device - iPhone 15 in New York",
+      "status": "SENT"
+    }
+  ]
+}

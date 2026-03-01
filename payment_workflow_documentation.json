@@ -1,0 +1,262 @@
+{
+  "system": "Permission-Based Payment System with WhatsApp Integration",
+  "created": "2026-02-15T13:24:07.073534",
+  "version": "1.0.0",
+  "send_payment_workflow": {
+    "title": "SEND PAYMENT (User initiates, system verifies each step)",
+    "total_steps": 6,
+    "time_to_complete": "< 5 minutes",
+    "steps": [
+      {
+        "step": 1,
+        "name": "USER REQUESTS PAYMENT",
+        "channel": "WhatsApp",
+        "user_action": "Sends message: 'Send $600 to John's Consulting'",
+        "system_response": "Receives and parses message",
+        "time": "< 2 seconds",
+        "status": "IN_PROGRESS"
+      },
+      {
+        "step": 2,
+        "name": "SYSTEM REQUESTS PERMISSION",
+        "channel": "WhatsApp",
+        "user_action": "Receives payment details & approval request",
+        "system_message": "Amount: $600, To: John's Consulting, Proceed? YES/NO",
+        "time": "< 1 second",
+        "critical": "User must explicitly choose YES or NO",
+        "status": "AWAITING_USER_APPROVAL"
+      },
+      {
+        "step": 3,
+        "name": "USER GRANTS PERMISSION",
+        "channel": "WhatsApp",
+        "user_action": "Replies: 'YES' to grant permission",
+        "system_response": "Logs user's explicit approval",
+        "time": "User-paced (minutes)",
+        "critical": "If NO: Payment cancelled immediately",
+        "status": "APPROVED"
+      },
+      {
+        "step": 4,
+        "name": "SYSTEM REQUESTS PIN",
+        "channel": "WhatsApp",
+        "user_action": "Receives PIN request",
+        "system_message": "Permission confirmed. Enter 4-digit PIN",
+        "time": "< 1 second",
+        "critical": "PIN ONLY sent AFTER permission approved",
+        "status": "AWAITING_PIN"
+      },
+      {
+        "step": 5,
+        "name": "USER ENTERS PIN",
+        "channel": "WhatsApp",
+        "user_action": "Replies with 4-digit PIN: 1234",
+        "system_response": "Verifies against stored hash (SHA256)",
+        "time": "User-paced",
+        "critical": "3-attempt limit, then 15-min lockout",
+        "status": "PIN_SUBMITTED"
+      },
+      {
+        "step": 6,
+        "name": "SYSTEM VERIFIES PIN & SENDS OTP",
+        "channel": "WhatsApp",
+        "user_action": "Receives OTP message",
+        "system_message": "PIN verified! Your OTP: 212064 (5 min valid)",
+        "time": "< 1 second",
+        "critical": "OTP ONLY generated AFTER PIN verified",
+        "status": "OTP_SENT"
+      },
+      {
+        "step": 7,
+        "name": "USER ENTERS OTP",
+        "channel": "Mobile App",
+        "user_action": "Opens app & enters OTP: 212064",
+        "system_response": "Verifies OTP matches",
+        "time": "User-paced",
+        "critical": "3-attempt limit",
+        "status": "OTP_SUBMITTED"
+      },
+      {
+        "step": 8,
+        "name": "SYSTEM AUTHORIZES PAYMENT",
+        "channel": "Backend",
+        "user_action": "Waits for confirmation",
+        "system_response": "All verifications passed - PAYMENT AUTHORIZED",
+        "verifications": {
+          "permission": "\u2705 GRANTED",
+          "pin": "\u2705 VERIFIED",
+          "otp": "\u2705 VERIFIED"
+        },
+        "time": "< 1 second",
+        "status": "AUTHORIZED"
+      },
+      {
+        "step": 9,
+        "name": "PAYMENT SUBMITTED TO BANK",
+        "channel": "Bank API",
+        "system_action": "Submits payment to bank",
+        "payment_method": "ACH, Wire, or Instant",
+        "time": "< 5 seconds",
+        "status": "SUBMITTED_TO_BANK"
+      },
+      {
+        "step": 10,
+        "name": "CONFIRMATION SENT TO USER",
+        "channel": "Multiple (WhatsApp + Email + Push)",
+        "system_sends": [
+          "WhatsApp: '\u2705 Payment Sent: $600 to John's Consulting'",
+          "Email: Detailed receipt",
+          "Push: Mobile notification"
+        ],
+        "time": "< 1 second",
+        "status": "COMPLETED"
+      }
+    ]
+  },
+  "receive_payment_workflow": {
+    "title": "RECEIVE PAYMENT (Bank notifies, user confirms each step)",
+    "total_steps": 6,
+    "time_to_complete": "< 3 minutes",
+    "steps": [
+      {
+        "step": 1,
+        "name": "BANK SENDS PAYMENT",
+        "channel": "Bank API",
+        "trigger": "Payment arrives from Client ABC Corp",
+        "amount": "$1,200.00",
+        "status": "RECEIVED_BY_SYSTEM"
+      },
+      {
+        "step": 2,
+        "name": "SYSTEM DETECTS PAYMENT",
+        "channel": "Backend",
+        "system_action": "Auto-detects incoming payment",
+        "time": "< 2 seconds",
+        "status": "DETECTED"
+      },
+      {
+        "step": 3,
+        "name": "SYSTEM REQUESTS PERMISSION",
+        "channel": "WhatsApp",
+        "user_receives": "Incoming payment notification",
+        "system_message": "From: Client ABC Corp, Amount: $1,200, Approve? YES/NO",
+        "time": "< 1 second",
+        "critical": "User must approve receipt explicitly",
+        "status": "AWAITING_APPROVAL"
+      },
+      {
+        "step": 4,
+        "name": "USER GRANTS PERMISSION",
+        "channel": "WhatsApp",
+        "user_action": "Replies: 'YES' to confirm receipt",
+        "system_response": "Logs approval & generates OTP",
+        "time": "User-paced",
+        "critical": "If NO: Payment rejected",
+        "status": "APPROVED"
+      },
+      {
+        "step": 5,
+        "name": "SYSTEM SENDS CONFIRMATION OTP",
+        "channel": "WhatsApp",
+        "system_message": "Confirmation OTP: 456789 (5 min valid)",
+        "time": "< 1 second",
+        "status": "OTP_SENT"
+      },
+      {
+        "step": 6,
+        "name": "USER CONFIRMS WITH OTP",
+        "channel": "WhatsApp",
+        "user_action": "Replies with OTP: 456789",
+        "system_response": "Verifies OTP & confirms payment",
+        "time": "User-paced",
+        "status": "OTP_VERIFIED"
+      },
+      {
+        "step": 7,
+        "name": "PAYMENT CONFIRMED",
+        "channel": "Backend",
+        "system_actions": [
+          "Update balance: +$1,200",
+          "Log transaction",
+          "Generate receipt"
+        ],
+        "time": "< 1 second",
+        "status": "CONFIRMED"
+      },
+      {
+        "step": 8,
+        "name": "CONFIRMATIONS SENT",
+        "channel": "Multiple",
+        "system_sends": [
+          "WhatsApp: '\u2705 Payment Confirmed: $1,200 from Client ABC'",
+          "Email: Receipt",
+          "Push: Notification"
+        ],
+        "time": "< 1 second",
+        "status": "COMPLETED"
+      }
+    ]
+  },
+  "security_layers": {
+    "layer_1": {
+      "name": "EXPLICIT PERMISSION",
+      "what": "User explicitly approves payment intent",
+      "how": "WhatsApp YES/NO response",
+      "protection": "Prevents accidental/unauthorized requests",
+      "enforcement": "Required before PIN asked"
+    },
+    "layer_2": {
+      "name": "PIN VERIFICATION",
+      "what": "User proves identity with 4-digit code",
+      "how": "SHA256 hashed comparison",
+      "protection": "Prevents someone else using account",
+      "enforcement": "Required before OTP generated",
+      "lockout": "3 attempts, then 15 minutes locked"
+    },
+    "layer_3": {
+      "name": "OTP VERIFICATION",
+      "what": "One-time password sent to registered contact",
+      "how": "6-digit random code, 5-minute expiry",
+      "protection": "Proves user has registered phone/email",
+      "enforcement": "Required before payment processed",
+      "limitations": "3 attempts per OTP"
+    },
+    "layer_4": {
+      "name": "LOGGING & AUDIT",
+      "what": "Every action logged with timestamp",
+      "how": "JSON files + database entries",
+      "protection": "Complete accountability & fraud detection",
+      "enforcement": "Mandatory for all transactions"
+    }
+  },
+  "cancellation_points": [
+    {
+      "point": 1,
+      "step": "Permission Request",
+      "how": "User replies NO instead of YES",
+      "result": "Payment CANCELLED immediately",
+      "logging": "Cancellation recorded"
+    },
+    {
+      "point": 2,
+      "step": "PIN Entry - Wrong PIN",
+      "how": "User enters incorrect PIN 3 times",
+      "result": "Account LOCKED for 15 minutes",
+      "logging": "Failed attempts logged"
+    },
+    {
+      "point": 3,
+      "step": "OTP Entry - Wrong OTP",
+      "how": "User enters incorrect OTP 3 times",
+      "result": "OTP EXPIRED and payment cancelled",
+      "logging": "Failed attempts logged"
+    },
+    {
+      "point": 4,
+      "step": "OTP Expired",
+      "how": "User doesn't enter OTP within 5 minutes",
+      "result": "OTP INVALID and payment cancelled",
+      "logging": "Expiry recorded"
+    }
+  ]
+}

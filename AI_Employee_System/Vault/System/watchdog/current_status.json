@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-02-22T15:31:19.763782",
+  "processes": {
+    "Email Watcher": {
+      "name": "Email Watcher",
+      "status": "crashed",
+      "pid": null,
+      "started_at": null,
+      "crashed_at": "2026-02-22T14:14:41.345367",
+      "restart_count": 5,
+      "last_health_check": null,
+      "health_check_passed": false,
+      "error_message": "ProcessStatusRecord.__init__() missing 1 required positional argument: 'status'"
+    },
+    "WhatsApp Watcher": {
+      "name": "WhatsApp Watcher",
+      "status": "crashed",
+      "pid": null,
+      "started_at": null,
+      "crashed_at": "2026-02-22T14:14:51.351849",
+      "restart_count": 3,
+      "last_health_check": null,
+      "health_check_passed": false,
+      "error_message": "ProcessStatusRecord.__init__() missing 1 required positional argument: 'status'"
+    },
+    "File Watcher": {
+      "name": "File Watcher",
+      "status": "crashed",
+      "pid": null,
+      "started_at": null,
+      "crashed_at": "2026-02-22T14:15:21.357595",
+      "restart_count": 5,
+      "last_health_check": null,
+      "health_check_passed": false,
+      "error_message": "ProcessStatusRecord.__init__() missing 1 required positional argument: 'status'"
+    },
+    "Claude Code": {
+      "name": "Claude Code",
+      "status": "stopped",
+      "pid": null,
+      "started_at": null,
+      "crashed_at": "2026-02-22T14:15:26.363628",
+      "restart_count": 0,
+      "last_health_check": null,
+      "health_check_passed": false,
+      "error_message": "ProcessStatusRecord.__init__() missing 1 required positional argument: 'status'"
+    },
+    "Dashboard": {
+      "name": "Dashboard",
+      "status": "crashed",
+      "pid": null,
+      "started_at": null,
+      "crashed_at": "2026-02-22T14:15:26.363832",
+      "restart_count": 3,
+      "last_health_check": null,
+      "health_check_passed": false,
+      "error_message": "ProcessStatusRecord.__init__() missing 1 required positional argument: 'status'"
+    }
+  }
+}

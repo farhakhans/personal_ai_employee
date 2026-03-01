@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-02-15T13:27:05.747365",
+  "system": "WhatsApp Notifications",
+  "total_sent": 12,
+  "notifications": [
+    {
+      "timestamp": "2026-02-15T13:27:05.297322",
+      "type": "PAYMENT_SENT",
+      "recipient": "John's Consulting",
+      "amount": 600.0,
+      "tx_id": "SEND_20260215_141530",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.441829",
+      "type": "PAYMENT_RECEIVED",
+      "sender": "Client ABC Corp",
+      "amount": 1500.0,
+      "tx_id": "RECV_20260215_141545",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.522895",
+      "type": "OTP_CODE",
+      "otp": "912847",
+      "amount": 2500.0,
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.529092",
+      "type": "PAYMENT_APPROVED",
+      "amount": 3500.0,
+      "recipient": "Vendor ABC Inc.",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.537477",
+      "type": "SECURITY_ALERT",
+      "alert_type": "NEW_LOGIN",
+      "details": "iPhone 15 in New York",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.539040",
+      "type": "SECURITY_ALERT",
+      "alert_type": "FAILED_ATTEMPTS",
+      "details": "Login attempts",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.543459",
+      "type": "DAILY_SUMMARY",
+      "sent_count": 3,
+      "sent_amount": 6500.0,
+      "received_count": 2,
+      "received_amount": 9500.0,
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.556784",
+      "type": "BALANCE_ALERT",
+      "balance": 54000.0,
+      "status": "HEALTHY"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.615945",
+      "type": "INVOICE_RECEIVED",
+      "invoice_number": "INV-2026-150",
+      "amount": 2500.0,
+      "due_date": "2026-03-15",
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.699856",
+      "type": "PAYROLL_PROCESSED",
+      "employee": "Sarah Johnson",
+      "amount": 5000.0,
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.733310",
+      "type": "PAYMENT_REMINDER",
+      "invoice_number": "INV-2026-140",
+      "amount": 1800.0,
+      "days_until_due": 3,
+      "status": "SENT"
+    },
+    {
+      "timestamp": "2026-02-15T13:27:05.744342",
+      "type": "SUPPORT_RESPONSE",
+      "ticket_id": "SUP_20260215_001",
+      "status": "SENT"
+    }
+  ]
+}

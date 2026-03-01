@@ -1,0 +1,24 @@
+{
+  "chase_001": {
+    "account_number": "****1234",
+    "account_holder": "My Business Corp",
+    "bank_name": "Chase Bank",
+    "account_type": "business_checking",
+    "balance": 50000.0,
+    "routing_number": "021000021",
+    "swift_code": "CHASUS33",
+    "is_verified": true,
+    "connected_date": "2026-02-15T13:02:04.647675"
+  },
+  "bank_of_america_001": {
+    "account_number": "****5678",
+    "account_holder": "My Business Corp",
+    "bank_name": "Bank of America",
+    "account_type": "savings",
+    "balance": 25000.0,
+    "routing_number": "021000021",
+    "swift_code": "CHASUS33",
+    "is_verified": true,
+    "connected_date": "2026-02-15T13:02:04.655053"
+  }
+}

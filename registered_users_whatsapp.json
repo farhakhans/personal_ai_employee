@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-02-15T13:31:19.243803",
+  "total_users_registered": 3,
+  "active_users": 3,
+  "users": [
+    {
+      "user_id": "USER_50812",
+      "name": "Ahmed Hassan",
+      "email": "ahmed@business.com",
+      "whatsapp_number": "+1-555-789-0123",
+      "company": "Tech Solutions Inc.",
+      "registration_date": "2026-02-15T13:31:19.130346",
+      "verified_otp": "453746",
+      "status": "VERIFIED",
+      "account_status": "ACTIVE",
+      "profile_complete": true,
+      "notifications_enabled": true,
+      "daily_summary": true,
+      "security_alerts": true,
+      "payment_alerts": true,
+      "invoice_alerts": true
+    },
+    {
+      "user_id": "USER_57645",
+      "name": "Sarah Johnson",
+      "email": "sarah.johnson@company.com",
+      "whatsapp_number": "+1-555-456-7890",
+      "company": "Tech Solutions Inc.",
+      "registration_date": "2026-02-15T13:31:19.191999",
+      "verified_otp": "439997",
+      "status": "VERIFIED",
+      "account_status": "ACTIVE",
+      "profile_complete": true,
+      "notifications_enabled": true,
+      "daily_summary": true,
+      "security_alerts": true,
+      "payment_alerts": true,
+      "invoice_alerts": true
+    },
+    {
+      "user_id": "USER_53075",
+      "name": "Carlos Rodriguez",
+      "email": "carlos@freelance.com",
+      "whatsapp_number": "+1-555-123-4567",
+      "company": null,
+      "registration_date": "2026-02-15T13:31:19.221192",
+      "verified_otp": "968602",
+      "status": "VERIFIED",
+      "account_status": "ACTIVE",
+      "profile_complete": true,
+      "notifications_enabled": true,
+      "daily_summary": true,
+      "security_alerts": true,
+      "payment_alerts": true,
+      "invoice_alerts": true
+    }
+  ]
+}

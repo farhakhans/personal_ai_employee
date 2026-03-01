@@ -1,0 +1,35 @@
+{
+  "security": "PIN+OTP Two-Factor",
+  "sent_transactions": [
+    {
+      "id": "SEND_20260215_131215",
+      "type": "SEND",
+      "recipient": "Vendor ABC Inc.",
+      "amount": 2500.0,
+      "description": "Invoice #INV-2026-001",
+      "security": {
+        "pin_verified": true,
+        "otp_verified": true,
+        "two_factor": true
+      },
+      "status": "SUBMITTED_TO_BANK",
+      "created": "2026-02-15T13:12:15.211465"
+    }
+  ],
+  "received_transactions": [
+    {
+      "id": "RECV_20260215_131215",
+      "type": "RECEIVE",
+      "sender": "Client XYZ Corp",
+      "amount": 5000.0,
+      "description": "Project Alpha Payment",
+      "security": {
+        "otp_verified": true,
+        "two_factor": true
+      },
+      "status": "CONFIRMED",
+      "created": "2026-02-15T13:12:15.225857"
+    }
+  ],
+  "created": "2026-02-15T13:12:15.288249"
+}

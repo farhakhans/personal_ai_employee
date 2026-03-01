@@ -1,0 +1,36 @@
+{
+  "account": {
+    "bank": "Chase Bank",
+    "account": "****1234",
+    "holder": "My Business Corp",
+    "balance": 46000.0,
+    "routing": "021000021",
+    "swift": "CHASUS33"
+  },
+  "payments": [
+    {
+      "payment_id": "SEND_20260215_130530",
+      "type": "SEND",
+      "recipient": "Vendor ABC Inc.",
+      "amount": 2500.0,
+      "method": "ACH",
+      "description": "Invoice #INV-2026-001",
+      "created": "2026-02-15T13:05:31.462076",
+      "status": "SUBMITTED",
+      "bank": "Chase Bank",
+      "reference": "REF_20260215130531"
+    },
+    {
+      "payment_id": "SEND_20260215_130531",
+      "type": "SEND",
+      "recipient": "John's Consulting",
+      "amount": 1500.0,
+      "method": "ACH",
+      "description": "Professional Services",
+      "created": "2026-02-15T13:05:32.678801",
+      "status": "SUBMITTED",
+      "bank": "Chase Bank",
+      "reference": "REF_20260215130532"
+    }
+  ]
+}

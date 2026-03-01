@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-02-15T13:03:08.155037",
+  "banks": {
+    "chase": {
+      "name": "Chase Bank",
+      "account": "****1234",
+      "balance": 50000.0,
+      "status": "Connected \u2713"
+    },
+    "bank_of_america": {
+      "name": "Bank of America",
+      "account": "****5678",
+      "balance": 25000.0,
+      "status": "Connected \u2713"
+    }
+  },
+  "payment_gateways": {
+    "stripe": {
+      "status": "Ready",
+      "methods": [
+        "ach",
+        "wire",
+        "cards"
+      ],
+      "api_key": "sk_live_***"
+    },
+    "paypal": {
+      "status": "Ready",
+      "methods": [
+        "ach",
+        "international"
+      ],
+      "api_key": "key_***"
+    }
+  },
+  "features": {
+    "real_time_balance": true,
+    "auto_payments": true,
+    "auto_reconciliation": true,
+    "webhooks": true,
+    "error_recovery": true,
+    "tax_reporting": true
+  }
+}

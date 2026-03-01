@@ -1,0 +1,16 @@
+{
+  "approved": [
+    {
+      "id": "APPROVAL_20260215_124854_EMAIL_ClientA_2026-02-15.md",
+      "task_name": "EMAIL_ClientA_2026-02-15.md",
+      "request_type": "PAYMENT",
+      "amount": 2500,
+      "reason": "Payment for EMAIL_ClientA_2026-02-15.md - Invoice INV-2026-001",
+      "status": "APPROVED",
+      "created_date": "2026-02-15T12:48:54.178135",
+      "approved_date": "2026-02-15T12:48:54.181147",
+      "approved_by": "ADMIN"
+    }
+  ],
+  "rejected": []
+}

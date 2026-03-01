@@ -1,0 +1,12 @@
+[
+  {
+    "received_id": "RECV_20260215_125247",
+    "amount": 2500,
+    "payment_method": "bank_transfer",
+    "received_date": "2026-02-15T12:52:47.298969",
+    "reference_number": "TXN-2026021501",
+    "notes": "Payment for Project Alpha - Invoice INV-2026-001",
+    "status": "VERIFIED",
+    "verified": true
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "account": {
+    "bank": "Chase Bank",
+    "account": "****1234",
+    "holder": "My Business Corp",
+    "balance": 54000.0,
+    "routing": "021000021",
+    "swift": "CHASUS33"
+  },
+  "payments": [
+    {
+      "payment_id": "RECV_20260215_130532",
+      "type": "RECEIVE",
+      "sender": "Client XYZ Corp",
+      "amount": 5000.0,
+      "method": "ACH",
+      "description": "Project Alpha - Invoice #PRO-001",
+      "received": "2026-02-15T13:05:33.909156",
+      "status": "CONFIRMED",
+      "bank": "Chase Bank",
+      "reference": "RECV_20260215130533"
+    },
+    {
+      "payment_id": "RECV_20260215_130533",
+      "type": "RECEIVE",
+      "sender": "Tech Startup Inc.",
+      "amount": 3000.0,
+      "method": "Wire",
+      "description": "Consulting Services",
+      "received": "2026-02-15T13:05:35.125592",
+      "status": "CONFIRMED",
+      "bank": "Chase Bank",
+      "reference": "RECV_20260215130535"
+    }
+  ]
+}

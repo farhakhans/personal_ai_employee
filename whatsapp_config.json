@@ -1,0 +1,39 @@
+{
+  "phone_number": "+92 3062437423",
+  "access_token": "",
+  "phone_id": "",
+  "webhook_verify_token": "my_verify_token_123",
+  "greeting_message": "Assalam-o-Alaikum! Thank you for contacting AI Employee System. How can we help you today?",
+  "business_hours_message": "We are currently away but will respond within 24 hours.",
+  "auto_reply_enabled": true,
+  "keywords": [
+    {
+      "keyword": "price",
+      "response": "Our pricing starts at $99/month. Would you like to schedule a demo?"
+    },
+    {
+      "keyword": "payment",
+      "response": "You can make payment via bank transfer. Account: 1234567890"
+    },
+    {
+      "keyword": "order",
+      "response": "To place an order, please provide: 1) Product name 2) Quantity 3) Delivery address"
+    },
+    {
+      "keyword": "hello",
+      "response": "Walaikum Assalam! How can I help you today?"
+    },
+    {
+      "keyword": "hi",
+      "response": "Hello! Thanks for contacting us. How can we help?"
+    },
+    {
+      "keyword": "thanks",
+      "response": "You're welcome! Is there anything else I can help you with?"
+    },
+    {
+      "keyword": "thank you",
+      "response": "You're welcome! Feel free to ask if you need anything else."
+    }
+  ]
+}

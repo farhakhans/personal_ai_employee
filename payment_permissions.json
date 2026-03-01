@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-02-15T13:23:03.873987",
+  "system": "Permission-Based Payment",
+  "workflow": "Request \u2192 Permission \u2192 PIN \u2192 OTP \u2192 Payment",
+  "total_steps": 5,
+  "permission_entries": [
+    {
+      "step": 1,
+      "timestamp": "2026-02-15T13:23:03.762540",
+      "type": "PERMISSION_REQUESTED",
+      "user_phone": "+1-234-567-8900",
+      "recipient": "John's Consulting",
+      "amount": 600.0,
+      "description": "Invoice #INV-2026-003",
+      "status": "APPROVED",
+      "response": "YES"
+    },
+    {
+      "step": 2,
+      "timestamp": "2026-02-15T13:23:03.768303",
+      "type": "PERMISSION_APPROVED",
+      "user_decision": "YES - APPROVE",
+      "next_step": "Request PIN",
+      "status": "PROCEEDS_TO_PIN"
+    },
+    {
+      "step": 3,
+      "timestamp": "2026-02-15T13:23:03.775992",
+      "type": "PIN_REQUESTED",
+      "recipient": "John's Consulting",
+      "amount": 600.0,
+      "status": "AWAITING_PIN",
+      "note": "PIN requested ONLY AFTER permission granted"
+    },
+    {
+      "step": 4,
+      "timestamp": "2026-02-15T13:23:03.825583",
+      "type": "OTP_SENT",
+      "pin_verified": true,
+      "otp": "212064",
+      "status": "AWAITING_OTP",
+      "note": "OTP sent ONLY AFTER PIN verified"
+    },
+    {
+      "step": 5,
+      "timestamp": "2026-02-15T13:23:03.837808",
+      "type": "PAYMENT_PROCESSED",
+      "otp_verified": true,
+      "recipient": "John's Consulting",
+      "amount": 600.0,
+      "status": "AUTHORIZED_AND_SUBMITTED",
+      "security_checks": {
+        "permission": "APPROVED",
+        "pin": "VERIFIED",
+        "otp": "VERIFIED"
+      },
+      "note": "Payment sent to bank ONLY AFTER all verifications"
+    }
+  ]
+}

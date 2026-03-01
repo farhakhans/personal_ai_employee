@@ -1,0 +1,18 @@
+{
+  "intervention_id": "HITL_20260301_212708",
+  "intervention_type": "approval",
+  "level": "critical",
+  "risk_assessment": "medium_risk",
+  "title": "Send Invoice to Client",
+  "description": "Send invoice payment reminder to John Smith",
+  "action_details": {
+    "to": "john@example.com",
+    "subject": "Invoice Payment Reminder",
+    "body": "Your invoice is due..."
+  },
+  "timestamp": "2026-03-01T21:27:08.021967",
+  "status": "pending",
+  "resolved_by": null,
+  "resolution_time": null,
+  "resolution_notes": null
+}
