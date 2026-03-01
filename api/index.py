@@ -1,22 +1,36 @@
-from flask import Flask, jsonify, send_file, request, make_response
+from flask import Flask, jsonify, make_response
 import os
-import mimetypes
 
 app = Flask(__name__)
 
-# Get the directory where this file is located
+# Read HTML files at startup
+def read_html_file(filename):
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return f.read()
+    except:
+        return None
+
+# Get base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Set proper MIME types
-mimetypes.add_type('text/html', '.html')
-mimetypes.add_type('text/css', '.css')
-mimetypes.add_type('application/javascript', '.js')
+# Cache HTML content
+HTML_CACHE = {}
+
+def get_html(filename):
+    if filename not in HTML_CACHE:
+        filepath = os.path.join(BASE_DIR, filename)
+        HTML_CACHE[filename] = read_html_file(filepath)
+    return HTML_CACHE[filename]
 
 @app.route('/')
 def index():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "dashboard.html not found"}), 404
 
 @app.route('/api/health')
 def health():
@@ -28,91 +42,128 @@ def health():
 
 @app.route('/dashboard')
 def dashboard():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "dashboard.html not found"}), 404
 
 @app.route('/whatsapp-manager')
 def whatsapp_manager():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'whatsapp_manager.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('whatsapp_manager.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "whatsapp_manager.html not found"}), 404
 
 @app.route('/whatsapp_analysis.html')
 def whatsapp_analysis():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'whatsapp_analysis.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('whatsapp_analysis.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/banking_system.html')
 def banking_system():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'banking_system.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('banking_system.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/analytics.html')
 def analytics():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'analytics.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('analytics.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/bronze_dashboard.html')
 def bronze_dashboard():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'bronze_dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('bronze_dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/silver_dashboard.html')
 def silver_dashboard():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'silver_dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('silver_dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/gold_dashboard.html')
 def gold_dashboard():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'gold_dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('gold_dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/platinum_dashboard.html')
 def platinum_dashboard():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'platinum_dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('platinum_dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/complete_dashboard.html')
 def complete_dashboard():
-    response = make_response(send_file(os.path.join(BASE_DIR, 'complete_dashboard.html')))
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
+    html = get_html('complete_dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/agent-skills')
 def agent_skills():
-    return jsonify({
-        "status": "ok",
-        "message": "Agent Skills endpoint"
-    })
+    return jsonify({"status": "ok", "message": "Agent Skills endpoint"})
 
 @app.route('/api/mcp/servers')
 def mcp_servers():
+    return jsonify({"servers": ["approval", "email"], "status": "ok"})
+
+# Debug endpoint to check files
+@app.route('/api/debug/files')
+def debug_files():
+    import os
+    files = os.listdir(BASE_DIR)
+    html_files = [f for f in files if f.endswith('.html')]
     return jsonify({
-        "servers": ["approval", "email"],
-        "status": "ok"
+        "base_dir": BASE_DIR,
+        "html_files": html_files[:20],
+        "total_html": len(html_files)
     })
 
 # Catch-all for other HTML files
 @app.route('/<path:filename>')
 def serve_html(filename):
-    if filename.endswith('.html'):
-        filepath = os.path.join(BASE_DIR, filename)
-        if os.path.exists(filepath):
-            response = make_response(send_file(filepath))
+    if filename.endswith('.html') or filename.endswith('.htm'):
+        html = get_html(filename)
+        if html:
+            response = make_response(html)
             response.headers['Content-Type'] = 'text/html; charset=utf-8'
             return response
     
     return jsonify({
         "error": "Not found",
-        "path": filename
+        "path": filename,
+        "base_dir": BASE_DIR
     }), 404
 
 if __name__ == '__main__':
