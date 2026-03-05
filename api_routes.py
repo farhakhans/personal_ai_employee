@@ -13,11 +13,18 @@ import datetime
 import os
 import re
 from functools import wraps
+import tempfile
 
 # Project root
 PROJECT_ROOT = Path(__file__).parent
-DATABASE_PATH = PROJECT_ROOT / "auth_database.db"
 HTML_ROOT = PROJECT_ROOT
+
+# Vercel-compatible database path
+# Use /tmp for serverless environments
+if os.environ.get('VERCEL'):
+    DATABASE_PATH = Path(tempfile.gettempdir()) / "auth_database.db"
+else:
+    DATABASE_PATH = PROJECT_ROOT / "auth_database.db"
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)

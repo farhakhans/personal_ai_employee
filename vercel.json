@@ -11,11 +11,5 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ],
-  "env": {
-    "SECRET_KEY": "@secret-key",
-    "ANTHROPIC_API_KEY": "@anthropic-key",
-    "VAULT_PATH": "/tmp/vault"
-  },
-  "outputDirectory": "public"
+  ]
 }
