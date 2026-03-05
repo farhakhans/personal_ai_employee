@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database (local)
+auth_database.db
+*.db-journal
+
+# Environment
+.env
+.env.local
+
+# Vault (local files)
+vault/
+AI_Employee_System/Vault/
+
+# Node
+node_modules/
+
+# Vercel
+.vercel
+
+# Batch files
+*.bat
+
+# Markdown docs (keep README.md)
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+
+# Deployment configs (keep Dockerfile)
+render.yaml
+Procfile
