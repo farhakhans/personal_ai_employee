@@ -35,298 +35,162 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production"
 # Database initialization
 def init_db():
     """Initialize the authentication database"""
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
-    
-    # Users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            full_name TEXT,
-            role TEXT DEFAULT 'user',
-            tier TEXT DEFAULT 'bronze',
-            is_active BOOLEAN DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Sessions table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            token TEXT UNIQUE NOT NULL,
-            expires_at TIMESTAMP NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-    ''')
-    
-    # Audit logs table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            action TEXT NOT NULL,
-            details TEXT,
-            ip_address TEXT,
-            user_agent TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-    ''')
-
-    # Customers table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE,
-            phone TEXT,
-            company TEXT,
-            address TEXT,
-            balance REAL DEFAULT 0,
-            status TEXT DEFAULT 'active',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # Employees table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS employees (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE,
-            phone TEXT,
-            role TEXT,
-            department TEXT,
-            salary REAL,
-            hours_worked REAL DEFAULT 0,
-            pay_rate REAL DEFAULT 0,
-            status TEXT DEFAULT 'active',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # Payments table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER,
-            amount REAL NOT NULL,
-            type TEXT NOT NULL,
-            status TEXT DEFAULT 'pending',
-            description TEXT,
-            payment_method TEXT,
-            transaction_id TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (customer_id) REFERENCES customers(id)
-        )
-    ''')
-
-    # Transactions table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT NOT NULL,
-            party_name TEXT,
-            amount REAL NOT NULL,
-            status TEXT DEFAULT 'pending',
-            description TEXT,
-            reference TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # Orders table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER,
-            order_number TEXT UNIQUE,
-            amount REAL NOT NULL,
-            status TEXT DEFAULT 'pending',
-            items TEXT,
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (customer_id) REFERENCES customers(id)
-        )
-    ''')
-
-    # Notifications table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS notifications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            title TEXT NOT NULL,
-            message TEXT NOT NULL,
-            type TEXT DEFAULT 'info',
-            is_read BOOLEAN DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-    ''')
-
-    # Settings table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS settings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key_name TEXT UNIQUE NOT NULL,
-            value TEXT,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # Insert default settings if not exist
-    cursor.execute('SELECT COUNT(*) FROM settings')
-    if cursor.fetchone()[0] == 0:
-        default_settings = [
-            ('company_name', 'My Company'),
-            ('currency', 'USD'),
-            ('tax_rate', '0'),
-            ('whatsapp_enabled', 'false'),
-            ('email_notifications', 'true'),
-            ('auto_payroll', 'false')
-        ]
-        for key, value in default_settings:
-            cursor.execute('INSERT INTO settings (key_name, value) VALUES (?, ?)', (key, value))
-
-    # Insert sample data for testing
-    cursor.execute('SELECT COUNT(*) FROM customers')
-    if cursor.fetchone()[0] == 0:
-        sample_customers = [
-            ('Ahmed Hassan', 'ahmed@example.com', '+92 300 1234567', 'Ahmed Corp', 'Lahore', 1500, 'active'),
-            ('Fatima Store', 'fatima@example.com', '+92 321 7654321', 'Fatima Enterprises', 'Karachi', 2300, 'active'),
-            ('John Consulting', 'john@example.com', '+92 333 9876543', 'John LLC', 'Islamabad', 800, 'active'),
-            ('Sara Johnson', 'sara@example.com', '+92 345 1122334', 'Sara Industries', 'Rawalpindi', 650, 'active'),
-            ('Ali Store', 'ali@example.com', '+92 356 2233445', 'Ali Traders', 'Faisalabad', 500, 'active')
-        ]
-        for cust in sample_customers:
-            cursor.execute('''
-                INSERT INTO customers (name, email, phone, company, address, balance, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', cust)
-
-    # Insert sample employees
-    cursor.execute('SELECT COUNT(*) FROM employees')
-    if cursor.fetchone()[0] == 0:
-        sample_employees = [
-            ('Harun', 'harun@employee.ai', '+92 300 1111111', 'Manager', 'Administration', 40, 8, 5),
-            ('Zainab', 'zainab@employee.ai', '+92 300 2222222', 'Sales', 'Marketing', 30, 6, 5),
-            ('Ali', 'ali@employee.ai', '+92 300 3333333', 'Delivery', 'Logistics', 35, 7, 5),
-            ('Ayesha', 'ayesha@employee.ai', '+92 300 4444444', 'Accountant', 'Finance', 45, 8, 6),
-            ('Bilal', 'bilal@employee.ai', '+92 300 5555555', 'Developer', 'IT', 50, 8, 7)
-        ]
-        for emp in sample_employees:
-            cursor.execute('''
-                INSERT INTO employees (name, email, phone, role, department, salary, hours_worked, pay_rate)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', emp)
-
-    # Insert sample payments
-    cursor.execute('SELECT COUNT(*) FROM payments')
-    if cursor.fetchone()[0] == 0:
-        sample_payments = [
-            (1, 450, 'received', 'completed', 'Payment for Order #1234', 'bank_transfer', 'TXN001'),
-            (2, 320, 'received', 'completed', 'Payment for Order #1235', 'cash', 'TXN002'),
-            (3, 200, 'sent', 'completed', 'Consulting fees', 'bank_transfer', 'TXN003'),
-            (4, 650, 'received', 'pending', 'Order payment pending', 'pending', None),
-            (5, 500, 'received', 'pending', 'Follow up required', 'pending', None)
-        ]
-        for pay in sample_payments:
-            cursor.execute('''
-                INSERT INTO payments (customer_id, amount, type, status, description, payment_method, transaction_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', pay)
-
-    # Insert sample transactions
-    cursor.execute('SELECT COUNT(*) FROM transactions')
-    if cursor.fetchone()[0] == 0:
-        sample_transactions = [
-            ('received', 'Ahmed Hassan', 450, 'completed', 'Payment received', 'REF001'),
-            ('sent', 'ABC Suppliers', 200, 'completed', 'Inventory purchase', 'REF002'),
-            ('received', 'Fatima Store', 320, 'completed', 'Order payment', 'REF003'),
-            ('sent', 'XYZ Corp', 150, 'pending', 'Service payment', 'REF004'),
-            ('received', 'John Consulting', 280, 'completed', 'Consulting payment', 'REF005')
-        ]
-        for txn in sample_transactions:
-            cursor.execute('''
-                INSERT INTO transactions (type, party_name, amount, status, description, reference)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', txn)
-
-    # Insert sample notifications
-    cursor.execute('SELECT COUNT(*) FROM notifications')
-    if cursor.fetchone()[0] == 0:
-        sample_notifications = [
-            (1, 'Payment Received', '$450 received from Ahmed Hassan', 'success', 0),
-            (1, 'Pending Approval', 'Order #1236 awaiting approval', 'warning', 0),
-            (1, 'Low Balance Alert', 'Account balance below threshold', 'error', 0),
-            (1, 'New Customer', 'Ali Store registered as new customer', 'info', 1),
-            (1, 'Payroll Due', 'Weekly payroll processing due', 'warning', 0)
-        ]
-        for notif in sample_notifications:
-            cursor.execute('''
-                INSERT INTO notifications (user_id, title, message, type, is_read)
-                VALUES (?, ?, ?, ?, ?)
-            ''', notif)
-
-    conn.commit()
-
-    # Create default admin user if not exists
-    cursor.execute('SELECT COUNT(*) FROM users')
-    if cursor.fetchone()[0] == 0:
-        # Create default users
-        default_users = [
-            {
-                'email': 'admin@employee.ai',
-                'username': 'admin',
-                'password': 'Admin@2026!',
-                'full_name': 'Administrator',
-                'role': 'admin',
-                'tier': 'platinum'
-            },
-            {
-                'email': 'manager@employee.ai',
-                'username': 'manager',
-                'password': 'Manager@2026!',
-                'full_name': 'Manager',
-                'role': 'manager',
-                'tier': 'gold'
-            },
-            {
-                'email': 'user@employee.ai',
-                'username': 'user',
-                'password': 'User@2026!',
-                'full_name': 'User',
-                'role': 'user',
-                'tier': 'bronze'
-            }
-        ]
+    try:
+        # Ensure directory exists for Vercel
+        if os.environ.get('VERCEL'):
+            os.makedirs('/tmp', exist_ok=True)
         
-        for user_data in default_users:
-            password_hash = bcrypt.hashpw(
-                user_data['password'].encode('utf-8'),
-                bcrypt.gensalt(rounds=12)
-            ).decode('utf-8')
-            
-            cursor.execute('''
-                INSERT INTO users (email, username, password_hash, full_name, role, tier)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                user_data['email'],
-                user_data['username'],
-                password_hash,
-                user_data['full_name'],
-                user_data['role'],
-                user_data['tier']
-            ))
-    
-    conn.commit()
-    conn.close()
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+
+        # Users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                full_name TEXT,
+                role TEXT DEFAULT 'user',
+                tier TEXT DEFAULT 'bronze',
+                is_active BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Sessions table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                token TEXT UNIQUE NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ''')
+
+        # Audit logs table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                action TEXT NOT NULL,
+                details TEXT,
+                ip_address TEXT,
+                user_agent TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ''')
+
+        # Customers table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS customers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE,
+                phone TEXT,
+                company TEXT,
+                address TEXT,
+                balance REAL DEFAULT 0,
+                status TEXT DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Employees table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS employees (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE,
+                phone TEXT,
+                role TEXT,
+                department TEXT,
+                salary REAL,
+                hours_worked REAL DEFAULT 0,
+                pay_rate REAL DEFAULT 0,
+                status TEXT DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Payments table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id INTEGER,
+                amount REAL NOT NULL,
+                type TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                description TEXT,
+                payment_method TEXT,
+                transaction_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (customer_id) REFERENCES customers(id)
+            )
+        ''')
+
+        # Transactions table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                party_name TEXT,
+                amount REAL NOT NULL,
+                status TEXT DEFAULT 'pending',
+                description TEXT,
+                reference TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Orders table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id INTEGER,
+                order_number TEXT UNIQUE,
+                amount REAL NOT NULL,
+                status TEXT DEFAULT 'pending',
+                items TEXT,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (customer_id) REFERENCES customers(id)
+            )
+        ''')
+
+        # Notifications table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                type TEXT DEFAULT 'info',
+                is_read BOOLEAN DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ''')
+
+        # Settings table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                key_name TEXT UNIQUE NOT NULL,
+                value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        print(f"Database init error: {e}")
+        # Don't fail - allow app to continue without DB
 
 # Authentication helpers
 def get_db_connection():
@@ -2413,14 +2277,20 @@ def ensure_db_initialized():
     global _db_initialized
     if not _db_initialized:
         with app.app_context():
-            init_db()
+            try:
+                init_db()
+            except Exception as e:
+                print(f"DB init error: {e}")
         _db_initialized = True
 
 # For local development only - Vercel will lazy load
 if __name__ == '__main__':
     # Initialize database on startup for local dev
     with app.app_context():
-        init_db()
+        try:
+            init_db()
+        except Exception as e:
+            print(f"DB init error: {e}")
     
     import sys
     # Set UTF-8 encoding for Windows console
