@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api_routes.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api_routes.py"
+    }
+  ],
+  "env": {
+    "VERCEL": "1",
+    "VAULT_PATH": "/tmp/vault"
+  },
+  "outputDirectory": "tmp"
+}

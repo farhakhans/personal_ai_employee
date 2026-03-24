@@ -2862,7 +2862,14 @@ if __name__ == '__main__':
 os.environ['VERCEL'] = '1'
 os.environ['VAULT_PATH'] = '/tmp/vault'
 
-# For Vercel serverless deployment
+# For Vercel serverless deployment - MUST be at module level
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+# Secret key for JWT (in production, use environment variable)
+SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production")
+
+# Vercel serverless handler
 def handler(request):
     """Vercel serverless handler"""
     try:
@@ -2872,9 +2879,3 @@ def handler(request):
         import traceback
         print(traceback.format_exc())
         raise
-
-
-# For local development - use port 8080 (Vercel compatible)
-if __name__ != '__main__':
-    # Vercel import
-    pass
