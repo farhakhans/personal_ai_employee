@@ -16,5 +16,9 @@
     "VERCEL": "1",
     "VAULT_PATH": "/tmp/vault"
   },
-  "outputDirectory": "tmp"
+  "functions": {
+    "api_routes.py": {
+      "maxDuration": 60
+    }
+  }
 }
