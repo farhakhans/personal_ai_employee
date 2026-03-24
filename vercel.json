@@ -15,10 +15,5 @@
   "env": {
     "VERCEL": "1",
     "VAULT_PATH": "/tmp/vault"
-  },
-  "functions": {
-    "api_routes.py": {
-      "maxDuration": 60
-    }
   }
 }
