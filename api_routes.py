@@ -1,7 +1,17 @@
 """
 Personal AI Employee - Main Flask API Server
 Handles authentication and serves all dashboard pages
+
+This is the main entry point for both local development and Vercel deployment.
+All AI_Employee_System modules are imported and integrated here.
 """
+
+import sys
+import os
+import traceback
+
+# Add project root to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, request, jsonify, send_file, redirect, url_for, render_template_string
 from flask_cors import CORS
@@ -10,7 +20,6 @@ import sqlite3
 import jwt
 import bcrypt
 import datetime
-import os
 import re
 from functools import wraps
 import tempfile
@@ -18,6 +27,10 @@ import tempfile
 # Project root
 PROJECT_ROOT = Path(__file__).parent
 HTML_ROOT = PROJECT_ROOT
+
+# Set environment for Vercel deployment
+os.environ['VERCEL'] = '1'
+os.environ['VAULT_PATH'] = '/tmp/vault'
 
 # Vercel-compatible database path
 # Use /tmp for serverless environments
@@ -318,6 +331,22 @@ def status_page():
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
+@app.route('/gmail')
+def gmail_page():
+    """Serve the Gmail login page"""
+    try:
+        return send_file(HTML_ROOT / "gmail_login.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/gmail-inbox')
+def gmail_inbox_page():
+    """Serve the Gmail inbox page"""
+    try:
+        return send_file(HTML_ROOT / "gmail.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
 @app.route('/bronze')
 def bronze_dashboard():
     """Serve bronze tier dashboard (no auth required)"""
@@ -384,39 +413,25 @@ def platinum_dashboard_file():
 
 @app.route('/dashboard')
 def complete_dashboard():
-    """Serve complete dashboard (no auth required)"""
+    """Serve unified dashboard (no auth required) - MAIN DASHBOARD"""
     try:
         return send_file(HTML_ROOT / "complete_dashboard.html")
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
-@app.route('/all-tiers')
-def all_tiers():
-    """Serve all tiers page (no auth required)"""
-    try:
-        return send_file(HTML_ROOT / "all_tiers_form.html")
-    except Exception as e:
-        return jsonify({'error': str(e)}), 404
-
-# Template routes
-@app.route('/templates/<path:filename>')
-def serve_template(filename):
-    """Serve template HTML files"""
-    try:
-        return send_file(HTML_ROOT / "templates" / filename)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 404
-
-# Add route for main dashboard with sidebar
 @app.route('/main-dashboard')
 def main_dashboard():
-    """Serve main dashboard from templates"""
+    """Serve main dashboard from templates folder"""
     try:
-        response = send_file(HTML_ROOT / "dashboard.html")
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-        return response
+        return send_file(HTML_ROOT / "templates" / "dashboard.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/templates/dashboard.html')
+def templates_dashboard():
+    """Serve dashboard from templates folder"""
+    try:
+        return send_file(HTML_ROOT / "templates" / "dashboard.html")
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
@@ -1889,26 +1904,32 @@ def start_gmail_watcher(current_user, user_id):
     try:
         import subprocess
         import sys
-        
+        import webbrowser
+
         # Get the correct path to the watcher script
         watchers_path = PROJECT_ROOT / "AI_Employee_System" / "Watchers" / "start_gmail_watcher.py"
-        
+
         if not watchers_path.exists():
             return jsonify({
                 'status': 'error',
                 'message': f'Watcher script not found at: {watchers_path}'
             }), 404
-        
+
         # Check if .env file exists with Gmail credentials
         env_file = PROJECT_ROOT / ".env"
+        gmail_email = ''
         has_credentials = False
-        
+
         if env_file.exists():
             with open(env_file, 'r') as f:
                 content = f.read()
-                if 'GMAIL_ADDRESS=' in content and 'GMAIL_APP_PASSWORD=' in content:
-                    has_credentials = True
-        
+                for line in content.split('\n'):
+                    if line.startswith('GMAIL_ADDRESS='):
+                        gmail_email = line.split('=', 1)[1].strip()
+                        if gmail_email and 'your.email' not in gmail_email:
+                            has_credentials = True
+                        break
+
         if has_credentials:
             # Use START command to open in new window that stays open
             # Create a batch file that pauses on error
@@ -1925,6 +1946,8 @@ echo Script: {watchers_path}
 echo.
 echo ================================================================
 echo.
+echo Opening Gmail in browser...
+echo.
 "{sys.executable}" "{watchers_path}"
 echo.
 echo ================================================================
@@ -1933,29 +1956,35 @@ echo Press any key to exit...
 pause >nul
 '''
             batch_file = PROJECT_ROOT / "run_gmail_watcher.bat"
-            
+
             with open(batch_file, 'w', encoding='utf-8') as f:
                 f.write(batch_content)
-            
+
             # Use START to open in new window
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            
+
             # Start the batch file - this will open a new window
             subprocess.Popen(
                 ['cmd.exe', '/c', 'start', 'Gmail Watcher', str(batch_file)],
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
                 startupinfo=startupinfo
             )
-            
+
+            # Open Gmail in web browser
+            gmail_url = f"https://mail.google.com/mail/u/{gmail_email}/"
+            webbrowser.open(gmail_url)
+
             log_audit(user_id, 'GMAIL_WATCHER_STARTED', f'User {current_user} started Gmail watcher')
-            
+
             return jsonify({
                 'status': 'success',
                 'message': 'Gmail watcher started successfully',
                 'script': str(watchers_path),
                 'batch_file': str(batch_file),
-                'mode': 'live'
+                'mode': 'live',
+                'email': gmail_email,
+                'gmail_url': gmail_url
             }), 200
         else:
             # No credentials - show setup instructions
@@ -1970,23 +1999,233 @@ pause >nul
    GMAIL_ADDRESS=your.email@gmail.com
    GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
 
-3. Get App Password:
-   - Go to: https://myaccount.google.com/
-   - Security → 2-Step Verification → App passwords
-   - Generate new app password for 'Mail'
-   - Copy to .env file
+Get App Password:
+1. Go to: https://myaccount.google.com/security
+2. Security -> 2-Step Verification -> App passwords
+3. Generate new app password for 'Mail'
+4. Copy to .env file
 
-4. Restart the watcher
-
-OR
-
-Run manually from command prompt:
-   cd "D:\\DocuBook-Chatbot folder\\Personal AI Employee"
-   python AI_Employee_System\\Watchers\\start_gmail_watcher.py'''
+Or use DEMO mode:
+   GMAIL_APP_PASSWORD=demo'''
             }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+# Simple endpoint to start Gmail watcher (no auth, for dashboard)
+@app.route('/api/watchers/gmail/start-simple', methods=['POST'])
+def start_gmail_watcher_simple():
+    """Start Gmail watcher - simple version without auth"""
+    try:
+        import subprocess
+        import sys
+
+        # Get the correct path to the watcher script
+        watchers_path = PROJECT_ROOT / "AI_Employee_System" / "Watchers" / "start_gmail_watcher.py"
+
+        if not watchers_path.exists():
+            return jsonify({
+                'status': 'error',
+                'message': f'Watcher script not found'
+            }), 404
+
+        # Check credentials
+        env_file = PROJECT_ROOT / ".env"
+        gmail_email = ''
+        app_password = ''
+        
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                content = f.read()
+                for line in content.split('\n'):
+                    if line.startswith('GMAIL_ADDRESS='):
+                        gmail_email = line.split('=', 1)[1].strip()
+                    elif line.startswith('GMAIL_APP_PASSWORD='):
+                        app_password = line.split('=', 1)[1].strip()
+
+        # Determine mode
+        mode = 'demo'
+        if app_password and app_password.lower() not in ['demo', 'test', 'demo_password']:
+            mode = 'live'
+
+        # Start watcher in background
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+
+        # Start the watcher process
+        process = subprocess.Popen(
+            [sys.executable, str(watchers_path)],
+            cwd=str(PROJECT_ROOT),
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+            startupinfo=startupinfo
+        )
+
+        return jsonify({
+            'status': 'success',
+            'message': f'Gmail watcher started in {mode} mode',
+            'mode': mode,
+            'email': gmail_email,
+            'pid': process.pid
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+# Gmail Configuration API Routes
+@app.route('/api/gmail/config', methods=['GET'])
+def get_gmail_config():
+    """Get Gmail configuration"""
+    try:
+        env_file = PROJECT_ROOT / ".env"
+        config = {
+            'email': '',
+            'password': '',
+            'notification_email': ''
+        }
+        
+        if env_file.exists():
+            with open(env_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if line.startswith('GMAIL_ADDRESS='):
+                        config['email'] = line.split('=', 1)[1].strip()
+                    elif line.startswith('GMAIL_APP_PASSWORD='):
+                        config['password'] = line.split('=', 1)[1].strip()
+                    elif line.startswith('NOTIFICATION_EMAIL='):
+                        config['notification_email'] = line.split('=', 1)[1].strip()
+        
+        return jsonify({
+            'status': 'success',
+            'config': config
+        }), 200
     except Exception as e:
         return jsonify({
             'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/gmail/config', methods=['POST'])
+def save_gmail_config():
+    """Save Gmail configuration"""
+    try:
+        data = request.get_json()
+        email = data.get('email', '')
+        password = data.get('password', '')
+        notification_email = data.get('notification_email', email)
+        
+        env_file = PROJECT_ROOT / ".env"
+        
+        # Read existing content
+        existing_content = ""
+        if env_file.exists():
+            with open(env_file, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+        
+        # Update or add values
+        import re
+        
+        new_lines = []
+        updated = {
+            'GMAIL_ADDRESS': False,
+            'GMAIL_APP_PASSWORD': False,
+            'NOTIFICATION_EMAIL': False
+        }
+        
+        for line in existing_content.split('\n'):
+            if line.startswith('GMAIL_ADDRESS='):
+                new_lines.append(f'GMAIL_ADDRESS={email}')
+                updated['GMAIL_ADDRESS'] = True
+            elif line.startswith('GMAIL_APP_PASSWORD='):
+                new_lines.append(f'GMAIL_APP_PASSWORD={password}')
+                updated['GMAIL_APP_PASSWORD'] = True
+            elif line.startswith('NOTIFICATION_EMAIL='):
+                new_lines.append(f'NOTIFICATION_EMAIL={notification_email}')
+                updated['NOTIFICATION_EMAIL'] = True
+            else:
+                new_lines.append(line)
+        
+        # Add missing values
+        if not updated['GMAIL_ADDRESS'] and email:
+            new_lines.append(f'GMAIL_ADDRESS={email}')
+        if not updated['GMAIL_APP_PASSWORD'] and password:
+            new_lines.append(f'GMAIL_APP_PASSWORD={password}')
+        if not updated['NOTIFICATION_EMAIL'] and notification_email:
+            new_lines.append(f'NOTIFICATION_EMAIL={notification_email}')
+        
+        # Write back
+        with open(env_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(new_lines))
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Gmail configuration saved'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/gmail/test', methods=['POST'])
+def test_gmail_connection():
+    """Test Gmail connection"""
+    try:
+        data = request.get_json()
+        email = data.get('email', '')
+        password = data.get('password', '')
+        
+        # Demo mode
+        if password.lower() in ['demo', 'test', 'demo_password']:
+            return jsonify({
+                'success': True,
+                'message': 'Demo mode active. Ready to test without real Gmail.'
+            }), 200
+        
+        # Test real connection
+        import imaplib
+        
+        try:
+            imap = imaplib.IMAP4_SSL("imap.gmail.com")
+            imap.login(email, password)
+            imap.select("INBOX")
+            imap.close()
+            imap.logout()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Successfully connected to Gmail: {email}'
+            }), 200
+        except Exception as e:
+            error_msg = str(e)
+            if 'AUTHENTICATIONFAILED' in error_msg:
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid credentials. Please check your App Password.'
+                }), 200
+            elif 'ALERT' in error_msg:
+                return jsonify({
+                    'success': False,
+                    'message': 'App password required. Enable 2FA and generate app password.'
+                }), 200
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': f'Connection failed: {error_msg}'
+                }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
             'message': str(e)
         }), 500
 
@@ -2269,6 +2508,271 @@ try:
 except Exception as e:
     print(f"Social media integration not available: {e}")
 
+# ================================================================
+# EMAIL DASHBOARD ROUTES
+# ================================================================
+
+@app.route('/email-dashboard')
+def email_dashboard():
+    """Serve email dashboard"""
+    try:
+        response = send_file(HTML_ROOT / "email_dashboard.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/email-dashboard-v2')
+def email_dashboard_v2():
+    """Serve email dashboard v2 with fixed sent folder"""
+    try:
+        response = send_file(HTML_ROOT / "email_dashboard_v2.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/demo-email')
+def demo_email_page():
+    """Serve demo email page"""
+    try:
+        return send_file(HTML_ROOT / "demo_email.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/api/demo/emails', methods=['GET'])
+def get_demo_emails():
+    """Get demo emails from vault"""
+    try:
+        vault_path = Path(os.getenv('VAULT_PATH', 'Vault'))
+        inbox_dir = vault_path / "Inbox" / "EMAIL"
+        
+        emails = []
+        if inbox_dir.exists():
+            for file in sorted(inbox_dir.glob("*.md"), reverse=True):
+                try:
+                    content = file.read_text(encoding='utf-8')
+                    email_data = {
+                        'id': file.stem,
+                        'from': 'user@example.com',
+                        'to': 'you@employee.ai',
+                        'subject': file.stem.replace('_', ' '),
+                        'body': content[:500],
+                        'timestamp': datetime.datetime.fromtimestamp(file.stat().st_mtime).isoformat(),
+                        'unread': True
+                    }
+                    emails.append(email_data)
+                except:
+                    pass
+        
+        return jsonify({'status': 'success', 'emails': emails[:50]})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/sent/emails', methods=['GET'])
+def get_sent_emails():
+    """Get sent emails from vault"""
+    try:
+        vault_path = Path(os.getenv('VAULT_PATH', 'Vault'))
+        sent_dir = vault_path / "Sent" / "EMAIL"
+
+        emails = []
+        if sent_dir.exists():
+            # Get all files and sort by modification time (newest first)
+            files = list(sent_dir.glob("*.md"))
+            files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+            
+            for file in files:
+                try:
+                    content = file.read_text(encoding='utf-8')
+                    # Extract email data from content
+                    email_data = {
+                        'id': file.stem,
+                        'from': 'you@employee.ai',
+                        'to': 'recipient@example.com',
+                        'subject': file.stem.replace('_', ' ').replace('SENT_', '').replace('EMAIL SENT ', ''),
+                        'body': content[:500],
+                        'timestamp': datetime.datetime.fromtimestamp(file.stat().st_mtime).isoformat(),
+                        'status': 'sent'
+                    }
+                    emails.append(email_data)
+                except:
+                    pass
+
+        return jsonify({'status': 'success', 'emails': emails[:50]})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/demo/send-email', methods=['POST'])
+def send_demo_email():
+    """Send demo email"""
+    try:
+        data = request.get_json()
+        
+        vault_path = Path(os.getenv('VAULT_PATH', 'Vault'))
+        sent_dir = vault_path / "Sent" / "EMAIL"
+        sent_dir.mkdir(parents=True, exist_ok=True)
+        
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        subject_safe = data.get('subject', 'No_Subject').replace(' ', '_')[:20]
+        filename = f"SENT_{data.get('to', 'unknown').replace('@', '_')}_{subject_safe}_{timestamp}.md"
+        
+        content = f"""# Email - SENT
+
+## Header
+- **Subject:** {data.get('subject')}
+- **From:** you@employee.ai
+- **To:** {data.get('to')}
+{f"- **CC:** {data.get('cc')}" if data.get('cc') else ""}
+- **Date:** {datetime.datetime.now().isoformat()}
+
+## Content
+
+{data.get('body')}
+
+## Status
+- [x] Sent
+- [ ] Read
+- [ ] Archived
+"""
+        
+        (sent_dir / filename).write_text(content, encoding='utf-8')
+        
+        return jsonify({'status': 'success', 'message': 'Email sent'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/real/send-email', methods=['POST'])
+def send_real_email():
+    """Send REAL email via SMTP"""
+    try:
+        data = request.get_json()
+
+        # Reload .env file to get fresh credentials
+        from dotenv import load_dotenv
+        env_file = PROJECT_ROOT / ".env"
+        load_dotenv(env_file, override=True)
+
+        # Get Gmail credentials from .env
+        gmail_address = os.getenv('GMAIL_ADDRESS', '')
+        gmail_password = os.getenv('GMAIL_APP_PASSWORD', '')
+
+        # Check if credentials are configured
+        if not gmail_address or 'your.email' in gmail_address or not gmail_password or gmail_password == 'demo':
+            # Fallback to demo mode with helpful instructions
+            return jsonify({
+                'status': 'demo',
+                'message': 'Gmail credentials not configured. Using demo mode.',
+                'setup_instructions': {
+                    'title': '📧 Setup Real Gmail Sending',
+                    'steps': [
+                        '1. Go to https://myaccount.google.com/apppasswords',
+                        '2. Sign in to your Google account',
+                        '3. Enable 2-Factor Authentication if not already enabled',
+                        '4. Click "App passwords"',
+                        '5. Select "Mail" and your device',
+                        '6. Copy the 16-character password',
+                        '7. Update .env file: GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx'
+                    ],
+                    'note': 'The password must be a Google App Password, NOT your regular Gmail password'
+                }
+            }), 200
+
+        # Import and use real email service
+        from AI_Employee_System.real_email_service import RealEmailService
+
+        email_service = RealEmailService(
+            email_addr=gmail_address,
+            password=gmail_password,
+            provider='gmail'
+        )
+
+        # Send real email
+        result = email_service.send_email(
+            to=data.get('to', ''),
+            subject=data.get('subject', ''),
+            body=data.get('body', ''),
+            cc=data.get('cc', '')
+        )
+
+        if result.get('status') == 'success':
+            # Also save to Sent folder for dashboard display
+            vault_path = Path(os.getenv('VAULT_PATH', 'Vault'))
+            sent_dir = vault_path / "Sent" / "EMAIL"
+            sent_dir.mkdir(parents=True, exist_ok=True)
+            
+            timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            subject_safe = data.get('subject', 'No_Subject').replace(' ', '_')[:20]
+            filename = f"SENT_{data.get('to', 'unknown').replace('@', '_')}_{subject_safe}_{timestamp}.md"
+            
+            content = f"""# Email - SENT
+
+## Header
+- **Subject:** {data.get('subject')}
+- **From:** {gmail_address}
+- **To:** {data.get('to')}
+{f"- **CC:** {data.get('cc')}" if data.get('cc') else ""}
+- **Date:** {datetime.datetime.now().isoformat()}
+
+## Content
+
+{data.get('body')}
+
+## Status
+- [x] Sent via Gmail
+- [ ] Read
+- [ ] Archived
+
+---
+*Sent via Real Gmail SMTP*
+"""
+            
+            (sent_dir / filename).write_text(content, encoding='utf-8')
+            
+            return jsonify({
+                'status': 'success',
+                'message': f'Real email sent to {data.get("to")}',
+                'result': result
+            })
+        else:
+            # Check for authentication error
+            if result.get('error_code') == 'SMTP_AUTH_FAILED':
+                return jsonify({
+                    'status': 'auth_error',
+                    'message': result.get('message', 'Authentication failed'),
+                    'setup_instructions': {
+                        'title': '🔐 Gmail Authentication Failed',
+                        'steps': [
+                            '1. Verify your Gmail address is correct in .env',
+                            '2. Make sure you are using an App Password (not regular password)',
+                            '3. Ensure 2FA is enabled on your Google account',
+                            '4. Generate a new App Password at: https://myaccount.google.com/apppasswords',
+                            '5. Update .env with the new password: GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx'
+                        ],
+                        'help_url': 'https://support.google.com/accounts/answer/185833'
+                    }
+                }), 401
+            
+            return jsonify({
+                'status': 'error',
+                'message': result.get('message', 'Failed to send')
+            })
+
+    except ImportError:
+        return jsonify({
+            'status': 'demo',
+            'message': 'Real email service not available. Using demo mode.'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        })
+
 # Database initialization flag
 _db_initialized = False
 
@@ -2339,7 +2843,38 @@ if __name__ == '__main__':
     print("  Manager: manager@employee.ai  / Manager@2026!")
     print("  User:    user@employee.ai     / User@2026!")
     print("")
+    print("  Email:")
+    print("    GET  /email-dashboard     - Email Dashboard UI")
+    print("    GET  /api/demo/emails     - Get demo emails")
+    print("    POST /api/demo/send-email - Send demo email")
+    print("")
     print("Press Ctrl+C to stop the server")
     print("=" * 70)
 
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+# ================================================================
+# VERCEL DEPLOYMENT SUPPORT
+# ================================================================
+
+# Set environment for Vercel
+os.environ['VERCEL'] = '1'
+os.environ['VAULT_PATH'] = '/tmp/vault'
+
+# For Vercel serverless deployment
+def handler(request):
+    """Vercel serverless handler"""
+    try:
+        return app(request.environ, lambda *args: None)
+    except Exception as e:
+        print(f"Request error: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        raise
+
+
+# For local development - use port 8080 (Vercel compatible)
+if __name__ != '__main__':
+    # Vercel import
+    pass

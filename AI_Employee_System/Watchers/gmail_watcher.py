@@ -2,18 +2,22 @@
 GMAIL WATCHER
 Monitors Gmail inbox and processes new emails
 Runs continuously, checking every 5 minutes
+Sends email notifications when new emails arrive
 """
 
 import os
 import json
 import time
 import logging
+import smtplib
 from typing import List, Dict, Any
 from datetime import datetime
 from pathlib import Path
 import imaplib
 import email
 from email.header import decode_header
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 logger = logging.getLogger("GmailWatcher")
 
@@ -29,13 +33,15 @@ class GmailWatcher:
     ALLOWED_TIERS = ['bronze', 'silver', 'gold', 'platinum']
 
     def __init__(self, email_addr: str, app_password: str, vault_path: str,
-                 poll_interval: int = 300, user_tier: str = 'bronze'):
+                 poll_interval: int = 300, user_tier: str = 'bronze',
+                 notification_email: str = None):
         """
         email_addr: Gmail address
         app_password: Gmail app password (from 2FA settings)
         vault_path: Path to Obsidian vault
         poll_interval: Seconds between polls (default 5 min)
         user_tier: Tier of the user/organization (used for gating)
+        notification_email: Email to send notifications to (defaults to email_addr)
         """
         if user_tier not in self.ALLOWED_TIERS:
             raise ValueError(f"GmailWatcher is not permitted for tier {user_tier}")
@@ -45,8 +51,10 @@ class GmailWatcher:
         self.vault_path = vault_path
         self.poll_interval = poll_interval
         self.user_tier = user_tier
+        self.notification_email = notification_email or email_addr
         self.processed_emails = set()
         self.load_processed_emails()
+        self.new_email_count = 0
     
     def load_processed_emails(self):
         """Load list of already-processed email IDs"""
@@ -60,6 +68,11 @@ class GmailWatcher:
     def connect_gmail(self):
         """Connect to Gmail via IMAP"""
         try:
+            # Demo mode for testing without real Gmail
+            if self.app_password in ['demo', 'test', 'DEMO123456789012', 'demo_password']:
+                logger.info(f"🔧 Demo mode - Skipping real Gmail connection")
+                return None
+            
             imap = imaplib.IMAP4_SSL("imap.gmail.com")
             imap.login(self.email_addr, self.app_password)
             imap.select("INBOX")
@@ -156,15 +169,15 @@ class GmailWatcher:
         try:
             inbox_path = Path(self.vault_path) / "Inbox"
             inbox_path.mkdir(parents=True, exist_ok=True)
-            
+
             email_id = email_data["email_id"]
             file_path = inbox_path / f"{email_id}.md"
-            
+
             # Create markdown file
             content = f"""# Email: {email_data['subject']}
-**From:** {email_data['from']}  
-**Date:** {email_data['date']}  
-**Received:** {email_data['received_at']}  
+**From:** {email_data['from']}
+**Date:** {email_data['date']}
+**Received:** {email_data['received_at']}
 **Status:** 📥 Inbox
 
 ---
@@ -184,24 +197,77 @@ class GmailWatcher:
 - [ ] Mark as Done
 
 ## Analysis
-Priority: TBD  
-Category: TBD  
-Suggested Action: TBD  
+Priority: TBD
+Category: TBD
+Suggested Action: TBD
 
 ---
 *Auto-captured by Gmail Watcher*
 """
-            
+
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
-            
+
             self.processed_emails.add(email_id)
             logger.info(f"✅ Saved to Inbox: {email_id}")
-            
+
             return True
-        
+
         except Exception as e:
             logger.error(f"❌ Error saving email: {e}")
+            return False
+
+    def send_email_notification(self, email_data: Dict[str, Any]) -> bool:
+        """Send email notification when new email arrives"""
+        try:
+            # Create notification email
+            msg = MIMEMultipart()
+            msg['From'] = self.email_addr
+            msg['To'] = self.notification_email
+            msg['Subject'] = f"📧 New Email Alert: {email_data['subject'][:50]}"
+
+            # Email body
+            body = f"""
+<html>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #667eea;">📧 New Email Received</h2>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <p><strong>From:</strong> {email_data['from']}</p>
+            <p><strong>Subject:</strong> {email_data['subject']}</p>
+            <p><strong>Received:</strong> {email_data['received_at']}</p>
+        </div>
+        
+        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <h3 style="color: #495057; margin-top: 0;">Preview:</h3>
+            <p style="color: #6c757d;">{email_data['body'][:300]}...</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <p style="color: #6c757d; font-size: 14px;">
+                This notification was sent by your Personal AI Employee Gmail Watcher
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+            msg.attach(MIMEText(body, 'html', 'utf-8'))
+
+            # Send via Gmail SMTP
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(self.email_addr, self.app_password)
+            server.send_message(msg)
+            server.quit()
+
+            logger.info(f"📤 Notification sent to: {self.notification_email}")
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ Failed to send notification: {e}")
             return False
     
     def check_new_emails(self) -> int:
@@ -210,34 +276,40 @@ Suggested Action: TBD
             imap = self.connect_gmail()
             if not imap:
                 return 0
-            
+
             # Get list of emails
             status, msg_ids = imap.search(None, "ALL")
             if status != "OK":
                 logger.error("Failed to search emails")
                 return 0
-            
+
             msg_id_list = msg_ids[0].split()
-            
+
             # Process only recent emails (last 50)
             new_count = 0
+            new_emails = []
             for msg_id in msg_id_list[-50:]:
                 msg_id_decoded = msg_id.decode()
-                
+
                 if msg_id_decoded not in self.processed_emails:
                     email_data = self.process_email(msg_id)
                     if email_data:
                         self.save_to_inbox(email_data)
+                        new_emails.append(email_data)
                         new_count += 1
-            
+
             imap.close()
             imap.logout()
-            
+
+            # Send notifications for new emails
+            for email_data in new_emails:
+                self.send_email_notification(email_data)
+
             if new_count > 0:
                 logger.info(f"📨 Found {new_count} new email(s)")
-            
+
             return new_count
-        
+
         except Exception as e:
             logger.error(f"❌ Error checking emails: {e}")
             return 0

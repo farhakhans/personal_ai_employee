@@ -194,9 +194,16 @@
                                         <span class="status-indicator status-running" id="gmail-status"></span>
                                         <span id="gmail-status-text">Running</span>
                                     </div>
+                                    <small class="text-muted" id="gmail-email-display">farhanakhanzai14@gmail.com</small>
                                 </div>
                                 <div class="watcher-actions">
-                                    <button class="btn btn-sm btn-outline-success" onclick="runWatcher('gmail_watcher.py')">
+                                    <button class="btn btn-sm btn-outline-info me-1" onclick="showGmailConfig()">
+                                        <i class="fas fa-cog me-1"></i>Config
+                                    </button>
+                                    <a href="/gmail" target="_blank" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fas fa-envelope me-1"></i>Gmail
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-success" onclick="runGmailWatcher()">
                                         <i class="fas fa-play me-1"></i>Run
                                     </button>
                                 </div>
@@ -806,7 +813,237 @@
             checkUser();
             initWatcherStatuses();
             startAutoRefresh();
+            loadGmailConfig();
         });
+
+        // Gmail Watcher Functions
+        function showGmailConfig() {
+            const modal = document.getElementById('gmailConfigModal');
+            if (modal) {
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            } else {
+                createGmailConfigModal();
+            }
+        }
+
+        function createGmailConfigModal() {
+            const modalHTML = `
+                <div class="modal fade" id="gmailConfigModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                                <h5 class="modal-title"><i class="fas fa-envelope me-2"></i>Gmail Watcher Configuration</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Setup Instructions:</strong>
+                                    <ol class="mb-0">
+                                        <li>Go to <a href="https://myaccount.google.com/security" target="_blank">Google Account Security</a></li>
+                                        <li>Enable 2-Step Verification</li>
+                                        <li>Generate App Password (Mail → Other → "AI Employee")</li>
+                                        <li>Copy the 16-character password</li>
+                                    </ol>
+                                </div>
+                                
+                                <form id="gmailConfigForm">
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-envelope me-1"></i>Gmail Address</label>
+                                        <input type="email" class="form-control" id="gmailAddress" placeholder="your.email@gmail.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-key me-1"></i>Gmail App Password</label>
+                                        <input type="text" class="form-control" id="gmailAppPassword" placeholder="abcd efgh ijkl mnop">
+                                        <small class="text-muted">Get from: Google Account → Security → App passwords</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-bell me-1"></i>Notification Email</label>
+                                        <input type="email" class="form-control" id="notificationEmail" placeholder="your.email@gmail.com">
+                                        <small class="text-muted">Emails will be sent here when new emails arrive</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="demoMode">
+                                            <label class="form-check-label" for="demoMode">
+                                                Use Demo Mode (Test without real Gmail)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <div id="gmailConfigStatus"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="saveGmailConfig()">
+                                    <i class="fas fa-save me-1"></i>Save Configuration
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="testGmailConnection()">
+                                    <i class="fas fa-vial me-1"></i>Test Connection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function loadGmailConfig() {
+            fetch('/api/gmail/config')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('gmailAddress').value = data.config.email || '';
+                        document.getElementById('notificationEmail').value = data.config.notification_email || '';
+                        document.getElementById('gmail-email-display').textContent = data.config.email || 'Not configured';
+                        
+                        if (data.config.password === 'demo') {
+                            document.getElementById('demoMode').checked = true;
+                        }
+                    }
+                })
+                .catch(err => console.log('Gmail config load error:', err));
+        }
+
+        function saveGmailConfig() {
+            const email = document.getElementById('gmailAddress').value;
+            const password = document.getElementById('gmailAppPassword').value;
+            const notification = document.getElementById('notificationEmail').value;
+            const demo = document.getElementById('demoMode').checked;
+
+            const statusDiv = document.getElementById('gmailConfigStatus');
+
+            if (!email && !demo) {
+                statusDiv.innerHTML = '<div class="alert alert-danger">Gmail address required!</div>';
+                return;
+            }
+
+            const finalPassword = demo ? 'demo' : password;
+
+            fetch('/api/gmail/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    password: finalPassword,
+                    notification_email: notification || email
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    statusDiv.innerHTML = '<div class="alert alert-success">Configuration saved! You can now run Gmail Watcher.</div>';
+                    document.getElementById('gmail-email-display').textContent = email || 'Demo Mode';
+                    
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('gmailConfigModal'));
+                        modal.hide();
+                    }, 2000);
+                } else {
+                    statusDiv.innerHTML = '<div class="alert alert-danger">Failed to save configuration</div>';
+                }
+            })
+            .catch(err => {
+                statusDiv.innerHTML = '<div class="alert alert-danger">Error: ' + err.message + '</div>';
+            });
+        }
+
+        function testGmailConnection() {
+            const email = document.getElementById('gmailAddress').value;
+            const password = document.getElementById('gmailAppPassword').value;
+            const demo = document.getElementById('demoMode').checked;
+
+            const statusDiv = document.getElementById('gmailConfigStatus');
+            statusDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i>Testing connection...</div>';
+
+            fetch('/api/gmail/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    password: demo ? 'demo' : password
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' + data.message + '</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>' + data.message + '</div>';
+                }
+            })
+            .catch(err => {
+                statusDiv.innerHTML = '<div class="alert alert-danger">Error: ' + err.message + '</div>';
+            });
+        }
+
+        function runGmailWatcher() {
+            const token = getToken();
+            
+            fetch('/api/watchers/start/gmail', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('✅ Gmail Watcher started!\\n\\nA new window will open showing the watcher.\\n\\nGmail will open in your browser.\\n\\nEmail: ' + (data.email || 'Demo Mode'));
+                    updateWatcherStatus('gmail', true);
+                    document.getElementById('gmail-status-text').textContent = 'Running';
+                } else if (data.status === 'info') {
+                    alert('⚠️ Setup Required\\n\\n' + data.message + '\\n\\nClick Config to set up Gmail.');
+                    showGmailConfig();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('❌ Error starting Gmail Watcher: ' + err.message);
+            });
+        }
+
+        function openGmailWeb() {
+            // Get Gmail email from config
+            fetch('/api/gmail/config')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success' && data.config.email) {
+                        const email = data.config.email;
+                        if (email && email !== 'your.email@gmail.com') {
+                            // Try multiple Gmail URLs for direct access
+                            const gmailUrls = [
+                                `https://mail.google.com/mail/?authuser=${email}#inbox`,
+                                `https://mail.google.com/mail/u/0/#inbox`,
+                                `https://gmail.com`
+                            ];
+                            
+                            // Open Gmail inbox directly
+                            window.open(gmailUrls[0], '_blank');
+                            
+                            // Show instructions
+                            alert('📧 Gmail Opening...\\n\\nEmail: ' + email + '\\n\\nIf login page appears:\\n1. Sign in with your Gmail\\n2. Check "Stay signed in"\\n3. Next time it will open directly');
+                        } else {
+                            // No valid email, open generic Gmail with instructions
+                            window.open('https://gmail.com', '_blank');
+                            alert('📧 Gmail Opening...\\n\\nPlease configure your Gmail address in Config first for direct access.');
+                        }
+                    } else {
+                        // No config, open generic Gmail
+                        window.open('https://gmail.com', '_blank');
+                        alert('📧 Gmail Opening...\\n\\nConfigure Gmail in settings for personalized access.');
+                    }
+                })
+                .catch(err => {
+                    // Error, open generic Gmail
+                    window.open('https://gmail.com', '_blank');
+                });
+        }
     </script>
 </body>
 </html>
