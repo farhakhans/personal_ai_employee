@@ -1,8 +1,27 @@
+# Flask and Web Server
 Flask==2.3.0
 Flask-CORS==4.0.0
-PyJWT==2.8.0
-bcrypt==4.0.1
-python-dotenv==1.0.0
-psutil==5.9.8
 Werkzeug==2.3.0
 gunicorn==21.2.0
+
+# Authentication & Security
+PyJWT==2.8.0
+bcrypt==4.0.1
+
+# Environment & Utilities
+python-dotenv==1.0.0
+psutil==5.9.8
+
+# Email Support
+# (built-in: smtplib, imaplib, email)
+
+# WhatsApp Integration
+# (API-based, no additional packages needed)
+
+# Social Media (API-based)
+# (built-in: requests would be nice but using API calls directly)
+
+# Database (built-in: sqlite3)
+
+# Additional utilities
+requests==2.31.0
