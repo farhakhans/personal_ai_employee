@@ -2858,18 +2858,9 @@ if __name__ == '__main__':
 # VERCEL DEPLOYMENT SUPPORT
 # ================================================================
 
-# Set environment for Vercel
-os.environ['VERCEL'] = '1'
-os.environ['VAULT_PATH'] = '/tmp/vault'
-
-# For Vercel serverless deployment - MUST be at module level
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-
-# Secret key for JWT (in production, use environment variable)
-SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production")
-
 # Vercel serverless handler
+# The Flask app is already initialized at line 42 of this file
+
 def handler(request):
     """Vercel serverless handler"""
     try:
