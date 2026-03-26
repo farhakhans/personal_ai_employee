@@ -950,24 +950,59 @@
             chatboxBody.appendChild(typingMsg);
 
             try {
-                const aiEnabled = document.getElementById('autoReplyEnabled').checked;
-                let response = '';
                 const messageLower = message.toLowerCase();
+                let response = '';
                 
                 // Send real WhatsApp message via click-to-chat link
                 if (messageLower.includes('send') || messageLower.includes('message') || messageLower.includes('whatsapp')) {
                     const sendMatch = message.match(/send.*?to\s*(\+?\d{10,15})\s*(.*)/i);
                     if (sendMatch) {
-                        const targetNumber = sendMatch[1].replace('+', '');
-                        const msgToSend = sendMatch[2] || 'Hello from AI Agent!';
+                        const targetNumber = sendMatch[1].replace('+', '').replace(/\s/g, '');
+                        const msgToSend = sendMatch[2].trim() || 'Hello from AI Agent!';
                         
                         // Create real WhatsApp click-to-chat link
-                        const whatsappUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msgToSend)}`;
+                        const whatsappUrl = `https://web.whatsapp.com/send?phone=${targetNumber}&text=${encodeURIComponent(msgToSend)}`;
                         
-                        // Open WhatsApp in new window
-                        window.open(whatsappUrl, '_blank');
+                        console.log('Opening WhatsApp:', whatsappUrl);
+                        console.log('Number:', targetNumber);
+                        console.log('Message:', msgToSend);
                         
-                        response = `✅ Opening WhatsApp to send message to ${targetNumber}...\n\nMessage: "${msgToSend}"\n\nWhatsApp will open in a new window. Click send to deliver the message!`;
+                        // Open WhatsApp in new window - try multiple methods
+                        let opened = false;
+                        
+                        // Method 1: Direct window.open
+                        try {
+                            const newWindow = window.open(whatsappUrl, '_blank', 'width=800,height=600');
+                            if (newWindow && !newWindow.closed) {
+                                opened = true;
+                                console.log('WhatsApp opened successfully');
+                            }
+                        } catch (e) {
+                            console.log('Method 1 failed:', e);
+                        }
+                        
+                        // Method 2: Create and click link
+                        if (!opened) {
+                            try {
+                                const link = document.createElement('a');
+                                link.href = whatsappUrl;
+                                link.target = '_blank';
+                                link.rel = 'noopener noreferrer';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                opened = true;
+                                console.log('WhatsApp opened via link click');
+                            } catch (e) {
+                                console.log('Method 2 failed:', e);
+                            }
+                        }
+                        
+                        if (opened) {
+                            response = `✅ WhatsApp is opening to send message to ${targetNumber}!\n\nMessage: "${msgToSend}"\n\n👉 WhatsApp will open in a new window/tab.\n👉 Click the SEND button in WhatsApp to deliver the message!\n\n⚠️ If WhatsApp didn't open, check your popup blocker settings.`;
+                        } else {
+                            response = `⚠️ Could not open WhatsApp automatically.\n\nPlease manually:\n1. Open: https://web.whatsapp.com\n2. Search for: ${targetNumber}\n3. Send: "${msgToSend}"`;
+                        }
                     } else {
                         response = 'To send a WhatsApp message, type:\n"Send [message] to +923001234567"\n\nExample:\n"Send Hello to +923001234567"';
                     }
