@@ -950,68 +950,47 @@
             chatboxBody.appendChild(typingMsg);
 
             try {
-                // Get AI response from backend
                 const aiEnabled = document.getElementById('autoReplyEnabled').checked;
-                let response = 'Assalam-o-Alaikum! Auto-reply is enabled. Messages from Android will get automatic responses.';
+                let response = '';
+                const messageLower = message.toLowerCase();
                 
-                if (!aiEnabled) {
-                    response = '⚠️ Auto-reply is currently disabled. Please enable it in the settings above.';
-                } else {
-                    const messageLower = message.toLowerCase();
-                    
-                    // Check for WhatsApp number in message
-                    const phoneMatch = message.match(/(\+?\d{10,15})/);
-                    const phoneNumber = phoneMatch ? phoneMatch[1] : whatsappData.phoneNumber;
-                    
-                    // Send real WhatsApp message via API
-                    if (messageLower.includes('send') || messageLower.includes('message') || messageLower.includes('whatsapp')) {
-                        // Extract phone number and message to send
-                        const sendMatch = message.match(/send.*?to\s*(\+?\d{10,15})\s*(.*)/i);
-                        if (sendMatch) {
-                            const targetNumber = sendMatch[1];
-                            const msgToSend = sendMatch[2] || 'Hello from AI Agent!';
-                            
-                            // Call backend to send real WhatsApp message
-                            const sendResponse = await fetch('/api/whatsapp/send', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    to: targetNumber,
-                                    message: msgToSend
-                                })
-                            });
-                            
-                            const sendResult = await sendResponse.json();
-                            if (sendResult.status === 'success') {
-                                response = `✅ Message sent to ${targetNumber}!\n\n"${msgToSend}"`;
-                            } else {
-                                response = `❌ Failed to send message: ${sendResult.message || 'Check WhatsApp configuration'}`;
-                            }
-                        } else {
-                            response = 'To send a WhatsApp message, type:\n"Send [message] to +923001234567"\n\nExample:\n"Send Hello to +923001234567"';
-                        }
-                    } else if (messageLower.includes('price') || messageLower.includes('cost')) {
-                        response = 'Our AI Employee System has 4 tiers:\n\n🥉 Bronze: Basic automation\n🥈 Silver: WhatsApp + Social Media\n🥇 Gold: All platforms + MCP\n💎 Platinum: Full production ready\n\nWhich tier interests you?';
-                    } else if (messageLower.includes('demo') || messageLower.includes('trial')) {
-                        response = 'Great! You can start a free trial at: http://localhost:5000\n\nWould you like me to schedule a personalized demo?';
-                    } else if (messageLower.includes('feature') || messageLower.includes('what can')) {
-                        response = '✨ AI Employee Features:\n\n📧 Gmail Auto-Reply\n📱 WhatsApp Business Bot\n📊 Social Media Management\n💰 Payment Tracking\n👥 Customer Management\n📈 Analytics Dashboard\n\nWhat would you like to know more about?';
-                    } else if (messageLower.includes('hi') || messageLower.includes('hello') || messageLower.includes('salam')) {
-                        response = 'Assalam-o-Alaikum! 👋 Welcome to AI Employee System. How can I help you today?';
-                    } else if (messageLower.includes('thank')) {
-                        response = 'You\'re welcome! 😊 Is there anything else I can help you with?';
-                    } else if (messageLower.includes('android') || messageLower.includes('phone')) {
-                        response = `📱 To send messages to Android:\n\n1. Enable Auto-Reply in settings\n2. Start WhatsApp Receiver\n3. Messages will be auto-replied\n\nOr use command:\n"Send Hello to +923001234567"`;
-                    } else if (messageLower.includes('status') || messageLower.includes('check')) {
-                        // Check WhatsApp status
-                        const statusResponse = await fetch('/api/whatsapp/status');
-                        const statusData = await statusResponse.json();
-                        response = statusData.is_running 
-                            ? '✅ WhatsApp Receiver is RUNNING!\n\nMessages from Android will get auto-replies.' 
-                            : '❌ WhatsApp Receiver is NOT running.\n\nClick "START WHATSAPP RECEIVER" button above.';
+                // Send real WhatsApp message via click-to-chat link
+                if (messageLower.includes('send') || messageLower.includes('message') || messageLower.includes('whatsapp')) {
+                    const sendMatch = message.match(/send.*?to\s*(\+?\d{10,15})\s*(.*)/i);
+                    if (sendMatch) {
+                        const targetNumber = sendMatch[1].replace('+', '');
+                        const msgToSend = sendMatch[2] || 'Hello from AI Agent!';
+                        
+                        // Create real WhatsApp click-to-chat link
+                        const whatsappUrl = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msgToSend)}`;
+                        
+                        // Open WhatsApp in new window
+                        window.open(whatsappUrl, '_blank');
+                        
+                        response = `✅ Opening WhatsApp to send message to ${targetNumber}...\n\nMessage: "${msgToSend}"\n\nWhatsApp will open in a new window. Click send to deliver the message!`;
                     } else {
-                        response = `I received your message: "${message}"\n\nI can help you with:\n• Price information\n• Demo requests\n• Features\n• Sending WhatsApp messages\n\nWhat would you like to know?`;
+                        response = 'To send a WhatsApp message, type:\n"Send [message] to +923001234567"\n\nExample:\n"Send Hello to +923001234567"';
                     }
+                } else if (messageLower.includes('price') || messageLower.includes('cost')) {
+                    response = 'Our AI Employee System has 4 tiers:\n\n🥉 Bronze: Basic automation\n🥈 Silver: WhatsApp + Social Media\n🥇 Gold: All platforms + MCP\n💎 Platinum: Full production ready\n\nWhich tier interests you?';
+                } else if (messageLower.includes('demo') || messageLower.includes('trial')) {
+                    response = 'Great! You can start a free trial at: http://localhost:5000\n\nWould you like me to schedule a personalized demo?';
+                } else if (messageLower.includes('feature') || messageLower.includes('what can')) {
+                    response = '✨ AI Employee Features:\n\n📧 Gmail Auto-Reply\n📱 WhatsApp Business Bot\n📊 Social Media Management\n💰 Payment Tracking\n👥 Customer Management\n📈 Analytics Dashboard\n\nWhat would you like to know more about?';
+                } else if (messageLower.includes('hi') || messageLower.includes('hello') || messageLower.includes('salam')) {
+                    response = 'Assalam-o-Alaikum! 👋 Welcome to AI Employee System. How can I help you today?';
+                } else if (messageLower.includes('thank')) {
+                    response = 'You\'re welcome! 😊 Is there anything else I can help you with?';
+                } else if (messageLower.includes('android') || messageLower.includes('phone')) {
+                    response = `📱 To send REAL WhatsApp messages to Android:\n\n1. Type: "Send Hello to +923001234567"\n2. WhatsApp will open automatically\n3. Click send button in WhatsApp\n\nOR\n\nEnable Auto-Reply in settings to auto-reply to incoming messages!`;
+                } else if (messageLower.includes('status') || messageLower.includes('check')) {
+                    const statusResponse = await fetch('/api/whatsapp/status');
+                    const statusData = await statusResponse.json();
+                    response = statusData.is_running 
+                        ? '✅ WhatsApp Receiver is RUNNING!\n\nMessages from Android will get auto-replies.' 
+                        : '❌ WhatsApp Receiver is NOT running.\n\nClick "START WHATSAPP RECEIVER" button above.';
+                } else {
+                    response = `I received your message: "${message}"\n\nI can help you with:\n• Send WhatsApp messages: "Send Hi to +923001234567"\n• Price information\n• Demo requests\n• Features\n\nWhat would you like to know?`;
                 }
 
                 // Remove typing indicator
