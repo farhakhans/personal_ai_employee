@@ -1,19 +1,9 @@
 {
   "version": 2,
   "installCommand": "pip install -r requirements.txt",
-  "devCommand": "python app.py",
-  "buildCommand": "echo 'No build needed'",
   "env": {
     "VERCEL": "1",
     "VAULT_PATH": "/tmp/vault",
-    "PYTHONPATH": "..",
-    "ANTHROPIC_API_KEY": "",
-    "GMAIL_ADDRESS": "",
-    "GMAIL_APP_PASSWORD": ""
-  },
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 60
-    }
+    "PYTHONPATH": ".."
   }
 }
