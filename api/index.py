@@ -9,8 +9,32 @@ import os
 # Create Flask app - Vercel needs this 'app' variable
 app = Flask(__name__)
 
-# Get base directory (Vercel deployment root)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Get base directory - try multiple paths for Vercel compatibility
+def get_base_dir():
+    """Get the base directory where HTML files are located"""
+    # Current file location
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Try parent directory first (api/ is subfolder)
+    parent_dir = os.path.dirname(current_dir)
+    
+    # Check if login_custom.html exists in parent
+    if os.path.exists(os.path.join(parent_dir, 'login_custom.html')):
+        return parent_dir
+    
+    # Try current directory
+    if os.path.exists(os.path.join(current_dir, 'login_custom.html')):
+        return current_dir
+    
+    # Try /vercel/path0 (Vercel deployment path)
+    vercel_path = '/vercel/path0'
+    if os.path.exists(vercel_path) and os.path.exists(os.path.join(vercel_path, 'login_custom.html')):
+        return vercel_path
+    
+    # Default to parent
+    return parent_dir
+
+BASE_DIR = get_base_dir()
 
 # Cache HTML content
 HTML_CACHE = {}
@@ -63,6 +87,22 @@ def health():
         "service": "personal-ai-employee",
         "platform": "vercel"
     })
+
+
+@app.route('/api/debug/files')
+def debug_files():
+    """Debug endpoint to see available files"""
+    try:
+        files = os.listdir(BASE_DIR)
+        html_files = [f for f in files if f.endswith('.html')]
+        return jsonify({
+            "base_dir": BASE_DIR,
+            "html_files": html_files[:50],
+            "total_html": len(html_files),
+            "all_files": files[:20]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "base_dir": BASE_DIR})
 
 
 @app.route('/dashboard')
@@ -165,6 +205,16 @@ def complete_dashboard():
     return jsonify({"error": "File not found"}), 404
 
 
+@app.route('/login_custom.html')
+def login_custom():
+    html = get_html('login_custom.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    return jsonify({"error": "File not found"}), 404
+
+
 @app.route('/agent-skills')
 def agent_skills():
     return jsonify({"status": "ok", "message": "Agent Skills endpoint"})
@@ -173,20 +223,6 @@ def agent_skills():
 @app.route('/api/mcp/servers')
 def mcp_servers():
     return jsonify({"servers": ["approval", "email"], "status": "ok"})
-
-
-@app.route('/api/debug/files')
-def debug_files():
-    try:
-        files = os.listdir(BASE_DIR)
-        html_files = [f for f in files if f.endswith('.html')]
-        return jsonify({
-            "base_dir": BASE_DIR,
-            "html_files": html_files[:30],
-            "total_html": len(html_files)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e), "base_dir": BASE_DIR})
 
 
 # Catch-all for other HTML files
