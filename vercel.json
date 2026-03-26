@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "api_routes.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.9"
+      }
     }
   ],
   "routes": [
@@ -14,6 +17,8 @@
   ],
   "env": {
     "VERCEL": "1",
-    "VAULT_PATH": "/tmp/vault"
-  }
+    "VAULT_PATH": "/tmp/vault",
+    "PYTHONPATH": "."
+  },
+  "outputDirectory": "tmp"
 }
