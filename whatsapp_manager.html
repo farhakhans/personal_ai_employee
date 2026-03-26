@@ -157,103 +157,8 @@
         <div class="row">
             <!-- Left Column - Settings -->
             <div class="col-md-6">
-                <!-- Phone Number Setup -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-phone me-2"></i>WhatsApp Number Setup</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="phone-input-group">
-                            <input type="text" id="whatsappNumber" placeholder="+92 300 1234567" value="+92 300 1234567">
-                            <button class="btn btn-whatsapp" onclick="savePhoneNumber()">
-                                <i class="fas fa-save me-2"></i>Save
-                            </button>
-                        </div>
-                        <div class="alert alert-success" id="connectionStatus">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Connected:</strong> <span id="connected-number">+92 300 1234567</span>
-                        </div>
-                        
-                        <!-- Start WhatsApp Receiver Button -->
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-whatsapp" id="startReceiverBtn" onclick="startWhatsAppReceiver()">
-                                <i class="fas fa-play me-2"></i>START WHATSAPP RECEIVER
-                            </button>
-                            <button class="btn btn-outline-danger" id="stopReceiverBtn" onclick="stopWhatsAppReceiver()" style="display:none;">
-                                <i class="fas fa-stop me-2"></i>STOP RECEIVER
-                            </button>
-                        </div>
-                        
-                        <div class="alert alert-info mt-2" id="receiverStatus" style="display:none;">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <span id="receiverStatusText">Receiver is running...</span>
-                        </div>
-                        
-                        <button class="btn btn-outline-success w-100 mt-2" onclick="openWhatsAppWeb()">
-                            <i class="fab fa-whatsapp me-2"></i>Open WhatsApp Web
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Auto-Reply Settings -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Auto-Reply Configuration</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="auto-reply-card">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" id="autoReplyEnabled" checked onchange="toggleAutoReply()">
-                                <label class="form-check-label fw-bold" for="autoReplyEnabled">
-                                    <i class="fas fa-bolt me-2"></i>Enable Auto-Reply
-                                </label>
-                            </div>
-
-                            <label class="form-label fw-bold">Greeting Message</label>
-                            <textarea class="form-control mb-3" id="greetingMessage" rows="3">Assalam-o-Alaikum! Thank you for contacting AI Employee System. How can we help you today?</textarea>
-
-                            <label class="form-label fw-bold">Business Hours Message</label>
-                            <textarea class="form-control mb-3" id="businessHoursMessage" rows="2">We're currently away but will respond within 24 hours. For urgent matters, please call us.</textarea>
-
-                            <label class="form-label fw-bold">Quick Replies</label>
-                            <div class="mb-2">
-                                <input type="text" class="form-control mb-2" id="quickReply1" value="/payment - Payment received confirmation">
-                                <input type="text" class="form-control mb-2" id="quickReply2" value="/order - Order confirmation message">
-                                <input type="text" class="form-control mb-2" id="quickReply3" value="/reminder - Payment reminder message">
-                                <input type="text" class="form-control" id="quickReply4" value="/thanks - Thank you message">
-                            </div>
-
-                            <button class="btn btn-whatsapp w-100" onclick="saveAutoReplySettings()">
-                                <i class="fas fa-save me-2"></i>Save Auto-Reply Settings
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Keywords & Triggers -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-key me-2"></i>Smart Keywords & Auto-Responses</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Add Keyword Trigger</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="keywordInput" placeholder="e.g., price, cost, rates">
-                                <input type="text" class="form-control" id="keywordResponse" placeholder="Auto-response message">
-                                <button class="btn btn-whatsapp" onclick="addKeyword()">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="keywords-list">
-                            <!-- Keywords will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Agent Section -->
-                <div class="card" style="border: 2px solid #FFD700;">
+                <!-- AI Agent Section - MOVED TO TOP -->
+                <div class="card" style="border: 3px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);">
                     <div class="card-header" style="background: linear-gradient(135deg, #FFD700, #FFA500);">
                         <h5 class="mb-0"><i class="fas fa-robot me-2"></i>🤖 AI Agent - Intelligent Auto-Reply</h5>
                     </div>
@@ -361,6 +266,101 @@ What would you like to know more about?</textarea>
                                     <small class="text-muted">Pricing</small>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Number Setup -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-phone me-2"></i>WhatsApp Number Setup</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="phone-input-group">
+                            <input type="text" id="whatsappNumber" placeholder="+92 300 1234567" value="+92 300 1234567">
+                            <button class="btn btn-whatsapp" onclick="savePhoneNumber()">
+                                <i class="fas fa-save me-2"></i>Save
+                            </button>
+                        </div>
+                        <div class="alert alert-success" id="connectionStatus">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Connected:</strong> <span id="connected-number">+92 300 1234567</span>
+                        </div>
+                        
+                        <!-- Start WhatsApp Receiver Button -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-whatsapp" id="startReceiverBtn" onclick="startWhatsAppReceiver()">
+                                <i class="fas fa-play me-2"></i>START WHATSAPP RECEIVER
+                            </button>
+                            <button class="btn btn-outline-danger" id="stopReceiverBtn" onclick="stopWhatsAppReceiver()" style="display:none;">
+                                <i class="fas fa-stop me-2"></i>STOP RECEIVER
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info mt-2" id="receiverStatus" style="display:none;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="receiverStatusText">Receiver is running...</span>
+                        </div>
+                        
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="openWhatsAppWeb()">
+                            <i class="fab fa-whatsapp me-2"></i>Open WhatsApp Web
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Auto-Reply Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Auto-Reply Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="auto-reply-card">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="autoReplyEnabled" checked onchange="toggleAutoReply()">
+                                <label class="form-check-label fw-bold" for="autoReplyEnabled">
+                                    <i class="fas fa-bolt me-2"></i>Enable Auto-Reply
+                                </label>
+                            </div>
+
+                            <label class="form-label fw-bold">Greeting Message</label>
+                            <textarea class="form-control mb-3" id="greetingMessage" rows="3">Assalam-o-Alaikum! Thank you for contacting AI Employee System. How can we help you today?</textarea>
+
+                            <label class="form-label fw-bold">Business Hours Message</label>
+                            <textarea class="form-control mb-3" id="businessHoursMessage" rows="2">We're currently away but will respond within 24 hours. For urgent matters, please call us.</textarea>
+
+                            <label class="form-label fw-bold">Quick Replies</label>
+                            <div class="mb-2">
+                                <input type="text" class="form-control mb-2" id="quickReply1" value="/payment - Payment received confirmation">
+                                <input type="text" class="form-control mb-2" id="quickReply2" value="/order - Order confirmation message">
+                                <input type="text" class="form-control mb-2" id="quickReply3" value="/reminder - Payment reminder message">
+                                <input type="text" class="form-control" id="quickReply4" value="/thanks - Thank you message">
+                            </div>
+
+                            <button class="btn btn-whatsapp w-100" onclick="saveAutoReplySettings()">
+                                <i class="fas fa-save me-2"></i>Save Auto-Reply Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keywords & Triggers -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-key me-2"></i>Smart Keywords & Auto-Responses</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Add Keyword Trigger</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="keywordInput" placeholder="e.g., price, cost, rates">
+                                <input type="text" class="form-control" id="keywordResponse" placeholder="Auto-response message">
+                                <button class="btn btn-whatsapp" onclick="addKeyword()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="keywords-list">
+                            <!-- Keywords will be loaded here -->
                         </div>
                     </div>
                 </div>
