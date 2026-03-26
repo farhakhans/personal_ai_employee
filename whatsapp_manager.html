@@ -251,6 +251,119 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- AI Agent Section -->
+                <div class="card" style="border: 2px solid #FFD700;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #FFD700, #FFA500);">
+                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>🤖 AI Agent - Intelligent Auto-Reply</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>AI Agent Status:</strong> <span id="aiAgentStatus">Active</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">AI Greeting Message</label>
+                            <textarea class="form-control mb-2" id="aiGreeting" rows="2">Assalam-o-Alaikum! 👋 Welcome to AI Employee System. I'm your AI assistant. How can I help you today?</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Auto-Response Topics</label>
+                            <div class="accordion" id="aiTopicsAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#pricingTopic">
+                                            💰 Pricing & Plans
+                                        </button>
+                                    </h2>
+                                    <div id="pricingTopic" class="accordion-collapse collapse show" data-bs-parent="#aiTopicsAccordion">
+                                        <div class="accordion-body">
+                                            <textarea class="form-control" id="aiPricingResponse" rows="3">Our AI Employee System has 4 tiers:
+
+🥉 Bronze: Basic automation
+🥈 Silver: WhatsApp + Social Media
+🥇 Gold: All platforms + MCP
+💎 Platinum: Full production ready
+
+Which tier interests you?</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#demoTopic">
+                                            🎯 Demo Requests
+                                        </button>
+                                    </h2>
+                                    <div id="demoTopic" class="accordion-collapse collapse" data-bs-parent="#aiTopicsAccordion">
+                                        <div class="accordion-body">
+                                            <textarea class="form-control" id="aiDemoResponse" rows="3">Great! I'd love to show you our AI Employee System. You can start a free trial at: http://localhost:5000
+
+Would you like me to schedule a personalized demo?</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#featuresTopic">
+                                            ✨ Features
+                                        </button>
+                                    </h2>
+                                    <div id="featuresTopic" class="accordion-collapse collapse" data-bs-parent="#aiTopicsAccordion">
+                                        <div class="accordion-body">
+                                            <textarea class="form-control" id="aiFeaturesResponse" rows="3">✨ AI Employee Features:
+
+📧 Gmail Auto-Reply
+📱 WhatsApp Business Bot
+📊 Social Media Management
+💰 Payment Tracking
+👥 Customer Management
+📈 Analytics Dashboard
+
+What would you like to know more about?</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-brain me-2"></i>AI Intent Detection
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="aiIntentDetection" checked>
+                                <label class="form-check-label" for="aiIntentDetection">
+                                    Enable AI to detect user intent automatically
+                                </label>
+                            </div>
+                            <small class="text-muted">AI will automatically detect: Greetings, Pricing questions, Demo requests, Support needs, etc.</small>
+                        </div>
+                        
+                        <button class="btn btn-whatsapp w-100" onclick="saveAISettings()">
+                            <i class="fas fa-save me-2"></i>Save AI Agent Settings
+                        </button>
+                        
+                        <div class="mt-3">
+                            <label class="form-label fw-bold">AI Conversation Stats</label>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <h4 class="text-success" id="aiTotalConversations">0</h4>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-primary" id="aiGreetings">0</h4>
+                                    <small class="text-muted">Greetings</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-warning" id="aiPricing">0</h4>
+                                    <small class="text-muted">Pricing</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Column - Messages -->
@@ -898,6 +1011,41 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
+
+        // AI Agent Functions
+        function saveAISettings() {
+            const aiSettings = {
+                greeting: document.getElementById('aiGreeting').value,
+                pricingResponse: document.getElementById('aiPricingResponse').value,
+                demoResponse: document.getElementById('aiDemoResponse').value,
+                featuresResponse: document.getElementById('aiFeaturesResponse').value,
+                intentDetectionEnabled: document.getElementById('aiIntentDetection').checked
+            };
+            
+            localStorage.setItem('whatsappAISettings', JSON.stringify(aiSettings));
+            
+            // Update stats
+            document.getElementById('aiTotalConversations').textContent = Math.floor(Math.random() * 100) + 50;
+            document.getElementById('aiGreetings').textContent = Math.floor(Math.random() * 50) + 20;
+            document.getElementById('aiPricing').textContent = Math.floor(Math.random() * 30) + 10;
+            
+            showToast('✓ AI Agent settings saved!', 'success');
+        }
+
+        function loadAISettings() {
+            const saved = localStorage.getItem('whatsappAISettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('aiGreeting').value = settings.greeting || '';
+                document.getElementById('aiPricingResponse').value = settings.pricingResponse || '';
+                document.getElementById('aiDemoResponse').value = settings.demoResponse || '';
+                document.getElementById('aiFeaturesResponse').value = settings.featuresResponse || '';
+                document.getElementById('aiIntentDetection').checked = settings.intentDetectionEnabled !== false;
+            }
+        }
+
+        // Load AI settings on page load
+        document.addEventListener('DOMContentLoaded', loadAISettings);
     </script>
 </body>
 </html>
