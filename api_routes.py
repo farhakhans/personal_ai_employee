@@ -2535,16 +2535,24 @@ def get_system_logs_detailed(current_user, user_id):
         }), 500
 
 # ===== SOCIAL MEDIA INTEGRATION (from AI Employee System) =====
-try:
-    from AI_Employee_System.Watchers.facebook_poster import FacebookPoster
-    from AI_Employee_System.Watchers.instagram_poster import InstagramPoster
-    from AI_Employee_System.Watchers.linkedin_poster import LinkedInPoster
-    from AI_Employee_System.Watchers.twitter_poster import TwitterPoster
-    
-    fb = FacebookPoster()
-    ig = InstagramPoster()
-    li = LinkedInPoster()
-    tw = TwitterPoster()
+# Skip on Vercel to avoid import errors
+if not os.environ.get('VERCEL'):
+    try:
+        from AI_Employee_System.Watchers.facebook_poster import FacebookPoster
+        from AI_Employee_System.Watchers.instagram_poster import InstagramPoster
+        from AI_Employee_System.Watchers.linkedin_poster import LinkedInPoster
+        from AI_Employee_System.Watchers.twitter_poster import TwitterPoster
+
+        fb = FacebookPoster()
+        ig = InstagramPoster()
+        li = LinkedInPoster()
+        tw = TwitterPoster()
+    except Exception as e:
+        print(f"Social media imports failed: {e}")
+        fb = ig = li = tw = None
+
+# Social media routes (only available if imports succeeded)
+if fb and ig and li and tw:
     
     @app.route('/social')
     def social_media_hub():
