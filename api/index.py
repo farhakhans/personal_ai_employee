@@ -32,12 +32,28 @@ def get_html(filename):
 
 @app.route('/')
 def index():
+    # Try login_custom.html first (main login page)
+    html = get_html('login_custom.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    
+    # Fallback to complete_dashboard.html
+    html = get_html('complete_dashboard.html')
+    if html:
+        response = make_response(html)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        return response
+    
+    # Last fallback - dashboard.html
     html = get_html('dashboard.html')
     if html:
         response = make_response(html)
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
         return response
-    return jsonify({"error": "dashboard.html not found"}), 404
+    
+    return jsonify({"error": "No HTML files found", "base_dir": BASE_DIR}), 404
 
 
 @app.route('/api/health')
