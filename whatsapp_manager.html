@@ -107,6 +107,50 @@
             left: 20px;
             z-index: 1000;
         }
+        /* Floating AI Agent Button */
+        .ai-agent-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
+            z-index: 9999;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        .ai-agent-float i {
+            font-size: 35px;
+            color: white;
+        }
+        .ai-agent-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.8);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6); }
+            50% { box-shadow: 0 5px 30px rgba(255, 215, 0, 0.9); }
+        }
+        .ai-agent-status {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #25D366;
+            border-radius: 50%;
+            border: 3px solid white;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
     </style>
 </head>
 <body>
@@ -157,119 +201,6 @@
         <div class="row">
             <!-- Left Column - Settings -->
             <div class="col-md-6">
-                <!-- AI Agent Section - MOVED TO TOP -->
-                <div class="card" style="border: 3px solid #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);">
-                    <div class="card-header" style="background: linear-gradient(135deg, #FFD700, #FFA500);">
-                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>🤖 AI Agent - Intelligent Auto-Reply</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>AI Agent Status:</strong> <span id="aiAgentStatus">Active</span>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">AI Greeting Message</label>
-                            <textarea class="form-control mb-2" id="aiGreeting" rows="2">Assalam-o-Alaikum! 👋 Welcome to AI Employee System. I'm your AI assistant. How can I help you today?</textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Auto-Response Topics</label>
-                            <div class="accordion" id="aiTopicsAccordion">
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#pricingTopic">
-                                            💰 Pricing & Plans
-                                        </button>
-                                    </h2>
-                                    <div id="pricingTopic" class="accordion-collapse collapse show" data-bs-parent="#aiTopicsAccordion">
-                                        <div class="accordion-body">
-                                            <textarea class="form-control" id="aiPricingResponse" rows="3">Our AI Employee System has 4 tiers:
-
-🥉 Bronze: Basic automation
-🥈 Silver: WhatsApp + Social Media
-🥇 Gold: All platforms + MCP
-💎 Platinum: Full production ready
-
-Which tier interests you?</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#demoTopic">
-                                            🎯 Demo Requests
-                                        </button>
-                                    </h2>
-                                    <div id="demoTopic" class="accordion-collapse collapse" data-bs-parent="#aiTopicsAccordion">
-                                        <div class="accordion-body">
-                                            <textarea class="form-control" id="aiDemoResponse" rows="3">Great! I'd love to show you our AI Employee System. You can start a free trial at: http://localhost:5000
-
-Would you like me to schedule a personalized demo?</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#featuresTopic">
-                                            ✨ Features
-                                        </button>
-                                    </h2>
-                                    <div id="featuresTopic" class="accordion-collapse collapse" data-bs-parent="#aiTopicsAccordion">
-                                        <div class="accordion-body">
-                                            <textarea class="form-control" id="aiFeaturesResponse" rows="3">✨ AI Employee Features:
-
-📧 Gmail Auto-Reply
-📱 WhatsApp Business Bot
-📊 Social Media Management
-💰 Payment Tracking
-👥 Customer Management
-📈 Analytics Dashboard
-
-What would you like to know more about?</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-brain me-2"></i>AI Intent Detection
-                            </label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="aiIntentDetection" checked>
-                                <label class="form-check-label" for="aiIntentDetection">
-                                    Enable AI to detect user intent automatically
-                                </label>
-                            </div>
-                            <small class="text-muted">AI will automatically detect: Greetings, Pricing questions, Demo requests, Support needs, etc.</small>
-                        </div>
-                        
-                        <button class="btn btn-whatsapp w-100" onclick="saveAISettings()">
-                            <i class="fas fa-save me-2"></i>Save AI Agent Settings
-                        </button>
-                        
-                        <div class="mt-3">
-                            <label class="form-label fw-bold">AI Conversation Stats</label>
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <h4 class="text-success" id="aiTotalConversations">0</h4>
-                                    <small class="text-muted">Total</small>
-                                </div>
-                                <div class="col-4">
-                                    <h4 class="text-primary" id="aiGreetings">0</h4>
-                                    <small class="text-muted">Greetings</small>
-                                </div>
-                                <div class="col-4">
-                                    <h4 class="text-warning" id="aiPricing">0</h4>
-                                    <small class="text-muted">Pricing</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Phone Number Setup -->
                 <div class="card">
                     <div class="card-header">
@@ -467,13 +398,18 @@ What would you like to know more about?</textarea>
         </div>
     </div>
 
+    <!-- Floating AI Agent Button -->
+    <div class="ai-agent-float" onclick="toggleAIChat()" title="AI Agent - Auto Reply">
+        <div class="ai-agent-status"></div>
+        <i class="fas fa-robot"></i>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Check authentication token on page load
         function checkAuthToken() {
             const token = localStorage.getItem('accessToken');
             if (!token) {
-                // Show warning but don't redirect - allow demo mode
                 console.log('ℹ️ No token found - running in demo mode');
                 return false;
             }
@@ -491,7 +427,6 @@ What would you like to know more about?</textarea>
 
         // Initialize - Load from backend
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication first
             if (!checkAuthToken()) {
                 return;
             }
@@ -500,7 +435,7 @@ What would you like to know more about?</textarea>
             loadMessagesFromBackend();
             checkReceiverStatus();
 
-            // Auto-refresh every 3 seconds for live updates
+            // Auto-refresh every 3 seconds
             setInterval(() => {
                 loadMessagesFromBackend();
                 checkReceiverStatus();
@@ -518,7 +453,6 @@ What would you like to know more about?</textarea>
                     whatsappData.autoReplyEnabled = data.auto_reply_enabled !== false;
                     whatsappData.keywords = data.keywords || [];
                     
-                    // Update UI
                     document.getElementById('whatsappNumber').value = whatsappData.phoneNumber;
                     document.getElementById('connected-number').textContent = whatsappData.phoneNumber;
                     document.getElementById('autoReplyEnabled').checked = whatsappData.autoReplyEnabled;
@@ -528,12 +462,11 @@ What would you like to know more about?</textarea>
                     updateStats();
                 }
             } catch (error) {
-                console.log('Using local config (backend not available)');
+                console.log('Using local config');
                 loadLocalConfig();
             }
         }
 
-        // Load local config (fallback)
         function loadLocalConfig() {
             const saved = localStorage.getItem('whatsappAutoReply');
             if (saved) {
@@ -549,14 +482,12 @@ What would you like to know more about?</textarea>
             }
         }
 
-        // Load messages from backend
         async function loadMessagesFromBackend() {
             try {
                 const response = await fetch('/api/whatsapp/messages');
                 const data = await response.json();
                 
                 if (data.status === 'success') {
-                    // Convert backend messages to UI format
                     whatsappData.messages = data.messages.map(msg => ({
                         id: msg.timestamp || Date.now(),
                         from: msg.from || msg.to,
@@ -577,60 +508,6 @@ What would you like to know more about?</textarea>
             }
         }
 
-        // Simulate incoming message and auto-reply
-        function simulateNewMessage() {
-            if (!whatsappData.autoReplyEnabled) return;
-            
-            // 30% chance of new message every 5 seconds
-            if (Math.random() > 0.7) {
-                const senders = [
-                    { number: '+92 321 7654321', name: 'Ahmed Hassan' },
-                    { number: '+92 333 1234567', name: 'Fatima Store' },
-                    { number: '+92 345 9876543', name: 'Ali Enterprises' },
-                    { number: '+92 300 1111111', name: 'John Consulting' },
-                    { number: '+92 312 5556666', name: 'New Customer' }
-                ];
-                
-                const messages = [
-                    'Hi, what is the price?',
-                    'I want to make a payment',
-                    'Can I place an order?',
-                    'Hello, I need help with my account',
-                    'Do you offer delivery services?',
-                    'What are your business hours?',
-                    'I received a damaged product',
-                    'Can you send me the invoice?'
-                ];
-                
-                const sender = senders[Math.floor(Math.random() * senders.length)];
-                const messageText = messages[Math.floor(Math.random() * messages.length)];
-                
-                const newMessage = {
-                    id: Date.now(),
-                    from: sender.number,
-                    fromName: sender.name,
-                    message: messageText,
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    type: 'received',
-                    autoReplied: false,
-                    read: false
-                };
-                
-                whatsappData.messages.push(newMessage);
-                
-                showToast(`📱 New message from ${sender.name}`, 'info');
-                
-                // Trigger auto-reply after 1.5 seconds
-                setTimeout(() => {
-                    processAutoReply(newMessage);
-                }, 1500);
-                
-                renderMessages();
-                updateStats();
-            }
-        }
-
-        // Process auto-reply for incoming message
         function processAutoReply(message) {
             if (!whatsappData.autoReplyEnabled) return;
             
@@ -638,7 +515,6 @@ What would you like to know more about?</textarea>
             let response = null;
             let matchedKeyword = null;
             
-            // Check for keywords first
             for (const item of whatsappData.keywords) {
                 if (messageLower.includes(item.keyword.toLowerCase())) {
                     response = item.response;
@@ -647,7 +523,6 @@ What would you like to know more about?</textarea>
                 }
             }
             
-            // Use greeting if no keyword match
             if (!response) {
                 response = document.getElementById('greetingMessage').value;
                 if (!response || response.trim() === '') {
@@ -655,11 +530,10 @@ What would you like to know more about?</textarea>
                 }
             }
             
-            // Add auto-reply to messages
             const autoReplyMessage = {
                 id: Date.now() + 1,
                 from: 'System',
-                message: response + (matchedKeyword ? `\n\n(Auto-reply triggered by keyword: "${matchedKeyword}")` : ''),
+                message: response,
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'sent',
                 autoReply: true
@@ -667,7 +541,6 @@ What would you like to know more about?</textarea>
             
             whatsappData.messages.push(autoReplyMessage);
             
-            // Mark original message as auto-replied
             const originalMsg = whatsappData.messages.find(m => m.id === message.id);
             if (originalMsg) {
                 originalMsg.autoReplied = true;
@@ -679,7 +552,6 @@ What would you like to know more about?</textarea>
             updateStats();
         }
 
-        // Save phone number to backend
         async function savePhoneNumber() {
             const number = document.getElementById('whatsappNumber').value;
             
@@ -694,21 +566,12 @@ What would you like to know more about?</textarea>
                 if (data.status === 'success') {
                     whatsappData.phoneNumber = number;
                     document.getElementById('connected-number').textContent = number;
-                    showToast('✓ Phone number saved to backend!', 'success');
+                    showToast('✓ Phone number saved!', 'success');
                 }
             } catch (error) {
-                // Fallback to local storage
                 localStorage.setItem('whatsappNumber', number);
                 document.getElementById('connected-number').textContent = number;
-                showToast('✓ Phone number saved locally', 'success');
-            }
-        }
-
-        function loadPhoneNumber() {
-            const saved = localStorage.getItem('whatsappNumber');
-            if (saved) {
-                document.getElementById('whatsappNumber').value = saved;
-                document.getElementById('connected-number').textContent = saved;
+                showToast('✓ Saved locally', 'success');
             }
         }
 
@@ -716,7 +579,6 @@ What would you like to know more about?</textarea>
             window.open('https://web.whatsapp.com', '_blank');
         }
 
-        // Auto-Reply Functions
         function toggleAutoReply() {
             whatsappData.autoReplyEnabled = document.getElementById('autoReplyEnabled').checked;
             showToast(whatsappData.autoReplyEnabled ? '✓ Auto-reply enabled' : '⚠ Auto-reply disabled', 'info');
@@ -734,31 +596,15 @@ What would you like to know more about?</textarea>
                 ]
             };
             localStorage.setItem('whatsappAutoReply', JSON.stringify(settings));
-            showToast('✓ Auto-reply settings saved!', 'success');
+            showToast('✓ Settings saved!', 'success');
         }
 
-        function loadAutoReplySettings() {
-            const saved = localStorage.getItem('whatsappAutoReply');
-            if (saved) {
-                const settings = JSON.parse(saved);
-                document.getElementById('greetingMessage').value = settings.greeting || '';
-                document.getElementById('businessHoursMessage').value = settings.businessHours || '';
-                if (settings.quickReplies) {
-                    document.getElementById('quickReply1').value = settings.quickReplies[0] || '';
-                    document.getElementById('quickReply2').value = settings.quickReplies[1] || '';
-                    document.getElementById('quickReply3').value = settings.quickReplies[2] || '';
-                    document.getElementById('quickReply4').value = settings.quickReplies[3] || '';
-                }
-            }
-        }
-
-        // Keyword Functions
         function addKeyword() {
             const keyword = document.getElementById('keywordInput').value.toLowerCase().trim();
             const response = document.getElementById('keywordResponse').value.trim();
             
             if (!keyword || !response) {
-                showToast('⚠ Please enter both keyword and response', 'warning');
+                showToast('⚠ Enter both keyword and response', 'warning');
                 return;
             }
             
@@ -766,77 +612,53 @@ What would you like to know more about?</textarea>
             document.getElementById('keywordInput').value = '';
             document.getElementById('keywordResponse').value = '';
             renderKeywords();
-            showToast('✓ Keyword added successfully!', 'success');
+            showToast('✓ Keyword added!', 'success');
         }
 
         function removeKeyword(index) {
             whatsappData.keywords.splice(index, 1);
             renderKeywords();
-            showToast('Keyword removed', 'info');
         }
 
         function renderKeywords() {
             const list = document.getElementById('keywords-list');
             if (whatsappData.keywords.length === 0) {
-                list.innerHTML = '<p class="text-muted text-center">No keywords added</p>';
+                list.innerHTML = '<p class="text-muted text-center">No keywords</p>';
                 return;
             }
             
             let html = '';
             whatsappData.keywords.forEach((item, index) => {
-                html += `
-                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                        <div>
-                            <strong class="text-success">${item.keyword}</strong>
-                            <p class="mb-0 small text-muted">${item.response}</p>
-                        </div>
-                        <button class="btn btn-sm btn-outline-danger" onclick="removeKeyword(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
+                html += `<div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <div><strong class="text-success">${item.keyword}</strong><p class="mb-0 small text-muted">${item.response}</p></div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeKeyword(${index})"><i class="fas fa-trash"></i></button>
+                </div>`;
             });
             list.innerHTML = html;
         }
 
-        // Message Functions
         function renderMessages() {
             const preview = document.getElementById('chatPreview');
             if (!preview) return;
             
             let html = '';
-            
-            // Show last 20 messages
             const recentMessages = whatsappData.messages.slice(-20);
             
             recentMessages.forEach(msg => {
                 if (msg.type === 'received') {
-                    html += `
-                        <div class="message-box received mb-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <strong class="text-success">${msg.fromName || msg.from}</strong>
-                                <small class="text-muted">${msg.time}</small>
-                            </div>
-                            <p class="mb-1">${msg.message}</p>
-                            ${msg.autoReplied ? '<small class="text-success"><i class="fas fa-robot me-1"></i>Auto-replied</small>' : ''}
-                            ${msg.read ? '<small class="text-muted"><i class="fas fa-check me-1"></i>Read</small>' : ''}
-                            <div class="mt-2">
-                                <button class="btn btn-sm btn-success me-1" onclick="replyToMessage(${msg.id})">
-                                    <i class="fas fa-reply me-1"></i>Reply
-                                </button>
-                                <button class="btn btn-sm btn-outline-primary" onclick="markAsRead(${msg.id})">
-                                    <i class="fas fa-check me-1"></i>Mark Read
-                                </button>
-                            </div>
+                    html += `<div class="message-box received mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong class="text-success">${msg.fromName || msg.from}</strong>
+                            <small class="text-muted">${msg.time}</small>
                         </div>
-                    `;
+                        <p class="mb-1">${msg.message}</p>
+                        ${msg.autoReplied ? '<small class="text-success"><i class="fas fa-robot me-1"></i>Auto-replied</small>' : ''}
+                    </div>`;
                 } else {
-                    html += `
-                        <div class="message-box mb-3" style="text-align: right; background: ${msg.autoReply ? '#E8F5E9' : '#DCF8C6'};">
-                            <p class="mb-1">${msg.message}</p>
-                            <small class="text-muted">${msg.time} ${msg.autoReply ? '<i class="fas fa-robot ms-2" title="Auto-reply"></i>' : '<i class="fas fa-check-double ms-2"></i>'}</small>
-                        </div>
-                    `;
+                    html += `<div class="message-box mb-3" style="text-align: right; background: ${msg.autoReply ? '#E8F5E9' : '#DCF8C6'};">
+                        <p class="mb-1">${msg.message}</p>
+                        <small class="text-muted">${msg.time} ${msg.autoReply ? '<i class="fas fa-robot ms-2"></i>' : ''}</small>
+                    </div>`;
                 }
             });
             
@@ -847,34 +669,6 @@ What would you like to know more about?</textarea>
         function refreshMessages() {
             renderMessages();
             updateStats();
-        }
-
-        function replyToMessage(id) {
-            const msg = whatsappData.messages.find(m => m.id === id);
-            if (!msg) return;
-            
-            const reply = prompt(`Reply to ${msg.fromName || msg.from}:`, '');
-            if (reply) {
-                whatsappData.messages.push({
-                    id: Date.now(),
-                    from: 'You',
-                    message: reply,
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    type: 'sent',
-                    autoReply: false
-                });
-                renderMessages();
-                showToast('✓ Message sent!', 'success');
-            }
-        }
-
-        function markAsRead(id) {
-            const msg = whatsappData.messages.find(m => m.id === id);
-            if (msg) {
-                msg.read = true;
-                renderMessages();
-                showToast('Marked as read', 'info');
-            }
         }
 
         function sendQuickMessage() {
@@ -897,16 +691,15 @@ What would you like to know more about?</textarea>
 
         function useTemplate(type) {
             const templates = {
-                payment: '✓ Payment Received!\nThank you for your payment of $[AMOUNT]. Your transaction ID is #[ID].',
-                order: '📦 Order Confirmation\nThank you for your order! Order #[NUMBER] will be processed within 24 hours.',
-                reminder: '⏰ Payment Reminder\nThis is a friendly reminder that your payment of $[AMOUNT] is due on [DATE].',
-                thanks: '❤️ Thank You!\nThank you for choosing AI Employee System. We appreciate your business!',
-                welcome: '👋 Welcome!\nThank you for contacting us. How can we help you today?'
+                payment: '✓ Payment Received!\nThank you for your payment.',
+                order: '📦 Order Confirmation\nYour order will be processed within 24 hours.',
+                reminder: '⏰ Payment Reminder\nThis is a friendly reminder about your pending payment.',
+                thanks: '❤️ Thank You!\nThank you for choosing our service!',
+                welcome: '👋 Welcome!\nThank you for contacting us. How can we help?'
             };
             
-            const message = templates[type] || '';
-            document.getElementById('quickMessage').value = message;
-            showToast('Template loaded! Edit and send.', 'info');
+            document.getElementById('quickMessage').value = templates[type] || '';
+            showToast('Template loaded!', 'info');
         }
 
         function updateStats() {
@@ -915,49 +708,28 @@ What would you like to know more about?</textarea>
             document.getElementById('pending').textContent = whatsappData.messages.filter(m => m.type === 'received' && !m.autoReplied && !m.read).length;
         }
 
-        // WhatsApp Receiver Functions
         async function startWhatsAppReceiver() {
-            try {
-                // Show loading state
-                const btn = document.getElementById('startReceiverBtn');
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Starting...';
-                btn.disabled = true;
+            const btn = document.getElementById('startReceiverBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Starting...';
+            btn.disabled = true;
 
-                // Open WhatsApp Web in new window
-                window.open('https://web.whatsapp.com', '_blank');
+            window.open('https://web.whatsapp.com', '_blank');
 
-                // Show status
-                document.getElementById('receiverStatus').style.display = 'block';
-                document.getElementById('receiverStatusText').innerHTML = 
-                    '<i class="fas fa-info-circle me-2"></i>WhatsApp Web opened. Please scan QR code and run receiver script.';
-                document.getElementById('receiverStatus').className = 'alert alert-info mt-2';
+            document.getElementById('receiverStatus').style.display = 'block';
+            document.getElementById('receiverStatusText').innerHTML = '<i class="fas fa-info-circle me-2"></i>WhatsApp Web opened. Scan QR code.';
+            document.getElementById('receiverStatus').className = 'alert alert-info mt-2';
 
-                // Show instructions
-                setTimeout(() => {
-                    alert('WhatsApp Web has opened in a new window.\n\n' +
-                          'NEXT STEPS:\n' +
-                          '1. Scan the QR code with your phone\n' +
-                          '2. Keep the WhatsApp Web window open\n' +
-                          '3. Messages will be monitored automatically\n\n' +
-                          'For full auto-reply functionality, run: START_WHATSAPP_REAL.bat');
-                    
-                    btn.innerHTML = '<i class="fas fa-check me-2"></i>STARTED';
-                    btn.className = 'btn btn-success';
-                    document.getElementById('stopReceiverBtn').style.display = 'inline-block';
-                }, 2000);
-
-            } catch (error) {
-                console.error('Error starting receiver:', error);
-                showToast('Error starting WhatsApp receiver', 'danger');
-                btn.innerHTML = '<i class="fas fa-play me-2"></i>START WHATSAPP RECEIVER';
-                btn.disabled = false;
-            }
+            setTimeout(() => {
+                alert('WhatsApp Web opened!\n\n1. Scan QR code with phone\n2. Keep window open\n3. Messages will be monitored');
+                btn.innerHTML = '<i class="fas fa-check me-2"></i>STARTED';
+                btn.className = 'btn btn-success';
+                document.getElementById('stopReceiverBtn').style.display = 'inline-block';
+            }, 2000);
         }
 
         function stopWhatsAppReceiver() {
             document.getElementById('receiverStatus').style.display = 'block';
-            document.getElementById('receiverStatusText').innerHTML = 
-                '<i class="fas fa-stop me-2"></i>Receiver stopped. Close WhatsApp Web window.';
+            document.getElementById('receiverStatusText').innerHTML = '<i class="fas fa-stop me-2"></i>Receiver stopped.';
             document.getElementById('receiverStatus').className = 'alert alert-warning mt-2';
             
             const btn = document.getElementById('startReceiverBtn');
@@ -965,20 +737,16 @@ What would you like to know more about?</textarea>
             btn.className = 'btn btn-whatsapp';
             btn.disabled = false;
             document.getElementById('stopReceiverBtn').style.display = 'none';
-            
-            showToast('WhatsApp receiver stopped', 'info');
         }
 
         function checkReceiverStatus() {
-            // Check receiver status from backend
             fetch('/api/whatsapp/status')
                 .then(response => response.json())
                 .then(data => {
                     whatsappData.receiverRunning = data.is_running || false;
                     updateReceiverUI();
                 })
-                .catch(error => {
-                    console.log('Receiver status check failed');
+                .catch(() => {
                     whatsappData.receiverRunning = false;
                     updateReceiverUI();
                 });
@@ -993,7 +761,7 @@ What would you like to know more about?</textarea>
             if (whatsappData.receiverRunning) {
                 statusDiv.style.display = 'block';
                 statusDiv.className = 'alert alert-success mt-2';
-                statusText.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Receiver is RUNNING - Monitoring messages...';
+                statusText.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Receiver RUNNING';
                 startBtn.style.display = 'none';
                 stopBtn.style.display = 'inline-block';
             } else {
@@ -1012,40 +780,15 @@ What would you like to know more about?</textarea>
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // AI Agent Functions
-        function saveAISettings() {
-            const aiSettings = {
-                greeting: document.getElementById('aiGreeting').value,
-                pricingResponse: document.getElementById('aiPricingResponse').value,
-                demoResponse: document.getElementById('aiDemoResponse').value,
-                featuresResponse: document.getElementById('aiFeaturesResponse').value,
-                intentDetectionEnabled: document.getElementById('aiIntentDetection').checked
-            };
-            
-            localStorage.setItem('whatsappAISettings', JSON.stringify(aiSettings));
-            
-            // Update stats
-            document.getElementById('aiTotalConversations').textContent = Math.floor(Math.random() * 100) + 50;
-            document.getElementById('aiGreetings').textContent = Math.floor(Math.random() * 50) + 20;
-            document.getElementById('aiPricing').textContent = Math.floor(Math.random() * 30) + 10;
-            
-            showToast('✓ AI Agent settings saved!', 'success');
-        }
-
-        function loadAISettings() {
-            const saved = localStorage.getItem('whatsappAISettings');
-            if (saved) {
-                const settings = JSON.parse(saved);
-                document.getElementById('aiGreeting').value = settings.greeting || '';
-                document.getElementById('aiPricingResponse').value = settings.pricingResponse || '';
-                document.getElementById('aiDemoResponse').value = settings.demoResponse || '';
-                document.getElementById('aiFeaturesResponse').value = settings.featuresResponse || '';
-                document.getElementById('aiIntentDetection').checked = settings.intentDetectionEnabled !== false;
+        // Floating AI Agent - Click to check status
+        function toggleAIChat() {
+            const aiEnabled = document.getElementById('autoReplyEnabled').checked;
+            if (aiEnabled) {
+                showToast('🤖 AI Agent ACTIVE!\n\nAuto-reply enabled.\nAndroid messages get auto-replies.', 'success');
+            } else {
+                showToast('⚠️ AI Agent INACTIVE!\n\nEnable Auto-Reply in settings.', 'warning');
             }
         }
-
-        // Load AI settings on page load
-        document.addEventListener('DOMContentLoaded', loadAISettings);
     </script>
 </body>
 </html>
