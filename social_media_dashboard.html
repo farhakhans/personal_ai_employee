@@ -660,30 +660,93 @@
                 this.value === 'scheduled' ? 'block' : 'none';
         });
 
-        // Publish post
-        function publishPost() {
+        // Publish post - REAL API Integration
+        async function publishPost() {
             const content = document.getElementById('post-content').value;
             if (!content) {
                 showToast('Please enter post content', 'warning');
                 return;
             }
-            
+
             const platforms = [];
             if (document.getElementById('platform-linkedin').checked) platforms.push('LinkedIn');
             if (document.getElementById('platform-facebook').checked) platforms.push('Facebook');
             if (document.getElementById('platform-instagram').checked) platforms.push('Instagram');
             if (document.getElementById('platform-twitter').checked) platforms.push('Twitter');
-            
+
             if (platforms.length === 0) {
                 showToast('Please select at least one platform', 'warning');
                 return;
             }
-            
+
             showToast(`Publishing to ${platforms.join(', ')}...`, 'info');
+
+            const token = localStorage.getItem('accessToken');
+            const results = [];
+
+            // Publish to each selected platform
+            for (const platform of platforms) {
+                try {
+                    let endpoint = '';
+                    let payload = {};
+
+                    switch(platform) {
+                        case 'LinkedIn':
+                            endpoint = '/api/social/linkedin/publish';
+                            payload = { message: content };
+                            break;
+                        case 'Facebook':
+                            endpoint = '/api/social/facebook/publish';
+                            payload = { message: content };
+                            break;
+                        case 'Instagram':
+                            endpoint = '/api/social/instagram/publish';
+                            payload = { caption: content };
+                            break;
+                        case 'Twitter':
+                            endpoint = '/api/social/twitter/publish';
+                            payload = { tweet: content };
+                            break;
+                    }
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token ? `Bearer ${token}` : ''
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success || result.status === 'success') {
+                        results.push({ platform, status: 'success', message: `✓ ${platform} posted!` });
+                        showToast(`✓ ${platform} posted!`, 'success');
+                    } else {
+                        results.push({ platform, status: 'error', message: result.message || `${platform} failed` });
+                        showToast(`⚠ ${platform} failed`, 'warning');
+                    }
+                } catch (error) {
+                    console.error(`${platform} error:`, error);
+                    results.push({ platform, status: 'error', message: error.message });
+                    showToast(`❌ ${platform} error: ${error.message}`, 'danger');
+                }
+            }
+
+            // Show summary
+            const successCount = results.filter(r => r.status === 'success').length;
+            const failCount = results.filter(r => r.status === 'error').length;
+
             setTimeout(() => {
-                showToast('✓ Post published successfully!', 'success');
+                if (successCount > 0) {
+                    showToast(`✓ ${successCount}/${platforms.length} posts published!`, 'success');
+                }
+                if (failCount > 0) {
+                    showToast(`⚠ ${failCount} failed - Check .env credentials`, 'warning');
+                }
                 clearComposer();
-            }, 1500);
+            }, 500);
         }
 
         // Schedule post

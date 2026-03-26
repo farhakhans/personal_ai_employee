@@ -47,8 +47,6 @@
         <!-- Navigation -->
         <div class="text-center mb-4">
             <a href="/dashboard" class="nav-btn" style="background: linear-gradient(135deg, #00b894, #00cec9); color: white;"><i class="fas fa-arrow-left me-2"></i>Back to Dashboard</a>
-            <a href="status.html" class="nav-btn nav-home"><i class="fas fa-home me-2"></i>Home</a>
-            <a href="status.html" class="nav-btn nav-bronze"><i class="fas fa-tachometer-alt me-2"></i>Main Dashboard</a>
             <a href="bronze_dashboard.html" class="nav-btn nav-bronze"><i class="fas fa-arrow-left me-2"></i>Bronze</a>
             <a href="silver_dashboard.html" class="nav-btn nav-silver"><i class="fas fa-arrow-left me-2"></i>Silver</a>
             <a href="platinum_dashboard.html" class="nav-btn nav-platinum"><i class="fas fa-arrow-right me-2"></i>Platinum</a>
@@ -664,6 +662,16 @@
 
         function platform(name) {
             alert('📱 Managing ' + name + ' account\n\nOptions:\n✓ View analytics\n✓ Schedule posts\n✓ Approve content\n✓ View engagement metrics');
+        }
+
+        // Go back to main dashboard with token
+        function goBackToDashboard() {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                window.location.href = '/dashboard?token=' + token;
+            } else {
+                window.location.href = '/dashboard';
+            }
         }
     </script>
 </body>

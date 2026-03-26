@@ -334,7 +334,7 @@
                     localStorage.setItem('accessToken', data.access_token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     showAlert('✓ Google Sign-In successful! Welcome, ' + (data.user.full_name || data.user.username), 'success');
-                    setTimeout(() => { window.location.href = '/main-dashboard'; }, 1000);
+                    setTimeout(() => { window.location.href = '/main-dashboard?token=' + data.access_token; }, 1000);
                 } else {
                     showGoogleAccountSelector();
                 }
@@ -388,11 +388,12 @@
             btn.innerHTML = '<span class="spinner"></span> Signing in with Google...';
             const email = type === 'user1' ? 'user.demo@gmail.com' : 'user.work@gmail.com';
             const name = type === 'user1' ? 'Demo User' : 'Work User';
+            const googleToken = 'google-token-' + Date.now();
             setTimeout(() => {
-                localStorage.setItem('accessToken', 'google-token-' + Date.now());
+                localStorage.setItem('accessToken', googleToken);
                 localStorage.setItem('user', JSON.stringify({ email: email, username: email.split('@')[0], full_name: name, role: 'user', tier: 'silver', provider: 'google' }));
                 showAlert('✓ Google Sign-In successful! Welcome, ' + name, 'success');
-                setTimeout(() => { window.location.href = '/main-dashboard'; }, 1000);
+                setTimeout(() => { window.location.href = '/main-dashboard?token=' + googleToken; }, 1000);
             }, 1500);
         }
         
@@ -406,12 +407,11 @@
             const btn = document.getElementById('loginBtn');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> Signing in with Google...';
-            setTimeout(() => {
-                localStorage.setItem('accessToken', 'google-token-' + Date.now());
-                localStorage.setItem('user', JSON.stringify({ email: email, username: email.split('@')[0], full_name: email.split('@')[0], role: 'user', tier: 'silver', provider: 'google' }));
-                showAlert('✓ Google Sign-In successful! Welcome!', 'success');
-                setTimeout(() => { window.location.href = '/main-dashboard'; }, 1000);
-            }, 1500);
+            const googleToken = 'google-token-' + Date.now();
+            localStorage.setItem('accessToken', googleToken);
+            localStorage.setItem('user', JSON.stringify({ email: email, username: email.split('@')[0], full_name: email.split('@')[0], role: 'user', tier: 'silver', provider: 'google' }));
+            showAlert('✓ Google Sign-In successful! Welcome!', 'success');
+            setTimeout(() => { window.location.href = '/main-dashboard?token=' + googleToken; }, 1000);
         }
 
         // Toggle password visibility - FIXED
@@ -480,15 +480,15 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const btn = document.getElementById('loginBtn');
-            
+
             if (!email || !password) {
                 showAlert('❌ Please enter both email and password', 'error');
                 return;
             }
-            
+
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> Signing in...';
-            
+
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
@@ -497,12 +497,13 @@
                 });
                 const data = await response.json();
                 console.log('Login response:', data);
-                
+
                 if (response.ok && data.access_token) {
                     localStorage.setItem('accessToken', data.access_token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     showAlert('✓ Login successful! Redirecting...', 'success');
-                    setTimeout(() => { window.location.href = '/main-dashboard'; }, 1000);
+                    // Redirect with token as query parameter
+                    setTimeout(() => { window.location.href = '/dashboard?token=' + data.access_token; }, 1000);
                 } else {
                     // Demo mode - allow any login
                     demoLogin(email);
@@ -514,7 +515,8 @@
         }
 
         function demoLogin(email) {
-            localStorage.setItem('accessToken', 'demo-token-' + Date.now());
+            const demoToken = 'demo-token-' + Date.now();
+            localStorage.setItem('accessToken', demoToken);
             localStorage.setItem('user', JSON.stringify({
                 email: email,
                 username: email.split('@')[0],
@@ -523,7 +525,8 @@
                 tier: 'bronze'
             }));
             showAlert('✓ Login successful! Redirecting...', 'success');
-            setTimeout(() => { window.location.href = '/main-dashboard'; }, 1000);
+            // Redirect with token as query parameter
+            setTimeout(() => { window.location.href = '/dashboard?token=' + demoToken; }, 1000);
         }
 
         // Handle Sign Up
@@ -577,13 +580,13 @@
                 tier: 'bronze'
             }));
             showSignUpAlert('✓ Account created! Redirecting...', 'success');
-            setTimeout(() => { window.location.href = '/main-dashboard'; }, 1500);
+            setTimeout(() => { window.location.href = '/dashboard?token=demo-token-' + Date.now(); }, 1500);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('accessToken');
             if (token) {
-                window.location.href = '/main-dashboard';
+                window.location.href = '/dashboard?token=' + token;
             }
             setTimeout(initGoogleSignIn, 500);
         });

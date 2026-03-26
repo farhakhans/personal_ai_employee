@@ -270,6 +270,44 @@ Suggested Action: TBD
             logger.error(f"❌ Failed to send notification: {e}")
             return False
     
+    def delete_linkedin_emails(self):
+        """Auto-delete LinkedIn notification emails from Gmail"""
+        try:
+            imap = self.connect_gmail()
+            if not imap:
+                return 0
+            
+            # Search for LinkedIn emails
+            status, msg_ids = imap.search(None, '(FROM "notifications@linkedin.com")')
+            if status != "OK":
+                logger.error("Failed to search LinkedIn emails")
+                return 0
+            
+            msg_id_list = msg_ids[0].split()
+            deleted_count = 0
+            
+            # Delete LinkedIn emails
+            for msg_id in msg_id_list:
+                try:
+                    # Mark for deletion
+                    imap.store(msg_id, '+FLAGS', '\\Deleted')
+                    deleted_count += 1
+                    logger.info(f"🗑️ Deleted LinkedIn email: {msg_id.decode()}")
+                except Exception as e:
+                    logger.error(f"Failed to delete email {msg_id}: {e}")
+            
+            # Expunge to permanently delete
+            imap.expunge()
+            imap.close()
+            imap.logout()
+            
+            logger.info(f"✅ Auto-deleted {deleted_count} LinkedIn email(s)")
+            return deleted_count
+            
+        except Exception as e:
+            logger.error(f"❌ Error deleting LinkedIn emails: {e}")
+            return 0
+
     def check_new_emails(self) -> int:
         """Check for new emails and process them"""
         try:
@@ -313,11 +351,18 @@ Suggested Action: TBD
         except Exception as e:
             logger.error(f"❌ Error checking emails: {e}")
             return 0
-    
+
     def run_once(self) -> bool:
         """Run one polling cycle"""
         logger.info("🔄 Polling Gmail...")
         new_emails = self.check_new_emails()
+        
+        # Auto-delete LinkedIn emails
+        if os.getenv('AUTO_DELETE_LINKEDIN', 'false').lower() == 'true':
+            deleted = self.delete_linkedin_emails()
+            if deleted > 0:
+                logger.info(f"🗑️ Auto-deleted {deleted} LinkedIn email(s)")
+        
         logger.info(f"✅ Poll complete. New emails: {new_emails}")
         return True
     

@@ -642,38 +642,49 @@
             document.getElementById('composeForm').reset();
         }
         
-        // Send REAL email
+        // Send REAL email with attachments
         document.getElementById('composeForm').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // Create FormData object for file upload
+            const formData = new FormData();
+            formData.append('to', document.getElementById('composeTo').value);
+            formData.append('cc', document.getElementById('composeCc').value);
+            formData.append('subject', document.getElementById('composeSubject').value);
+            formData.append('body', document.getElementById('composeBody').value);
             
-            const emailData = {
-                to: document.getElementById('composeTo').value,
-                cc: document.getElementById('composeCc').value,
-                subject: document.getElementById('composeSubject').value,
-                body: document.getElementById('composeBody').value
-            };
-            
+            // Add attachments
+            const attachmentInput = document.getElementById('composeAttachments');
+            if (attachmentInput.files.length > 0) {
+                for (let i = 0; i < attachmentInput.files.length; i++) {
+                    formData.append('attachments', attachmentInput.files[i]);
+                }
+            }
+
             // Show sending status
             const sendBtn = this.querySelector('button[type="submit"]');
             const originalText = sendBtn.innerHTML;
             sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
             sendBtn.disabled = true;
-            
-            // First try REAL email, fallback to demo
+
+            // First try REAL email with attachments, fallback to demo
             fetch('/api/real/send-email', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(emailData)
+                body: formData
+                // Don't set Content-Type header - browser will set it automatically for FormData
             })
             .then(response => response.json())
             .then(data => {
                 sendBtn.innerHTML = originalText;
                 sendBtn.disabled = false;
-                
+
                 if (data.status === 'success') {
-                    alert('✅ Real email sent successfully to ' + emailData.to + '!');
+                    const attachmentCount = attachmentInput.files.length;
+                    let msg = '✅ Real email sent successfully to ' + data.to + '!';
+                    if (attachmentCount > 0) {
+                        msg += '\n\n📎 Attachments sent: ' + attachmentCount + ' file(s)';
+                    }
+                    alert(msg);
                     closeCompose();
                     loadEmails();
                     loadSentEmails();
@@ -682,6 +693,7 @@
                     alert('ℹ️ Demo mode: ' + data.message);
                     closeCompose();
                     loadEmails();
+                    loadSentEmails();
                 } else {
                     alert('❌ Failed: ' + data.message);
                 }

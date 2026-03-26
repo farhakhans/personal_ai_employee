@@ -29,6 +29,23 @@
       "alert_type": "SUSPICIOUS",
       "message": "\ud83d\udea8 Suspicious activity detected. Review: Login from new device - iPhone 15 in New York",
       "status": "SENT"
+    },
+    {
+      "type": "received",
+      "from": "+92 300 1234567",
+      "from_name": "Test Customer 1",
+      "message": "Hi, what is the price?",
+      "timestamp": "2026-03-25T23:29:49.649783",
+      "status": "received",
+      "auto_replied": false
+    },
+    {
+      "type": "sent",
+      "to": "+92 300 1234567",
+      "message": "Our pricing starts at $99/month. Would you like to schedule a demo?\n\n(Auto-reply for: price)",
+      "timestamp": "2026-03-25T23:29:50.657103",
+      "status": "sent",
+      "auto_reply": true
     }
   ]
 }
