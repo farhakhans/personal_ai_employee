@@ -321,22 +321,22 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/payments" class="nav-link">
+                    <a href="javascript:void(0)" onclick="navigateWithToken('/payments')" class="nav-link">
                         <span>💰</span> Payments
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/customers" class="nav-link">
+                    <a href="javascript:void(0)" onclick="navigateWithToken('/customers')" class="nav-link">
                         <span>👥</span> Customers
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/employees" class="nav-link">
+                    <a href="javascript:void(0)" onclick="navigateWithToken('/employees')" class="nav-link">
                         <span>👨‍💼</span> Employees
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/reports" class="nav-link">
+                    <a href="javascript:void(0)" onclick="navigateWithToken('/reports')" class="nav-link">
                         <span>📈</span> Reports
                     </a>
                 </li>
@@ -346,12 +346,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/notifications" class="nav-link">
+                    <a href="javascript:void(0)" onclick="navigateWithToken('/notifications')" class="nav-link">
                         <span>🔔</span> Notifications
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/settings" class="nav-link">
+                    <a href="javascript:void(0)" onclick="navigateWithToken('/settings')" class="nav-link">
                         <span>⚙️</span> Settings
                     </a>
                 </li>
@@ -367,6 +367,9 @@
                     AI-Powered Automation Capabilities
                 </div>
             </div>
+
+            <!-- ERROR MESSAGE AREA -->
+            <div id="errorContainer" style="display: none; margin-bottom: 20px;"></div>
 
             <!-- LOADING -->
             <div id="loading" style="text-align: center; padding: 50px;">
@@ -422,29 +425,103 @@
 
     <script>
         let currentSkill = null;
-        let authToken = localStorage.getItem('auth_token');
         
-        // Load skills on page load
+        // Get token from multiple sources: localStorage, URL query, or hash
+        function getToken() {
+            // 1. Check localStorage
+            let token = localStorage.getItem('accessToken') || localStorage.getItem('auth_token');
+            if (token) {
+                console.log('✓ Token from localStorage:', token.substring(0, 20) + '...');
+                return token;
+            }
+            
+            // 2. Check URL query parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            token = urlParams.get('token');
+            if (token) {
+                console.log('✓ Token from URL:', token.substring(0, 20) + '...');
+                // Save it for future use
+                localStorage.setItem('accessToken', token);
+                // Remove token from URL (clean up)
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return token;
+            }
+            
+            // 3. Check URL hash
+            token = window.location.hash.substring(1);
+            if (token && token.includes('token=')) {
+                token = token.split('token=')[1].split('&')[0];
+                console.log('✓ Token from URL hash:', token.substring(0, 20) + '...');
+                localStorage.setItem('accessToken', token);
+                return token;
+            }
+            
+            console.log('ℹ️ No token found - will load skills without authentication');
+            return null;
+        }
+        
+        let authToken = getToken();
+        
+        // Navigate with token
+        function navigateWithToken(path) {
+            const token = authToken || localStorage.getItem('accessToken');
+            if (token) {
+                window.location.href = `${path}?token=${token}`;
+            } else {
+                alert('⚠️ Please login first to access this page.');
+                window.location.href = '/login-page';
+            }
+        }
+        
+        // Load skills on page load (with or without token)
         document.addEventListener('DOMContentLoaded', loadSkills);
-        
+
+        function showLoginRequired() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('skillsGrid').style.display = 'none';
+            document.getElementById('errorContainer').innerHTML = `
+                <div class="alert alert-error" style="font-size: 16px; text-align: center; padding: 30px;">
+                    <h3 style="margin-bottom: 15px;">🔐 Login Required</h3>
+                    <p style="margin-bottom: 20px;">You need to login first to access Agent Skills.</p>
+                    <button onclick="window.location.href='/login-page'" class="btn btn-primary" style="width: auto; display: inline-block; padding: 12px 30px;">
+                        Go to Login →
+                    </button>
+                </div>
+            `;
+            document.getElementById('errorContainer').style.display = 'block';
+        }
+
         async function loadSkills() {
+            console.log('🔍 Loading Agent Skills...');
+            console.log('Token present:', !!authToken);
+            console.log('Token value:', authToken ? authToken.substring(0, 20) + '...' : 'NONE');
+
             try {
                 const response = await fetch('/api/agent/skills', {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
                 });
-                
+
+                console.log('Response status:', response.status);
+
                 const data = await response.json();
-                
+                console.log('Response data:', data);
+
                 document.getElementById('loading').style.display = 'none';
-                
+
                 if (data.status === 'success') {
+                    console.log('✓ Skills loaded:', Object.keys(data.skills).length);
                     renderSkills(data.skills);
+                } else if (data.error && data.error.includes('Token')) {
+                    // Token is invalid or missing
+                    alert('⚠️ Session expired! Please login again.');
+                    window.location.href = '/login-page';
                 } else {
-                    showError('Failed to load skills: ' + data.message);
+                    showError('Failed to load skills: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
+                console.error('❌ Error loading skills:', error);
                 document.getElementById('loading').style.display = 'none';
                 showError('Error connecting to server: ' + error.message);
             }

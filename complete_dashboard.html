@@ -24,8 +24,8 @@
         .sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
         .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
         .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
-        .sidebar .nav-link { color: rgba(255, 255, 255, 0.7); padding: 12px 20px; margin: 5px 15px; border-radius: 8px; transition: all 0.3s ease; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255, 255, 255, 0.15); transform: translateX(5px); }
+        .sidebar .nav-link { color: rgba(255, 255, 255, 0.9); padding: 12px 20px; margin: 5px 15px; border-radius: 8px; transition: all 0.3s ease; font-weight: 500; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255, 255, 255, 0.2); transform: translateX(5px); }
         .main-content { margin-left: 260px; padding: 20px; }
         .header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 30px; border-radius: 8px; margin-bottom: 25px; }
         .stat-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); }
@@ -115,27 +115,56 @@
         </div>
         <ul class="nav flex-column">
             <li class="nav-item"><a class="nav-link active" href="#" onclick="showSection('dashboard'); return false;"><i class="fas fa-home me-2"></i>Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="banking_system.html" target="_blank"><i class="fas fa-university me-2"></i>Banking</a></li>
-            <li class="nav-item"><a class="nav-link" href="/whatsapp-manager"><i class="fab fa-whatsapp me-2"></i>WhatsApp Manager</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openWithToken('banking_system.html'); return false;"><i class="fas fa-university me-2"></i>Banking</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openWhatsAppManager(); return false;"><i class="fab fa-whatsapp me-2"></i>WhatsApp Manager</a></li>
             <li class="nav-item"><a class="nav-link" href="#" onclick="showSocialMedia(); return false;"><i class="fas fa-share-alt me-2"></i>Social Media</a></li>
             <li class="nav-item"><a class="nav-link" href="/email-dashboard" target="_blank" style="color: #48bb78;"><i class="fas fa-inbox me-2" style="color: #48bb78;"></i>Email Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="#" onclick="showApprovals(); return false;"><i class="fas fa-user-check me-2"></i>Approvals</a></li>
-            <li class="nav-item"><a class="nav-link" href="analytics.html" target="_blank"><i class="fas fa-chart-line me-2"></i>Analytics</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openWithToken('analytics.html'); return false;"><i class="fas fa-chart-line me-2"></i>Analytics</a></li>
             <li class="nav-item"><a class="nav-link" href="#" onclick="showSettings(); return false;"><i class="fas fa-cog me-2"></i>Settings</a></li>
             <li class="nav-item"><a class="nav-link" href="#" onclick="showNotifications(); return false;"><i class="fas fa-bell me-2"></i>Notifications</a></li>
             
             <!-- AI Employee Agent Skills Section -->
-            <li class="nav-item" style="margin-top: 20px;">
-                <div style="color: #9f7aea; font-size: 11px; text-transform: uppercase; font-weight: bold; padding: 0 15px; margin-bottom: 5px;">
-                    <i class="fas fa-robot me-1"></i> AI Employee Skills
+            <li class="nav-item" style="margin-top: 25px; padding-top: 15px; border-top: 2px solid rgba(255,255,255,0.2);">
+                <div style="color: #9f7aea; font-size: 12px; text-transform: uppercase; font-weight: bold; padding: 0 15px; margin-bottom: 10px; letter-spacing: 1px;">
+                    <i class="fas fa-robot me-2"></i> AI Employee Skills
                 </div>
             </li>
-            <li class="nav-item"><a class="nav-link" href="/agent-skills" target="_blank" style="color: #9f7aea;"><i class="fas fa-book me-2" style="color: #9f7aea;"></i>Vault Read</a></li>
-            <li class="nav-item"><a class="nav-link" href="/agent-skills" target="_blank" style="color: #9f7aea;"><i class="fas fa-pen-fancy me-2" style="color: #9f7aea;"></i>Vault Write</a></li>
-            <li class="nav-item"><a class="nav-link" href="/agent-skills" target="_blank" style="color: #9f7aea;"><i class="fas fa-envelope me-2" style="color: #9f7aea;"></i>Email Triage</a></li>
-            <li class="nav-item"><a class="nav-link" href="/agent-skills" target="_blank" style="color: #9f7aea;"><i class="fas fa-file-alt me-2" style="color: #9f7aea;"></i>Draft Response</a></li>
-            <li class="nav-item"><a class="nav-link" href="/agent-skills" target="_blank" style="color: #9f7aea;"><i class="fas fa-check-circle me-2" style="color: #9f7aea;"></i>Approval</a></li>
-            <li class="nav-item"><a class="nav-link" href="/agent-skills" target="_blank" style="color: #9f7aea;"><i class="fas fa-clipboard-list me-2" style="color: #9f7aea;"></i>Create Plan</a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="/agent-skills" target="_blank" style="color: #f6e05e; font-weight: 600; background: rgba(159, 122, 234, 0.2); border-radius: 8px; margin-bottom: 8px;">
+                    <i class="fas fa-th-large me-2" style="color: #f6e05e;"></i>🤖 Agent Skills Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); executeAgentSkill('VaultRead'); return false;" style="color: #e0c3fc; font-weight: 500;">
+                    <i class="fas fa-book me-2" style="color: #e0c3fc;"></i>Vault Read
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); executeAgentSkill('VaultWrite'); return false;" style="color: #e0c3fc; font-weight: 500;">
+                    <i class="fas fa-pen-fancy me-2" style="color: #e0c3fc;"></i>Vault Write
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); executeAgentSkill('EmailTriage'); return false;" style="color: #e0c3fc; font-weight: 500;">
+                    <i class="fas fa-envelope me-2" style="color: #e0c3fc;"></i>Email Triage
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); executeAgentSkill('DraftResponse'); return false;" style="color: #e0c3fc; font-weight: 500;">
+                    <i class="fas fa-file-alt me-2" style="color: #e0c3fc;"></i>Draft Response
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); executeAgentSkill('RequestApproval'); return false;" style="color: #e0c3fc; font-weight: 500;">
+                    <i class="fas fa-check-circle me-2" style="color: #e0c3fc;"></i>Approval
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); executeAgentSkill('CreatePlan'); return false;" style="color: #e0c3fc; font-weight: 500;">
+                    <i class="fas fa-clipboard-list me-2" style="color: #e0c3fc;"></i>Create Plan
+                </a>
+            </li>
 
             <!-- Tiers Section -->
             <li class="nav-item" style="margin-top: 20px;">
@@ -143,10 +172,10 @@
                     <i class="fas fa-layer-group me-1"></i> Tiers
                 </div>
             </li>
-            <li class="nav-item"><a class="nav-link" href="bronze_dashboard.html" target="_blank" style="color: #cd7f32;"><i class="fas fa-medal me-2" style="color: #cd7f32;"></i>Bronze Tier</a></li>
-            <li class="nav-item"><a class="nav-link" href="silver_dashboard.html" target="_blank" style="color: #808080;"><i class="fas fa-medal me-2" style="color: #808080;"></i>Silver Tier</a></li>
-            <li class="nav-item"><a class="nav-link" href="gold_dashboard.html" target="_blank" style="color: #daa520;"><i class="fas fa-medal me-2" style="color: #daa520;"></i>Gold Tier</a></li>
-            <li class="nav-item"><a class="nav-link" href="platinum_dashboard.html" target="_blank" style="color: #7a7a7a;"><i class="fas fa-gem me-2" style="color: #7a7a7a;"></i>Platinum Tier</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openTierDashboard('bronze_dashboard.html'); return false;" style="color: #cd7f32;"><i class="fas fa-medal me-2" style="color: #cd7f32;"></i>Bronze Tier</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openTierDashboard('silver_dashboard.html'); return false;" style="color: #808080;"><i class="fas fa-medal me-2" style="color: #808080;"></i>Silver Tier</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openTierDashboard('gold_dashboard.html'); return false;" style="color: #daa520;"><i class="fas fa-medal me-2" style="color: #daa520;"></i>Gold Tier</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="openTierDashboard('platinum_dashboard.html'); return false;" style="color: #7a7a7a;"><i class="fas fa-gem me-2" style="color: #7a7a7a;"></i>Platinum Tier</a></li>
 
             <li class="nav-item" style="margin-top: 60px;"><a class="nav-link" href="#" onclick="logout()" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
         </ul>
@@ -282,7 +311,7 @@
                             </div>
                             
                             <div class="btn-group w-100 mt-2">
-                                <a href="bronze_dashboard.html" target="_blank" class="btn btn-outline-warning btn-sm">
+                                <a href="#" onclick="openTierDashboard('bronze_dashboard.html'); return false;" class="btn btn-outline-warning btn-sm">
                                     <i class="fas fa-external-link-alt me-1"></i>Open Dashboard
                                 </a>
                                 <button class="btn btn-outline-info btn-sm" onclick="showTierDetails('bronze')">
@@ -305,7 +334,7 @@
                                 <li><i class="fas fa-check text-success me-1"></i>Agent Skills</li>
                             </ul>
                             <div class="btn-group w-100">
-                                <a href="silver_dashboard.html" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                <a href="#" onclick="openTierDashboard('silver_dashboard.html'); return false;" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-external-link-alt me-1"></i>Open
                                 </a>
                                 <button class="btn btn-outline-info btn-sm" onclick="showTierDetails('silver')">
@@ -328,7 +357,7 @@
                                 <li><i class="fas fa-check text-success me-1"></i>MCP Servers</li>
                             </ul>
                             <div class="btn-group w-100">
-                                <a href="gold_dashboard.html" target="_blank" class="btn btn-outline-warning btn-sm">
+                                <a href="#" onclick="openTierDashboard('gold_dashboard.html'); return false;" class="btn btn-outline-warning btn-sm">
                                     <i class="fas fa-external-link-alt me-1"></i>Open
                                 </a>
                                 <button class="btn btn-outline-info btn-sm" onclick="showTierDetails('gold')">
@@ -351,7 +380,7 @@
                                 <li><i class="fas fa-check text-success me-1"></i>Auto-Healing</li>
                             </ul>
                             <div class="btn-group w-100">
-                                <a href="platinum_dashboard.html" target="_blank" class="btn btn-outline-dark btn-sm">
+                                <a href="#" onclick="openTierDashboard('platinum_dashboard.html'); return false;" class="btn btn-outline-dark btn-sm">
                                     <i class="fas fa-external-link-alt me-1"></i>Open
                                 </a>
                                 <button class="btn btn-outline-info btn-sm" onclick="showTierDetails('platinum')">
@@ -530,6 +559,67 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Skills Section -->
+        <div class="card mt-4" style="border: none; background: linear-gradient(135deg, #667eea, #764ba2);">
+            <div class="card-header bg-transparent border-0 text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>🤖 Agent Skills</h5>
+                        <p class="mb-0 opacity-75">AI-powered automation capabilities</p>
+                    </div>
+                    <button class="btn btn-light btn-sm" onclick="openAgentSkillsModal()">
+                        <i class="fas fa-th-large me-2"></i>View All Skills
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4 col-lg-2">
+                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.2s;" onclick="executeSkill('VaultRead')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-book fa-2x text-white mb-2"></i>
+                            <h6 class="text-white mb-1">Vault Read</h6>
+                            <small class="text-white-50">Read vault files</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.2s;" onclick="executeSkill('VaultWrite')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-pen-fancy fa-2x text-white mb-2"></i>
+                            <h6 class="text-white mb-1">Vault Write</h6>
+                            <small class="text-white-50">Write to vault</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.2s;" onclick="executeSkill('EmailTriage')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-envelope fa-2x text-white mb-2"></i>
+                            <h6 class="text-white mb-1">Email Triage</h6>
+                            <small class="text-white-50">Categorize emails</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.2s;" onclick="executeSkill('DraftResponse')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-file-alt fa-2x text-white mb-2"></i>
+                            <h6 class="text-white mb-1">Draft Response</h6>
+                            <small class="text-white-50">Auto drafts</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.2s;" onclick="executeSkill('RequestApproval')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-check-circle fa-2x text-white mb-2"></i>
+                            <h6 class="text-white mb-1">Approval</h6>
+                            <small class="text-white-50">Request approval</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-2">
+                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer; transition: transform 0.2s;" onclick="executeSkill('CreatePlan')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-clipboard-list fa-2x text-white mb-2"></i>
+                            <h6 class="text-white mb-1">Create Plan</h6>
+                            <small class="text-white-50">Action plans</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1449,55 +1539,46 @@
             </div>
         </div>
 
-        <!-- Agent Skills Section -->
-        <div class="card mt-4" style="border: none; background: linear-gradient(135deg, #667eea, #764ba2);">
-            <div class="card-header bg-transparent border-0 text-white">
-                <h5 class="mb-0"><i class="fas fa-robot me-2"></i>🤖 Agent Skills</h5>
-                <p class="mb-0 opacity-75">AI-powered automation capabilities</p>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4 col-lg-2">
-                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer;" onclick="location.href='/agent-skills'">
-                            <i class="fas fa-book fa-2x text-white mb-2"></i>
-                            <h6 class="text-white mb-1">Vault Read</h6>
-                            <small class="text-white-50">Read vault files</small>
+        <!-- Agent Skills Execution Modal -->
+        <div class="modal fade" id="agentSkillsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                        <h5 class="modal-title"><i class="fas fa-robot me-2"></i>🤖 Agent Skills - Execute Skill</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="skillExecutionForm">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Selected Skill</label>
+                                <input type="text" class="form-control" id="selectedSkill" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">File Path (for Vault skills)</label>
+                                <input type="text" class="form-control" id="skillFilePath" placeholder="e.g., Plans/PLAN_001.md">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Content (for Write skills)</label>
+                                <textarea class="form-control" id="skillContent" rows="4" placeholder="Enter content to write..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Mode</label>
+                                <select class="form-select" id="skillMode">
+                                    <option value="w">Write (Overwrite)</option>
+                                    <option value="a">Append</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="skillResult" class="alert alert-success" style="display: none;">
+                            <h6><i class="fas fa-check-circle me-2"></i>Execution Result:</h6>
+                            <pre id="skillResultContent" style="white-space: pre-wrap; margin: 0;"></pre>
                         </div>
                     </div>
-                    <div class="col-md-4 col-lg-2">
-                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer;" onclick="location.href='/agent-skills'">
-                            <i class="fas fa-pen-fancy fa-2x text-white mb-2"></i>
-                            <h6 class="text-white mb-1">Vault Write</h6>
-                            <small class="text-white-50">Write to vault</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg-2">
-                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer;" onclick="location.href='/agent-skills'">
-                            <i class="fas fa-envelope fa-2x text-white mb-2"></i>
-                            <h6 class="text-white mb-1">Email Triage</h6>
-                            <small class="text-white-50">Categorize emails</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg-2">
-                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer;" onclick="location.href='/agent-skills'">
-                            <i class="fas fa-file-alt fa-2x text-white mb-2"></i>
-                            <h6 class="text-white mb-1">Draft Response</h6>
-                            <small class="text-white-50">Auto drafts</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg-2">
-                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer;" onclick="location.href='/agent-skills'">
-                            <i class="fas fa-check-circle fa-2x text-white mb-2"></i>
-                            <h6 class="text-white mb-1">Approval</h6>
-                            <small class="text-white-50">Request approval</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg-2">
-                        <div class="card text-center p-3 h-100 border-0" style="background: rgba(255,255,255,0.15); cursor: pointer;" onclick="location.href='/agent-skills'">
-                            <i class="fas fa-clipboard-list fa-2x text-white mb-2"></i>
-                            <h6 class="text-white mb-1">Create Plan</h6>
-                            <small class="text-white-50">Action plans</small>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmExecuteSkill()">
+                            <i class="fas fa-play me-2"></i>Execute Skill
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2167,6 +2248,35 @@
             }
         }
 
+        // Open tier dashboard with token
+        function openTierDashboard(dashboardFile) {
+            const token = localStorage.getItem('accessToken');
+            const url = token ? `${dashboardFile}?token=${token}` : dashboardFile;
+            window.open(url, '_blank');
+        }
+
+        // Open page with token (for banking, analytics, etc.)
+        function openWithToken(pageFile) {
+            const token = localStorage.getItem('accessToken');
+            const url = token ? `${pageFile}?token=${token}` : pageFile;
+            window.open(url, '_blank');
+        }
+
+        // Open WhatsApp Manager with token check
+        function openWhatsAppManager() {
+            const token = localStorage.getItem('accessToken');
+            
+            if (!token) {
+                alert('⚠️ Token missing!\n\nPlease login first to access WhatsApp Manager.\n\nRedirecting to login page...');
+                window.location.href = '/login-page';
+                return;
+            }
+            
+            // Open WhatsApp Manager with token
+            const url = `/whatsapp-manager?token=${token}`;
+            window.open(url, '_blank');
+        }
+
         // Bronze Tier Functions - Real API Integration
         function startGmailWatcher() {
             showToast('📧 Starting Gmail Watcher...', 'info');
@@ -2347,6 +2457,225 @@
             document.getElementById('tier-detail-content').innerHTML = `<pre style="white-space: pre-wrap;">${tierInfo[tier]}</pre>`;
             document.getElementById('tier-details').style.display = 'block';
             showToast(`📊 Showing ${tier} tier details`, 'info');
+        }
+
+        // ========== AGENT SKILLS FUNCTIONS ==========
+        
+        // Open Agent Skills Modal
+        function openAgentSkillsModal() {
+            const modal = new bootstrap.Modal(document.getElementById('agentSkillsModal'));
+            modal.show();
+            showToast('🤖 Select a skill to execute', 'info');
+        }
+
+        // Execute specific skill (for dashboard cards)
+        function executeSkill(skillName) {
+            console.log('🤖 Executing skill:', skillName);
+            
+            // Get token from localStorage
+            const token = localStorage.getItem('accessToken');
+            console.log('Token:', token ? 'Found' : 'Not found');
+
+            if (!token) {
+                alert('⚠️ Token missing!\n\nPlease login first.\n\nRedirecting to login page...');
+                window.location.href = '/login-page';
+                return;
+            }
+
+            try {
+                // Set selected skill in modal
+                const skillInput = document.getElementById('selectedSkill');
+                console.log('🔍 skillInput element:', skillInput);
+                
+                if (skillInput) {
+                    skillInput.value = skillName;
+                    console.log('✓ Skill name set:', skillName);
+                } else {
+                    console.error('❌ selectedSkill element not found');
+                    alert('Error: Modal form not found. Please refresh the page.');
+                    return;
+                }
+
+                // Show/hide fields based on skill type
+                const filePathField = document.getElementById('skillFilePath').parentElement;
+                const contentField = document.getElementById('skillContent').parentElement;
+                const modeField = document.getElementById('skillMode').parentElement;
+
+                if (skillName.includes('Read')) {
+                    filePathField.style.display = 'block';
+                    contentField.style.display = 'none';
+                    modeField.style.display = 'none';
+                    console.log('✓ Read mode - showing file path');
+                } else if (skillName.includes('Write')) {
+                    filePathField.style.display = 'block';
+                    contentField.style.display = 'block';
+                    modeField.style.display = 'block';
+                    console.log('✓ Write mode - showing all fields');
+                } else {
+                    filePathField.style.display = 'none';
+                    contentField.style.display = 'none';
+                    modeField.style.display = 'none';
+                    console.log('✓ Other mode - hiding fields');
+                }
+
+                // Open modal - Method 1: Bootstrap Modal
+                const modalElement = document.getElementById('agentSkillsModal');
+                console.log('🔍 Modal element:', modalElement);
+                
+                if (modalElement) {
+                    // Try to show modal
+                    console.log('Attempting to show modal...');
+                    
+                    // Method 1: Using Bootstrap Modal constructor
+                    let modal = bootstrap.Modal.getInstance(modalElement);
+                    if (!modal) {
+                        console.log('Creating new Bootstrap Modal instance...');
+                        modal = new bootstrap.Modal(modalElement, {
+                            backdrop: true,
+                            keyboard: true
+                        });
+                    }
+                    
+                    console.log('Showing modal...');
+                    modal.show();
+                    console.log('✓ Modal show() called');
+                    
+                    // Verify modal is visible
+                    setTimeout(() => {
+                        const isVisible = modalElement.classList.contains('show');
+                        console.log('Modal visible:', isVisible);
+                        if (!isVisible) {
+                            console.warn('⚠️ Modal may not be visible!');
+                        }
+                    }, 500);
+                    
+                } else {
+                    console.error('❌ agentSkillsModal element not found');
+                    alert('Error: Modal element not found. Please refresh the page.');
+                    return;
+                }
+
+                // Hide result box
+                const resultBox = document.getElementById('skillResult');
+                if (resultBox) {
+                    resultBox.style.display = 'none';
+                }
+                
+                console.log('✅ Skill execution initiated successfully');
+            } catch (error) {
+                console.error('❌ Error in executeSkill:', error);
+                console.error('Stack trace:', error.stack);
+                alert('Error opening skill: ' + error.message);
+            }
+        }
+
+        // Execute Agent Skill (for sidebar links) - NEW FUNCTION
+        function executeAgentSkill(skillName) {
+            console.log('🤖 Agent Skill clicked:', skillName);
+            console.log('🔍 Checking modal element...');
+            
+            // Check if modal exists
+            const modalElement = document.getElementById('agentSkillsModal');
+            console.log('Modal element:', modalElement);
+            
+            if (!modalElement) {
+                console.error('❌ Modal element NOT found!');
+                alert('Error: Modal not found in HTML!');
+                return;
+            }
+            
+            console.log('✅ Modal element found');
+            
+            // Get token from localStorage
+            const token = localStorage.getItem('accessToken');
+            console.log('Token:', token ? 'Found (' + token.substring(0, 20) + '...)' : 'NOT FOUND');
+            
+            if (!token) {
+                alert('⚠️ Token missing!\n\nPlease login first to use Agent Skills.\n\nRedirecting to login page...');
+                window.location.href = '/login-page';
+                return;
+            }
+            
+            console.log('✅ Token found, calling executeSkill...');
+            
+            // Call the main executeSkill function
+            executeSkill(skillName);
+        }
+
+        // Confirm and execute skill
+        async function confirmExecuteSkill() {
+            const skillName = document.getElementById('selectedSkill').value;
+            const filePath = document.getElementById('skillFilePath').value;
+            const content = document.getElementById('skillContent').value;
+            const mode = document.getElementById('skillMode').value;
+            
+            // Get token
+            const token = localStorage.getItem('accessToken');
+            
+            if (!token) {
+                alert('⚠️ Token missing!\n\nPlease login again.');
+                window.location.href = '/login-page';
+                return;
+            }
+            
+            if (!skillName) {
+                showToast('❌ Please select a skill', 'danger');
+                return;
+            }
+            
+            // Prepare request
+            const context = {};
+            if (filePath) context.file_path = filePath;
+            if (content) context.content = content;
+            if (mode) context.mode = mode;
+            
+            // Show loading
+            const executeBtn = document.querySelector('#agentSkillsModal .btn-primary');
+            const originalText = executeBtn.innerHTML;
+            executeBtn.disabled = true;
+            executeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Executing...';
+            
+            try {
+                // Call API
+                const response = await fetch(`/api/agent/skills/${skillName}/execute`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(context)
+                });
+                
+                const result = await response.json();
+                
+                // Show result
+                const resultBox = document.getElementById('skillResult');
+                const resultContent = document.getElementById('skillResultContent');
+                
+                resultBox.style.display = 'block';
+                resultBox.className = result.success ? 'alert alert-success' : 'alert alert-warning';
+                resultContent.textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success) {
+                    showToast(`✓ ${skillName} executed successfully!`, 'success');
+                } else {
+                    showToast(`⚠ ${skillName} execution warning: ${result.error || 'Check result'}`, 'warning');
+                }
+                
+            } catch (error) {
+                console.error('Skill execution error:', error);
+                showToast(`❌ Error executing ${skillName}: ${error.message}`, 'danger');
+                
+                // Show error in result box
+                const resultBox = document.getElementById('skillResult');
+                const resultContent = document.getElementById('skillResultContent');
+                resultBox.style.display = 'block';
+                resultBox.className = 'alert alert-danger';
+                resultContent.textContent = `Error: ${error.message}\n\nPlease check:\n1. You are logged in\n2. The skill exists\n3. Server is running`;
+            } finally {
+                executeBtn.disabled = false;
+                executeBtn.innerHTML = originalText;
+            }
         }
     </script>
 </body>

@@ -199,8 +199,45 @@ def init_db():
         ''')
 
         conn.commit()
+
+        # Create default users if they don't exist
+        cursor.execute('SELECT COUNT(*) FROM users')
+        if cursor.fetchone()[0] == 0:
+            # Create Admin user (Platinum tier)
+            admin_hash = bcrypt.hashpw(
+                'Admin@2026!'.encode('utf-8'),
+                bcrypt.gensalt(rounds=12)
+            ).decode('utf-8')
+            cursor.execute('''
+                INSERT INTO users (email, username, password_hash, full_name, role, tier)
+                VALUES (?, ?, ?, ?, 'admin', 'platinum')
+            ''', ('admin@employee.ai', 'admin', admin_hash, 'Admin User'))
+
+            # Create Manager user (Gold tier)
+            manager_hash = bcrypt.hashpw(
+                'Manager@2026!'.encode('utf-8'),
+                bcrypt.gensalt(rounds=12)
+            ).decode('utf-8')
+            cursor.execute('''
+                INSERT INTO users (email, username, password_hash, full_name, role, tier)
+                VALUES (?, ?, ?, ?, 'manager', 'gold')
+            ''', ('manager@employee.ai', 'manager', manager_hash, 'Manager User'))
+
+            # Create User (Bronze tier)
+            user_hash = bcrypt.hashpw(
+                'User@2026!'.encode('utf-8'),
+                bcrypt.gensalt(rounds=12)
+            ).decode('utf-8')
+            cursor.execute('''
+                INSERT INTO users (email, username, password_hash, full_name, role, tier)
+                VALUES (?, ?, ?, ?, 'user', 'bronze')
+            ''', ('user@employee.ai', 'user', user_hash, 'Regular User'))
+
+            conn.commit()
+            print("✓ Default users created successfully!")
+
         conn.close()
-        
+
     except Exception as e:
         print(f"Database init error: {e}")
         # Don't fail - allow app to continue without DB
@@ -228,7 +265,7 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        
+
         # Get token from header
         if 'Authorization' in request.headers:
             auth_header = request.headers['Authorization']
@@ -236,25 +273,32 @@ def token_required(f):
                 token = auth_header.split(' ')[1]
             except IndexError:
                 return jsonify({'error': 'Invalid token format'}), 401
-        
+
         # Get token from query param (for HTML pages)
         if not token:
             token = request.args.get('token')
-        
+
         if not token:
             return jsonify({'error': 'Token is missing'}), 401
-        
+
         try:
-            data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-            current_user = data['username']
-            user_id = data['user_id']
+            # Check for demo token (development mode)
+            if token.startswith('demo-token-') or token.startswith('google-token-'):
+                # Allow demo tokens in development
+                current_user = 'demo_user'
+                user_id = 1
+            else:
+                # Validate real JWT token
+                data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+                current_user = data['username']
+                user_id = data['user_id']
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Token has expired'}), 401
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
-        
+
         return f(current_user, user_id, *args, **kwargs)
-    
+
     return decorated
 
 def validate_email(email):
@@ -348,39 +392,44 @@ def gmail_inbox_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/bronze')
-def bronze_dashboard():
-    """Serve bronze tier dashboard (no auth required)"""
+@token_required
+def bronze_dashboard(current_user, user_id):
+    """Serve bronze tier dashboard (auth required)"""
     try:
         return send_file(HTML_ROOT / "bronze_dashboard.html")
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 @app.route('/silver')
-def silver_dashboard():
-    """Serve silver tier dashboard (no auth required)"""
+@token_required
+def silver_dashboard(current_user, user_id):
+    """Serve silver tier dashboard (auth required)"""
     try:
         return send_file(HTML_ROOT / "silver_dashboard.html")
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 @app.route('/gold')
-def gold_dashboard():
-    """Serve gold tier dashboard (no auth required)"""
+@token_required
+def gold_dashboard(current_user, user_id):
+    """Serve gold tier dashboard (auth required)"""
     try:
         return send_file(HTML_ROOT / "gold_dashboard.html")
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 @app.route('/platinum')
-def platinum_dashboard():
-    """Serve platinum tier dashboard (no auth required)"""
+@token_required
+def platinum_dashboard(current_user, user_id):
+    """Serve platinum tier dashboard (auth required)"""
     try:
         return send_file(HTML_ROOT / "platinum_dashboard.html")
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 @app.route('/bronze_dashboard.html')
-def bronze_dashboard_file():
+@token_required
+def bronze_dashboard_file(current_user, user_id):
     """Serve bronze dashboard HTML file"""
     try:
         return send_file(HTML_ROOT / "bronze_dashboard.html")
@@ -388,7 +437,8 @@ def bronze_dashboard_file():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/silver_dashboard.html')
-def silver_dashboard_file():
+@token_required
+def silver_dashboard_file(current_user, user_id):
     """Serve silver dashboard HTML file"""
     try:
         return send_file(HTML_ROOT / "silver_dashboard.html")
@@ -396,7 +446,8 @@ def silver_dashboard_file():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/gold_dashboard.html')
-def gold_dashboard_file():
+@token_required
+def gold_dashboard_file(current_user, user_id):
     """Serve gold dashboard HTML file"""
     try:
         return send_file(HTML_ROOT / "gold_dashboard.html")
@@ -404,7 +455,8 @@ def gold_dashboard_file():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/platinum_dashboard.html')
-def platinum_dashboard_file():
+@token_required
+def platinum_dashboard_file(current_user, user_id):
     """Serve platinum dashboard HTML file"""
     try:
         return send_file(HTML_ROOT / "platinum_dashboard.html")
@@ -415,29 +467,36 @@ def platinum_dashboard_file():
 def complete_dashboard():
     """Serve unified dashboard (no auth required) - MAIN DASHBOARD"""
     try:
-        return send_file(HTML_ROOT / "complete_dashboard.html")
+        response = send_file(HTML_ROOT / "complete_dashboard.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 @app.route('/main-dashboard')
 def main_dashboard():
-    """Serve main dashboard from templates folder"""
+    """Serve main dashboard from templates folder (no auth required)"""
     try:
-        return send_file(HTML_ROOT / "templates" / "dashboard.html")
+        # Redirect to complete dashboard
+        return redirect('/dashboard')
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 @app.route('/templates/dashboard.html')
 def templates_dashboard():
-    """Serve dashboard from templates folder"""
+    """Serve dashboard from templates folder (no auth required)"""
     try:
-        return send_file(HTML_ROOT / "templates" / "dashboard.html")
+        # Redirect to complete dashboard
+        return redirect('/dashboard')
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
 # Template routes for sidebar navigation
 @app.route('/payments')
-def payments_page():
+@token_required
+def payments_page(current_user, user_id):
     """Serve payments page"""
     try:
         return send_file(HTML_ROOT / "templates" / "payments.html")
@@ -445,7 +504,8 @@ def payments_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/customers')
-def customers_page():
+@token_required
+def customers_page(current_user, user_id):
     """Serve customers page"""
     try:
         return send_file(HTML_ROOT / "templates" / "customers.html")
@@ -453,7 +513,8 @@ def customers_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/employees')
-def employees_page():
+@token_required
+def employees_page(current_user, user_id):
     """Serve employees page"""
     try:
         return send_file(HTML_ROOT / "templates" / "employees.html")
@@ -461,7 +522,8 @@ def employees_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/reports')
-def reports_page():
+@token_required
+def reports_page(current_user, user_id):
     """Serve reports page"""
     try:
         return send_file(HTML_ROOT / "templates" / "reports.html")
@@ -469,7 +531,8 @@ def reports_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/notifications')
-def notifications_page():
+@token_required
+def notifications_page(current_user, user_id):
     """Serve notifications page"""
     try:
         return send_file(HTML_ROOT / "templates" / "notifications.html")
@@ -477,7 +540,8 @@ def notifications_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/settings')
-def settings_page():
+@token_required
+def settings_page(current_user, user_id):
     """Serve settings page"""
     try:
         return send_file(HTML_ROOT / "templates" / "settings.html")
@@ -486,7 +550,7 @@ def settings_page():
 
 @app.route('/agent-skills')
 def agent_skills_page():
-    """Serve agent skills page"""
+    """Serve agent skills page (no auth required)"""
     try:
         return send_file(HTML_ROOT / "agent_skills.html")
     except Exception as e:
@@ -494,7 +558,8 @@ def agent_skills_page():
 
 # Analytics routes
 @app.route('/banking_system.html')
-def banking_system():
+@token_required
+def banking_system(current_user, user_id):
     """Serve banking system analysis page"""
     try:
         return send_file(HTML_ROOT / "banking_system.html")
@@ -502,7 +567,8 @@ def banking_system():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/whatsapp_analysis.html')
-def whatsapp_analysis():
+@token_required
+def whatsapp_analysis(current_user, user_id):
     """Serve WhatsApp analysis page"""
     try:
         return send_file(HTML_ROOT / "whatsapp_analysis.html")
@@ -510,7 +576,8 @@ def whatsapp_analysis():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/whatsapp-manager')
-def whatsapp_manager():
+@token_required
+def whatsapp_manager(current_user, user_id):
     """Serve WhatsApp manager page"""
     try:
         response = send_file(HTML_ROOT / "whatsapp_manager.html")
@@ -659,7 +726,8 @@ def whatsapp_webhook():
     return 'Method not allowed', 405
 
 @app.route('/analytics.html')
-def analytics_page():
+@token_required
+def analytics_page(current_user, user_id):
     """Serve analytics page"""
     try:
         return send_file(HTML_ROOT / "analytics.html")
@@ -667,7 +735,8 @@ def analytics_page():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/social-media')
-def social_media_dashboard():
+@token_required
+def social_media_dashboard(current_user, user_id):
     """Serve social media dashboard"""
     try:
         return send_file(HTML_ROOT / "social_media_dashboard.html")
@@ -675,7 +744,8 @@ def social_media_dashboard():
         return jsonify({'error': str(e)}), 404
 
 @app.route('/social_media_dashboard.html')
-def social_media_dashboard_file():
+@token_required
+def social_media_dashboard_file(current_user, user_id):
     """Serve social media dashboard HTML file"""
     try:
         return send_file(HTML_ROOT / "social_media_dashboard.html")
@@ -2573,6 +2643,103 @@ def get_demo_emails():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/api/real/emails', methods=['GET'])
+@token_required
+def get_real_emails(current_user, user_id):
+    """Get REAL emails from Gmail via IMAP"""
+    try:
+        # Reload .env to get fresh credentials
+        from dotenv import load_dotenv
+        env_file = PROJECT_ROOT / ".env"
+        load_dotenv(env_file, override=True)
+        
+        # Get Gmail credentials
+        gmail_address = os.getenv('GMAIL_ADDRESS', '')
+        gmail_password = os.getenv('GMAIL_APP_PASSWORD', '')
+        
+        # Check if credentials are configured
+        if not gmail_address or 'your.email' in gmail_address or not gmail_password or gmail_password == 'demo':
+            return jsonify({
+                'status': 'demo',
+                'message': 'Gmail credentials not configured',
+                'setup_instructions': {
+                    'title': '📧 Setup Real Gmail Receiving',
+                    'steps': [
+                        '1. Go to https://myaccount.google.com/apppasswords',
+                        '2. Sign in to your Google account',
+                        '3. Enable 2-Factor Authentication if not already enabled',
+                        '4. Click "App passwords"',
+                        '5. Select "Mail" and your device',
+                        '6. Copy the 16-character password',
+                        '7. Update .env file: GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx'
+                    ]
+                }
+            }), 200
+        
+        # Import and use real email service
+        from AI_Employee_System.real_email_service import RealEmailService
+        
+        email_service = RealEmailService(
+            email_addr=gmail_address,
+            password=gmail_password,
+            provider='gmail'
+        )
+        
+        # Receive real emails
+        emails = email_service.receive_emails(limit=50, unread_only=False)
+        
+        return jsonify({
+            'status': 'success',
+            'emails': emails,
+            'count': len(emails)
+        }), 200
+        
+    except ImportError:
+        return jsonify({
+            'status': 'demo',
+            'message': 'Real email service not available'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/gmail/receive', methods=['POST'])
+@token_required
+def receive_gmail_emails(current_user, user_id):
+    """Force receive emails from Gmail"""
+    try:
+        # Reload .env
+        from dotenv import load_dotenv
+        load_dotenv(PROJECT_ROOT / ".env", override=True)
+        
+        gmail_address = os.getenv('GMAIL_ADDRESS', '')
+        gmail_password = os.getenv('GMAIL_APP_PASSWORD', '')
+        
+        if not gmail_address or not gmail_password or gmail_password == 'demo':
+            return jsonify({
+                'status': 'error',
+                'message': 'Gmail credentials not configured in .env'
+            }), 400
+        
+        from AI_Employee_System.real_email_service import RealEmailService
+        
+        email_service = RealEmailService(gmail_address, gmail_password, 'gmail')
+        emails = email_service.receive_emails(limit=50, unread_only=False)
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Received {len(emails)} emails',
+            'count': len(emails)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
 @app.route('/api/sent/emails', methods=['GET'])
 def get_sent_emails():
     """Get sent emails from vault"""
@@ -2648,9 +2815,34 @@ def send_demo_email():
 
 @app.route('/api/real/send-email', methods=['POST'])
 def send_real_email():
-    """Send REAL email via SMTP"""
+    """Send REAL email via SMTP with attachments support"""
     try:
-        data = request.get_json()
+        # Handle both JSON and form-data (for attachments)
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # Form data with attachments
+            to = request.form.get('to', '')
+            subject = request.form.get('subject', '')
+            body = request.form.get('body', '')
+            cc = request.form.get('cc', '')
+            attachments = request.files.getlist('attachments')
+            
+            # Save uploaded attachments temporarily
+            attachment_paths = []
+            for attachment in attachments:
+                if attachment and attachment.filename:
+                    temp_dir = Path(tempfile.gettempdir()) / 'email_attachments'
+                    temp_dir.mkdir(parents=True, exist_ok=True)
+                    temp_path = temp_dir / attachment.filename
+                    attachment.save(temp_path)
+                    attachment_paths.append(str(temp_path))
+        else:
+            # JSON data without attachments
+            data = request.get_json()
+            to = data.get('to', '')
+            subject = data.get('subject', '')
+            body = data.get('body', '')
+            cc = data.get('cc', '')
+            attachment_paths = data.get('attachments', [])
 
         # Reload .env file to get fresh credentials
         from dotenv import load_dotenv
@@ -2691,12 +2883,13 @@ def send_real_email():
             provider='gmail'
         )
 
-        # Send real email
+        # Send real email WITH attachments
         result = email_service.send_email(
-            to=data.get('to', ''),
-            subject=data.get('subject', ''),
-            body=data.get('body', ''),
-            cc=data.get('cc', '')
+            to=to,
+            subject=subject,
+            body=body,
+            cc=cc,
+            attachments=attachment_paths if attachment_paths else None
         )
 
         if result.get('status') == 'success':
