@@ -360,8 +360,8 @@
         function checkAuthToken() {
             const token = localStorage.getItem('accessToken');
             if (!token) {
-                alert('⚠️ Token missing!\n\nPlease login first to access WhatsApp Manager.\n\nRedirecting to login page...');
-                window.location.href = '/login-page';
+                // Show warning but don't redirect - allow demo mode
+                console.log('ℹ️ No token found - running in demo mode');
                 return false;
             }
             return true;

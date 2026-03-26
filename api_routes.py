@@ -576,9 +576,8 @@ def whatsapp_analysis(current_user, user_id):
         return jsonify({'error': str(e)}), 404
 
 @app.route('/whatsapp-manager')
-@token_required
-def whatsapp_manager(current_user, user_id):
-    """Serve WhatsApp manager page"""
+def whatsapp_manager():
+    """Serve WhatsApp manager page (no auth required for easy access)"""
     try:
         response = send_file(HTML_ROOT / "whatsapp_manager.html")
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
