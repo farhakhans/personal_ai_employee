@@ -589,6 +589,91 @@ def whatsapp_manager(current_user, user_id):
         return jsonify({'error': str(e)}), 404
 
 # WhatsApp Real API Endpoints
+@app.route('/api/whatsapp/ai/send', methods=['POST'])
+def whatsapp_ai_send():
+    """Send WhatsApp message with AI auto-reply"""
+    data = request.get_json()
+    to_number = data.get('to', '')
+    message = data.get('message', '')
+    
+    if not to_number or not message:
+        return jsonify({'error': 'Number and message required'}), 400
+    
+    try:
+        # Use AI Agent for intelligent response
+        from whatsapp_ai_agent import whatsapp_ai
+        
+        # Process message with AI
+        response = whatsapp_ai.handle_incoming(to_number, message)
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'AI response sent',
+            'response': response
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/whatsapp/ai/config', methods=['GET'])
+def whatsapp_ai_get_config():
+    """Get WhatsApp AI configuration"""
+    try:
+        from whatsapp_ai_agent import whatsapp_ai
+        return jsonify({
+            'status': 'success',
+            'config': whatsapp_ai.config,
+            'stats': whatsapp_ai.get_stats()
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/whatsapp/ai/config', methods=['POST'])
+def whatsapp_ai_save_config():
+    """Save WhatsApp AI configuration"""
+    data = request.get_json()
+    
+    try:
+        from whatsapp_ai_agent import whatsapp_ai
+        
+        # Update config
+        if 'greeting' in data:
+            whatsapp_ai.config['greeting'] = data['greeting']
+        if 'business_name' in data:
+            whatsapp_ai.config['business_name'] = data['business_name']
+        if 'ai_settings' in data:
+            whatsapp_ai.config['ai_settings'].update(data['ai_settings'])
+        if 'auto_topics' in data:
+            whatsapp_ai.config['auto_topics'].update(data['auto_topics'])
+        
+        whatsapp_ai.save_config()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'AI configuration saved'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/whatsapp/ai/messages', methods=['GET'])
+def whatsapp_ai_get_messages():
+    """Get WhatsApp AI message history"""
+    try:
+        from whatsapp_ai_agent import whatsapp_ai
+        
+        # Get last 50 conversations
+        conversations = whatsapp_ai.messages.get('conversations', [])[-50:]
+        
+        return jsonify({
+            'status': 'success',
+            'messages': conversations,
+            'total': len(conversations),
+            'stats': whatsapp_ai.get_stats()
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/whatsapp/send', methods=['POST'])
 def whatsapp_send():
     """Send real WhatsApp message"""
