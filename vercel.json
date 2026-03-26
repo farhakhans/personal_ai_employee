@@ -3,24 +3,17 @@
   "installCommand": "pip install -r requirements.txt",
   "devCommand": "python app.py",
   "buildCommand": "echo 'No build needed'",
-  "outputDirectory": "tmp",
   "env": {
     "VERCEL": "1",
     "VAULT_PATH": "/tmp/vault",
-    "PYTHONPATH": ".",
+    "PYTHONPATH": "..",
     "ANTHROPIC_API_KEY": "",
     "GMAIL_ADDRESS": "",
     "GMAIL_APP_PASSWORD": ""
   },
   "functions": {
-    "api_routes.py": {
+    "api/index.py": {
       "maxDuration": 60
     }
-  },
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api_routes.py"
-    }
-  ]
+  }
 }

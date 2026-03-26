@@ -192,3 +192,8 @@ def serve_html(filename):
 # Vercel expects this for serverless
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
+# Vercel serverless handler
+def handler(request):
+    """Vercel serverless handler"""
+    return app(request.environ, lambda *args: None)
