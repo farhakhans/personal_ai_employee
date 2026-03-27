@@ -436,6 +436,18 @@ def bronze_dashboard_file(current_user, user_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
+@app.route('/bronze-tier')
+def bronze_tier_form():
+    """Serve bronze tier setup form (no auth required for easy setup)"""
+    try:
+        response = send_file(HTML_ROOT / "bronze_tier_form.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
 @app.route('/silver_dashboard.html')
 @token_required
 def silver_dashboard_file(current_user, user_id):
@@ -2202,9 +2214,8 @@ def get_gmail_watcher_status():
     }), 200
 
 @app.route('/api/watchers/start/gmail', methods=['POST'])
-@token_required
-def start_gmail_watcher(current_user, user_id):
-    """Start Gmail watcher"""
+def start_gmail_watcher_public():
+    """Start Gmail watcher - public endpoint (no auth required for Bronze tier)"""
     try:
         import subprocess
         import sys
@@ -2278,8 +2289,6 @@ pause >nul
             # Open Gmail in web browser
             gmail_url = f"https://mail.google.com/mail/u/{gmail_email}/"
             webbrowser.open(gmail_url)
-
-            log_audit(user_id, 'GMAIL_WATCHER_STARTED', f'User {current_user} started Gmail watcher')
 
             return jsonify({
                 'status': 'success',
@@ -2534,9 +2543,8 @@ def test_gmail_connection():
         }), 500
 
 @app.route('/api/watchers/start/file', methods=['POST'])
-@token_required
-def start_file_watcher(current_user, user_id):
-    """Start File watcher"""
+def start_file_watcher_public():
+    """Start File watcher - public endpoint (no auth required for Bronze tier)"""
     try:
         import subprocess
         import sys
@@ -2587,8 +2595,6 @@ pause >nul
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             startupinfo=startupinfo
         )
-        
-        log_audit(user_id, 'FILE_WATCHER_STARTED', f'User {current_user} started File watcher')
         
         return jsonify({
             'status': 'success',
@@ -2962,6 +2968,66 @@ except Exception as e:
 # ================================================================
 # EMAIL DASHBOARD ROUTES
 # ================================================================
+
+@app.route('/silver-tier')
+def silver_tier_form():
+    """Serve Silver Tier setup form"""
+    try:
+        response = send_file(HTML_ROOT / "silver_tier_form.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/silver-tier.html')
+def silver_tier_form_file():
+    """Serve Silver Tier setup form HTML file"""
+    try:
+        return send_file(HTML_ROOT / "silver_tier_form.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/gold-tier')
+def gold_tier_form():
+    """Serve Gold Tier setup form"""
+    try:
+        response = send_file(HTML_ROOT / "gold_tier_form.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/gold-tier.html')
+def gold_tier_form_file():
+    """Serve Gold Tier setup form HTML file"""
+    try:
+        return send_file(HTML_ROOT / "gold_tier_form.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/platinum-tier')
+def platinum_tier_form():
+    """Serve Platinum Tier setup form"""
+    try:
+        response = send_file(HTML_ROOT / "platinum_tier_form.html")
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/platinum-tier.html')
+def platinum_tier_form_file():
+    """Serve Platinum Tier setup form HTML file"""
+    try:
+        return send_file(HTML_ROOT / "platinum_tier_form.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
 @app.route('/email-dashboard')
 def email_dashboard():

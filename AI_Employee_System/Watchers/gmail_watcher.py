@@ -325,7 +325,6 @@ Suggested Action: TBD
 
             # Process only recent emails (last 50)
             new_count = 0
-            new_emails = []
             for msg_id in msg_id_list[-50:]:
                 msg_id_decoded = msg_id.decode()
 
@@ -333,15 +332,13 @@ Suggested Action: TBD
                     email_data = self.process_email(msg_id)
                     if email_data:
                         self.save_to_inbox(email_data)
-                        new_emails.append(email_data)
                         new_count += 1
 
             imap.close()
             imap.logout()
 
-            # Send notifications for new emails
-            for email_data in new_emails:
-                self.send_email_notification(email_data)
+            # Note: Email notifications have been disabled
+            # New emails are saved to Vault/Inbox only
 
             if new_count > 0:
                 logger.info(f"📨 Found {new_count} new email(s)")
