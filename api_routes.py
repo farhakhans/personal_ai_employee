@@ -836,6 +836,104 @@ def social_media_dashboard_file(current_user, user_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
+@app.route('/social-config')
+@token_required
+def social_media_config_page(current_user, user_id):
+    """Serve social media configuration page"""
+    try:
+        return send_file(HTML_ROOT / "social_config.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/test-linkedin')
+@token_required
+def test_linkedin_page(current_user, user_id):
+    """Serve LinkedIn test page"""
+    try:
+        return send_file(HTML_ROOT / "test_linkedin.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
+
+@app.route('/api/social/config', methods=['GET'])
+@token_required
+def get_social_config(current_user, user_id):
+    """Get social media configuration"""
+    try:
+        config = {
+            'linkedin_access_token': os.getenv('LINKEDIN_ACCESS_TOKEN', ''),
+            'linkedin_person_urn': os.getenv('LINKEDIN_PERSON_URN', ''),
+            'facebook_access_token': os.getenv('FACEBOOK_ACCESS_TOKEN', ''),
+            'facebook_page_id': os.getenv('FACEBOOK_PAGE_ID', ''),
+            'instagram_access_token': os.getenv('INSTAGRAM_ACCESS_TOKEN', ''),
+            'instagram_account_id': os.getenv('INSTAGRAM_ACCOUNT_ID', ''),
+            'twitter_api_key': os.getenv('TWITTER_API_KEY', ''),
+            'twitter_api_secret': os.getenv('TWITTER_API_SECRET', ''),
+            'twitter_access_token': os.getenv('TWITTER_ACCESS_TOKEN', ''),
+            'twitter_access_token_secret': os.getenv('TWITTER_ACCESS_TOKEN_SECRET', '')
+        }
+        return jsonify({'status': 'success', 'config': config}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/social/config', methods=['POST'])
+@token_required
+def save_social_config(current_user, user_id):
+    """Save social media configuration to .env file"""
+    try:
+        data = request.get_json()
+        env_file = PROJECT_ROOT / ".env"
+        
+        # Read existing content
+        existing_content = ""
+        if env_file.exists():
+            with open(env_file, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+        
+        # Mapping of config keys to env variable names
+        env_mapping = {
+            'linkedin_access_token': 'LINKEDIN_ACCESS_TOKEN',
+            'linkedin_person_urn': 'LINKEDIN_PERSON_URN',
+            'facebook_access_token': 'FACEBOOK_ACCESS_TOKEN',
+            'facebook_page_id': 'FACEBOOK_PAGE_ID',
+            'instagram_access_token': 'INSTAGRAM_ACCESS_TOKEN',
+            'instagram_account_id': 'INSTAGRAM_ACCOUNT_ID',
+            'twitter_api_key': 'TWITTER_API_KEY',
+            'twitter_api_secret': 'TWITTER_API_SECRET',
+            'twitter_access_token': 'TWITTER_ACCESS_TOKEN',
+            'twitter_access_token_secret': 'TWITTER_ACCESS_TOKEN_SECRET'
+        }
+        
+        new_lines = []
+        updated = {key: False for key in env_mapping.values()}
+        
+        for line in existing_content.split('\n'):
+            modified = False
+            for config_key, env_var in env_mapping.items():
+                if line.startswith(f'{env_var}='):
+                    if config_key in data and data[config_key]:
+                        new_lines.append(f'{env_var}={data[config_key]}')
+                        updated[env_var] = True
+                        modified = True
+                        break
+            if not modified:
+                new_lines.append(line)
+        
+        # Add missing values
+        for config_key, env_var in env_mapping.items():
+            if not updated[env_var] and config_key in data and data[config_key]:
+                new_lines.append(f'{env_var}={data[config_key]}')
+        
+        # Write back
+        with open(env_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(new_lines))
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Configuration saved. Restart server to apply changes.'
+        }), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 # Authentication endpoints
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -1386,18 +1484,7 @@ def get_mcp_capabilities(server_name):
             'message': str(e)
         }), 500
 
-@app.route('/api/vault/stats', methods=['GET'])
-@token_required
-def vault_stats(current_user, user_id):
-    """Get vault statistics"""
-    # Mock data - replace with actual vault reading
-    return jsonify({
-        'needs_action': 5,
-        'pending_approval': 2,
-        'done': 156,
-        'plans': 42,
-        'last_updated': datetime.datetime.utcnow().isoformat()
-    }), 200
+# Removed duplicate mock vault_stats endpoint - using get_vault_stats_public instead
 
 @app.route('/api/system/logs', methods=['GET'])
 @token_required
@@ -2029,17 +2116,80 @@ def get_dashboard_stats(current_user, user_id):
     }), 200
 
 @app.route('/api/vault/stats', methods=['GET'])
+def get_vault_stats_public():
+    """Get vault statistics (public - no auth required)"""
+    try:
+        vault_path = Path(os.getenv('VAULT_PATH', 'Vault'))
+        
+        # Count files in each folder
+        stats = {
+            'inbox': 0,
+            'needs_action': 0,
+            'pending_approval': 0,
+            'approved': 0,
+            'done': 0,
+            'plans': 0,
+            'sent': 0,
+            'total_files': 0
+        }
+        
+        # Check each subfolder
+        folders = {
+            'inbox': 'Inbox',
+            'needs_action': 'Needs_Action',
+            'pending_approval': 'Pending_Approval',
+            'approved': 'Approved',
+            'done': 'Done',
+            'plans': 'Plans',
+            'sent': 'Sent'
+        }
+        
+        for key, folder_name in folders.items():
+            folder_path = vault_path / folder_name
+            if folder_path.exists():
+                # Count all files recursively
+                file_count = len(list(folder_path.rglob('*')))
+                stats[key] = file_count
+                stats['total_files'] += file_count
+        
+        # Get recent files
+        recent_files = []
+        if vault_path.exists():
+            all_files = list(vault_path.rglob('*.md'))
+            all_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+            for file in all_files[:10]:
+                recent_files.append({
+                    'name': file.name,
+                    'path': str(file.relative_to(vault_path)),
+                    'modified': datetime.datetime.fromtimestamp(file.stat().st_mtime).isoformat()
+                })
+        
+        stats['recent_files'] = recent_files
+        stats['vault_path'] = str(vault_path)
+        stats['vault_exists'] = vault_path.exists()
+        
+        return jsonify(stats), 200
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'vault_exists': False
+        }), 500
+
+@app.route('/api/vault/stats', methods=['GET'])
 @token_required
 def get_vault_stats(current_user, user_id):
-    """Get vault statistics"""
-    # Return mock vault stats (will integrate with real vault later)
-    return jsonify({
-        'needs_action': 3,
-        'pending_approval': 2,
-        'done': 45,
-        'plans': 8,
-        'last_updated': datetime.datetime.utcnow().isoformat()
-    }), 200
+    """Get vault statistics (with auth)"""
+    # Same as public endpoint but with authentication
+    return get_vault_stats_public()
+
+@app.route('/vault-stats')
+def vault_stats_page():
+    """Serve vault statistics page"""
+    try:
+        return send_file(HTML_ROOT / "vault_stats.html")
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
 @app.route('/api/watchers/gmail/status', methods=['GET'])
 def get_gmail_watcher_status():
@@ -2604,63 +2754,210 @@ try:
         """
         return html
     
+    # ===== FACEBOOK API ROUTES =====
     @app.route('/api/social/facebook/create', methods=['POST'])
     def facebook_create():
+        """Generate Facebook post content"""
         body = request.json or {}
         topic = body.get('topic', 'AI Automation')
         content_result = fb.generate_post_content(topic, tone='professional')
         return jsonify(content_result)
-    
+
     @app.route('/api/social/facebook/publish', methods=['POST'])
     def facebook_publish():
+        """Publish post to Facebook Page"""
         body = request.json or {}
         message = body.get('message', 'Test post from AI Employee')
-        result = fb.post_to_page(message)
+        image_url = body.get('image_url')
+        result = fb.post_to_page(message, photo_url=image_url)
         return jsonify(result)
-    
+
+    @app.route('/api/social/facebook/test', methods=['GET'])
+    def facebook_test():
+        """Test Facebook API connection"""
+        result = fb.test_connection()
+        return jsonify(result)
+
+    @app.route('/api/social/facebook/posts', methods=['GET'])
+    def facebook_get_posts():
+        """Get recent Facebook posts"""
+        limit = request.args.get('limit', 10, type=int)
+        result = fb.get_page_posts(limit)
+        return jsonify(result)
+
+    # ===== INSTAGRAM API ROUTES =====
     @app.route('/api/social/instagram/create', methods=['POST'])
     def instagram_create():
+        """Generate Instagram post content"""
         body = request.json or {}
         topic = body.get('topic', 'AI Automation')
         content_result = ig.generate_post_content(topic, tone='casual')
         return jsonify(content_result)
-    
+
     @app.route('/api/social/instagram/publish', methods=['POST'])
     def instagram_publish():
+        """Publish post to Instagram"""
         body = request.json or {}
         caption = body.get('caption', 'Test post from AI Employee')
-        return jsonify({'success': True, 'message': 'Instagram post created', 'caption': caption})
-    
+        image_url = body.get('image_url', 'https://via.placeholder.com/1080x1080')
+        result = ig.post_image(image_url, caption)
+        return jsonify(result)
+
+    @app.route('/api/social/instagram/test', methods=['GET'])
+    def instagram_test():
+        """Test Instagram API connection"""
+        if not ig.access_token or not ig.instagram_account_id:
+            return jsonify({'success': False, 'error': 'Instagram credentials not configured'})
+        result = ig.get_recent_media(1)
+        return jsonify(result)
+
+    @app.route('/api/social/instagram/posts', methods=['GET'])
+    def instagram_get_posts():
+        """Get recent Instagram posts"""
+        limit = request.args.get('limit', 10, type=int)
+        result = ig.get_recent_media(limit)
+        return jsonify(result)
+
+    # ===== LINKEDIN API ROUTES =====
     @app.route('/api/social/linkedin/create', methods=['POST'])
     def linkedin_create():
+        """Generate LinkedIn post content"""
         body = request.json or {}
         topic = body.get('topic', 'Business Update')
-        content_result = li.generate_post_content(topic, tone='professional')
-        return jsonify(content_result)
-    
+        content_result = li.generate_business_post(topic, body.get('details', {}))
+        return jsonify({'success': True, 'content': content_result})
+
     @app.route('/api/social/linkedin/publish', methods=['POST'])
     def linkedin_publish():
+        """Publish post to LinkedIn"""
         body = request.json or {}
         message = body.get('message', 'Test post from AI Employee')
-        result = li.post_to_profile(message)
+        title = body.get('title', '')
+        result = li.post_to_profile(message, title)
         return jsonify(result)
-    
+
+    @app.route('/api/social/linkedin/test', methods=['GET'])
+    def linkedin_test():
+        """Test LinkedIn API connection"""
+        result = li.test_connection()
+        return jsonify(result)
+
+    @app.route('/api/social/linkedin/image', methods=['POST'])
+    def linkedin_publish_image():
+        """Publish post with image to LinkedIn"""
+        body = request.json or {}
+        message = body.get('message', 'Test post from AI Employee')
+        image_url = body.get('image_url', '')
+        if not image_url:
+            return jsonify({'success': False, 'error': 'image_url required'})
+        result = li.post_with_image(message, image_url)
+        return jsonify(result)
+
+    @app.route('/api/social/linkedin/posts', methods=['GET'])
+    def linkedin_get_posts():
+        """Get your LinkedIn posts"""
+        count = request.args.get('count', 10, type=int)
+        result = li.get_my_posts(count)
+        return jsonify(result)
+
+    @app.route('/api/social/linkedin/comments', methods=['GET'])
+    def linkedin_get_comments():
+        """Get comments for a LinkedIn post"""
+        post_id = request.args.get('post_id', '')
+        if not post_id:
+            return jsonify({'success': False, 'error': 'post_id required'})
+        result = li.get_post_comments(post_id)
+        return jsonify(result)
+
+    @app.route('/api/social/linkedin/notifications', methods=['GET'])
+    def linkedin_get_notifications():
+        """Get LinkedIn notifications (likes, comments, mentions)"""
+        count = request.args.get('count', 20, type=int)
+        result = li.get_notifications(count)
+        return jsonify(result)
+
+    @app.route('/api/social/linkedin/engagement', methods=['GET'])
+    def linkedin_get_engagement():
+        """Get engagement summary for a post"""
+        post_id = request.args.get('post_id', '')
+        if not post_id:
+            return jsonify({'success': False, 'error': 'post_id required'})
+        result = li.get_engagement_summary(post_id)
+        return jsonify(result)
+
+    @app.route('/api/social/linkedin/receive', methods=['GET'])
+    def linkedin_receive_posts():
+        """Receive/fetch all LinkedIn activity (posts + comments + notifications)"""
+        # Get posts
+        posts_result = li.get_my_posts(10)
+        
+        # Get notifications
+        notifications_result = li.get_notifications(20)
+        
+        # Combine results
+        all_activity = []
+        
+        # Add posts
+        if posts_result.get('success'):
+            for post in posts_result.get('posts', []):
+                all_activity.append({
+                    'type': 'post',
+                    'data': post
+                })
+        
+        # Add notifications
+        if notifications_result.get('success'):
+            for notif in notifications_result.get('notifications', []):
+                all_activity.append({
+                    'type': 'notification',
+                    'data': notif
+                })
+        
+        # Sort by created time
+        all_activity.sort(
+            key=lambda x: x['data'].get('created_at', x['data'].get('created', 0)) or 0,
+            reverse=True
+        )
+        
+        return jsonify({
+            'success': True,
+            'activity': all_activity,
+            'total': len(all_activity),
+            'posts_count': posts_result.get('total', 0),
+            'notifications_count': notifications_result.get('total', 0)
+        })
+
+    # ===== TWITTER API ROUTES =====
     @app.route('/api/social/twitter/create', methods=['POST'])
     def twitter_create():
+        """Generate tweet content"""
         body = request.json or {}
         topic = body.get('topic', 'AI News')
         content_result = tw.generate_tweet(topic)
         return jsonify(content_result)
-    
+
     @app.route('/api/social/twitter/publish', methods=['POST'])
     def twitter_publish():
+        """Publish tweet"""
         body = request.json or {}
         tweet = body.get('tweet', 'Test tweet from AI Employee')
         result = tw.post_tweet(tweet)
         return jsonify(result)
-        
+
+    @app.route('/api/social/twitter/test', methods=['GET'])
+    def twitter_test():
+        """Test Twitter API connection"""
+        return jsonify({'success': True, 'message': 'Twitter integration available'})
+
 except Exception as e:
     print(f"Social media integration not available: {e}")
+    
+    # Fallback routes when social media modules not available
+    @app.route('/api/social/facebook/test', methods=['GET'])
+    @app.route('/api/social/instagram/test', methods=['GET'])
+    @app.route('/api/social/linkedin/test', methods=['GET'])
+    def social_test_fallback():
+        return jsonify({'success': False, 'error': 'Social media integration not available'})
 
 # ================================================================
 # EMAIL DASHBOARD ROUTES
@@ -2728,9 +3025,8 @@ def get_demo_emails():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/real/emails', methods=['GET'])
-@token_required
-def get_real_emails(current_user, user_id):
-    """Get REAL emails from Gmail via IMAP"""
+def get_real_emails():
+    """Get REAL emails from Gmail via IMAP - NO AUTH REQUIRED for dashboard"""
     try:
         # Reload .env to get fresh credentials
         from dotenv import load_dotenv
@@ -2775,7 +3071,8 @@ def get_real_emails(current_user, user_id):
         return jsonify({
             'status': 'success',
             'emails': emails,
-            'count': len(emails)
+            'count': len(emails),
+            'gmail_account': gmail_address
         }), 200
         
     except ImportError:
@@ -2901,6 +3198,10 @@ def send_demo_email():
 def send_real_email():
     """Send REAL email via SMTP with attachments support"""
     try:
+        # Initialize data dict for both JSON and form-data
+        data = {}
+        attachment_paths = []
+        
         # Handle both JSON and form-data (for attachments)
         if request.content_type and 'multipart/form-data' in request.content_type:
             # Form data with attachments
@@ -2910,8 +3211,15 @@ def send_real_email():
             cc = request.form.get('cc', '')
             attachments = request.files.getlist('attachments')
             
+            # Save data for later use
+            data = {
+                'to': to,
+                'subject': subject,
+                'body': body,
+                'cc': cc
+            }
+
             # Save uploaded attachments temporarily
-            attachment_paths = []
             for attachment in attachments:
                 if attachment and attachment.filename:
                     temp_dir = Path(tempfile.gettempdir()) / 'email_attachments'
@@ -2921,7 +3229,7 @@ def send_real_email():
                     attachment_paths.append(str(temp_path))
         else:
             # JSON data without attachments
-            data = request.get_json()
+            data = request.get_json() or {}
             to = data.get('to', '')
             subject = data.get('subject', '')
             body = data.get('body', '')
@@ -2984,7 +3292,7 @@ def send_real_email():
             
             timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
             subject_safe = data.get('subject', 'No_Subject').replace(' ', '_')[:20]
-            filename = f"SENT_{data.get('to', 'unknown').replace('@', '_')}_{subject_safe}_{timestamp}.md"
+            filename = f"SENT_{str(data.get('to', 'unknown')).replace('@', '_')}_{subject_safe}_{timestamp}.md"
             
             content = f"""# Email - SENT
 

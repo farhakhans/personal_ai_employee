@@ -4,7 +4,9 @@ Monitors WhatsApp Business API for incoming messages
 Processes and stores them in vault
 """
 
+import os
 import logging
+import requests
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +14,6 @@ from pathlib import Path
 # import other watcher classes to allow multi-user orchestration
 from AI_Employee_System.Watchers.gmail_watcher import GmailWatcher
 from AI_Employee_System.Watchers.whatsapp_watcher import WhatsAppWatcher
-from AI_Employee_System.Watchers.linkedin_poster import LinkedInWatcher
 
 logger = logging.getLogger("WhatsAppWatcher")
 
@@ -91,21 +92,155 @@ class WhatsAppWatcher:
 
 class LinkedInWatcher:
     """Monitors LinkedIn for mentions and engagement (Silver Tier)"""
-    
+
     def __init__(self, access_token: str, vault_path: str):
         self.access_token = access_token
         self.vault_path = Path(vault_path)
+        self.person_urn = os.getenv("LINKEDIN_PERSON_URN")
+        self.base_url = "https://api.linkedin.com/v2"
         logger.info("✅ LinkedIn Watcher initialized (Silver Tier)")
-    
+
     def get_mentions(self) -> List[Dict[str, Any]]:
         """Get LinkedIn mentions and comments"""
         logger.info("🔗 Checking LinkedIn mentions...")
-        return []
-    
+        
+        if not self.access_token:
+            logger.warning("⚠️ LinkedIn access token not configured")
+            return []
+        
+        try:
+            # Get notifications (includes mentions)
+            endpoint = f"{self.base_url}/notifications"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            params = {
+                "count": 50,
+                "projection": "(elements*(id,activity,actionType,created))"
+            }
+            
+            response = requests.get(
+                endpoint,
+                headers=headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                elements = data.get("elements", [])
+                
+                mentions = []
+                for element in elements:
+                    action_type = element.get("actionType", "")
+                    
+                    # Filter for mentions, comments, and likes
+                    if action_type in ["MENTION", "COMMENT", "LIKE"]:
+                        mention_data = {
+                            "id": element.get("id"),
+                            "type": action_type.lower(),
+                            "activity": element.get("activity"),
+                            "created_at": element.get("created"),
+                            "actor": element.get("activity", {}).get("actor", {}),
+                            "text": element.get("activity", {}).get("text", "")
+                        }
+                        mentions.append(mention_data)
+                
+                logger.info(f"✅ Found {len(mentions)} LinkedIn mentions/interactions")
+                return mentions
+            else:
+                logger.error(f"❌ Failed to fetch LinkedIn mentions: {response.status_code}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"❌ Error fetching LinkedIn mentions: {e}")
+            return []
+
     def get_profile_visits(self) -> int:
         """Get recent profile visits"""
         logger.info("👀 Checking profile visits...")
-        return 0
+        
+        if not self.access_token:
+            return 0
+        
+        try:
+            # LinkedIn API doesn't directly expose profile visits
+            # Return 0 or implement via LinkedIn Analytics API
+            return 0
+        except Exception as e:
+            logger.error(f"❌ Error fetching profile visits: {e}")
+            return 0
+
+    def get_recent_activity(self) -> Dict[str, Any]:
+        """Get recent LinkedIn activity including posts and engagement"""
+        logger.info("📊 Fetching recent LinkedIn activity...")
+        
+        if not self.access_token or not self.person_urn:
+            return {"success": False, "error": "Credentials not configured"}
+        
+        try:
+            # Get posts
+            posts_endpoint = f"{self.base_url}/shares"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            posts_params = {
+                "q": "owners",
+                "owners": self.person_urn,
+                "count": 10
+            }
+            
+            posts_response = requests.get(
+                posts_endpoint,
+                headers=headers,
+                params=posts_params,
+                timeout=30
+            )
+            
+            posts = []
+            if posts_response.status_code == 200:
+                posts_data = posts_response.json()
+                posts = posts_data.get("elements", [])
+            
+            # Get notifications
+            notifications_endpoint = f"{self.base_url}/notifications"
+            
+            notifications_params = {
+                "count": 20
+            }
+            
+            notifications_response = requests.get(
+                notifications_endpoint,
+                headers=headers,
+                params=notifications_params,
+                timeout=30
+            )
+            
+            notifications = []
+            if notifications_response.status_code == 200:
+                notifications_data = notifications_response.json()
+                notifications = notifications_data.get("elements", [])
+            
+            result = {
+                "success": True,
+                "posts": posts,
+                "notifications": notifications,
+                "posts_count": len(posts),
+                "notifications_count": len(notifications)
+            }
+            
+            logger.info(f"✅ Fetched {len(posts)} posts and {len(notifications)} notifications")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching LinkedIn activity: {e}")
+            return {"success": False, "error": str(e)}
 
 
 class TwitterWatcher:

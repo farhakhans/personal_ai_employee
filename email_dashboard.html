@@ -530,32 +530,109 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadEmails();
+            console.log('Email Dashboard Loading...');
+            // Load emails immediately without waiting
+            loadEmailsFast();
             updateStats();
         });
-        
-        // Load emails
-        function loadEmails() {
+
+        // Fast email loading - skip real emails initially
+        function loadEmailsFast() {
             showLoading(true);
+            console.log('⚡ Fast loading demo emails...');
             
-            fetch('/api/demo/emails')
-                .then(response => response.json())
+            // Immediately load demo emails (faster)
+            loadDemoEmailsFast();
+        }
+
+        // Load demo emails fast
+        function loadDemoEmailsFast() {
+            console.log('📧 Fetching demo emails (fast)...');
+            
+            fetch('/api/demo/emails', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                cache: 'default'
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error: ' + response.status);
+                    return response.json();
+                })
                 .then(data => {
                     currentEmails = data.emails || [];
                     renderEmailList();
                     updateStats();
                     showLoading(false);
+                    
+                    if (currentEmails.length === 0) {
+                        showEmptyState();
+                    }
+                    
+                    // Load real emails in background (non-blocking)
+                    loadRealEmailsBackground();
                 })
                 .catch(error => {
-                    console.error('Error loading emails:', error);
+                    console.error('❌ Demo email error:', error);
                     showLoading(false);
-                    document.getElementById('emailList').innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Error loading emails. Please try again.
-                        </div>
-                    `;
+                    showEmptyState();
                 });
+        }
+
+        // Load real emails in background
+        function loadRealEmailsBackground() {
+            console.log('🔄 Loading real emails in background...');
+            
+            fetch('/api/real/emails', {
+                method: 'GET',
+                cache: 'default'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.emails && data.emails.length > 0) {
+                        console.log('✅ Real emails loaded:', data.emails.length);
+                        currentEmails = data.emails;
+                        renderEmailList();
+                        updateStats();
+                    }
+                })
+                .catch(error => {
+                    console.log('ℹ️ Real emails not available, using demo');
+                });
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            document.getElementById('emailList').innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Email Dashboard Connected!</strong><br>
+                    <small>No emails yet. Configure Gmail or send an email.</small>
+                    <br><br>
+                    <button class="btn btn-sm btn-primary" onclick="openCompose()">
+                        <i class="fas fa-plus me-1"></i>Compose Email
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="loadEmailsFast()">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                </div>
+            `;
+        }
+
+        // Show Gmail setup info
+        function showGmailSetupInfo(instructions) {
+            const infoHtml = `
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>${instructions.title}</h6>
+                    <hr>
+                    <ol style="font-size: 0.9rem;">
+                        ${instructions.steps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.getElementById('emailList').insertAdjacentHTML('beforebegin', infoHtml);
         }
         
         // Render email list

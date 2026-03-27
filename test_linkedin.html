@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test LinkedIn Post - AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%); 
+            min-height: 100vh; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        .container { max-width: 800px; margin: 50px auto; }
+        .test-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        h1 { color: #0077b5; margin-bottom: 10px; }
+        .status-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        .status-box.success { border-left: 4px solid #28a745; background: #d4edda; }
+        .status-box.error { border-left: 4px solid #dc3545; background: #f8d7da; }
+        .status-box.info { border-left: 4px solid #17a2b8; background: #d1ecf1; }
+        
+        .btn-linkedin {
+            background: #0077b5;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-linkedin:hover {
+            background: #005582;
+            color: white;
+        }
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-btn:hover { color: #f0f0f0; }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/social-media" class="back-btn">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        
+        <div class="test-card">
+            <h1><i class="fab fa-linkedin me-2"></i>Test LinkedIn Post</h1>
+            <p class="text-muted">Post directly to your LinkedIn profile</p>
+            
+            <div class="instructions" id="setup-instructions" style="display: none;">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>LinkedIn Credentials Required</h5>
+                <p>To post to LinkedIn, you need to configure your credentials:</p>
+                <ol>
+                    <li>Go to <a href="https://www.linkedin.com/developers/" target="_blank">LinkedIn Developer Portal</a></li>
+                    <li>Create an app and get OAuth 2.0 credentials</li>
+                    <li>Get your access token and person URN</li>
+                    <li>Update your .env file or use the configuration page</li>
+                </ol>
+                <a href="/social-config" class="btn btn-linkedin">
+                    <i class="fas fa-cog me-2"></i>Go to Configuration
+                </a>
+            </div>
+            
+            <form id="postForm">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Post Content</label>
+                    <textarea class="form-control" id="postContent" rows="5" placeholder="What would you like to share on LinkedIn?" maxlength="3000"></textarea>
+                    <div class="form-text">Maximum 3000 characters</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title (Optional)</label>
+                    <input type="text" class="form-control" id="postTitle" placeholder="Optional title for your post">
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-linkedin" onclick="testConnection()">
+                        <i class="fas fa-plug me-2"></i>Test Connection
+                    </button>
+                    <button type="button" class="btn btn-linkedin" onclick="postToLinkedIn()">
+                        <i class="fas fa-paper-plane me-2"></i>Post to LinkedIn
+                    </button>
+                </div>
+            </form>
+            
+            <div class="status-box" id="statusBox"></div>
+            
+            <hr class="my-4">
+            
+            <h5><i class="fas fa-info-circle me-2"></i>How It Works</h5>
+            <ol class="small text-muted">
+                <li>Enter your LinkedIn API credentials in the .env file or configuration page</li>
+                <li>Click "Test Connection" to verify your credentials</li>
+                <li>Write your post content (up to 3000 characters)</li>
+                <li>Click "Post to LinkedIn" to publish directly to your LinkedIn profile</li>
+                <li>Your post will appear on LinkedIn immediately</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check credentials on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkCredentials();
+        });
+        
+        async function checkCredentials() {
+            try {
+                const response = await fetch('/api/social/config');
+                const data = await response.json();
+                const config = data.config || {};
+                
+                if (!config.linkedin_access_token || !config.linkedin_person_urn) {
+                    document.getElementById('setup-instructions').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking credentials:', error);
+            }
+        }
+        
+        async function testConnection() {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-box info';
+            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing LinkedIn connection...';
+            
+            try {
+                const response = await fetch('/api/social/linkedin/test');
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusBox.className = 'status-box success';
+                    statusBox.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Connection Successful!</strong><br>
+                        ${result.user_name ? `Connected as: ${result.user_name}` : ''}<br>
+                        <small>${result.message || 'LinkedIn API is ready'}</small>
+                    `;
+                } else {
+                    statusBox.className = 'status-box error';
+                    statusBox.innerHTML = `
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Connection Failed</strong><br>
+                        ${result.error || 'Unable to connect to LinkedIn'}
+                    `;
+                }
+            } catch (error) {
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                `;
+            }
+        }
+        
+        async function postToLinkedIn() {
+            const content = document.getElementById('postContent').value.trim();
+            const title = document.getElementById('postTitle').value.trim();
+            const statusBox = document.getElementById('statusBox');
+            
+            if (!content) {
+                alert('Please enter post content');
+                return;
+            }
+            
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-box info';
+            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Posting to LinkedIn...';
+            
+            try {
+                const response = await fetch('/api/social/linkedin/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: content,
+                        title: title
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusBox.className = 'status-box success';
+                    statusBox.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Post Published Successfully!</strong><br>
+                        <a href="${result.post_url}" target="_blank">View on LinkedIn</a><br>
+                        <small>Post ID: ${result.post_id}</small>
+                    `;
+                    
+                    // Clear the form
+                    document.getElementById('postForm').reset();
+                } else {
+                    statusBox.className = 'status-box error';
+                    statusBox.innerHTML = `
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Post Failed</strong><br>
+                        ${result.error || 'Unable to post to LinkedIn'}<br>
+                        <small>${result.details ? JSON.stringify(result.details) : ''}</small>
+                    `;
+                }
+            } catch (error) {
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

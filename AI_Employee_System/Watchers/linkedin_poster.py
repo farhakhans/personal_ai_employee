@@ -1,38 +1,309 @@
 """
 LINKEDIN POSTER (Silver Tier)
-Automatically posts business updates to LinkedIn
+Real LinkedIn API integration for posting business updates
 Generates content, schedules posts, tracks engagement
 """
 
+import os
+import json
 import logging
+import requests
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
-import json
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger("LinkedInPoster")
 
 
 class LinkedInPoster:
-    """Posts business content to LinkedIn
-
+    """
+    Real LinkedIn posting using LinkedIn API v2.
+    
     Silver tier feature – check tier before using in workflows.
+    
+    Capabilities:
+    - Post text updates to LinkedIn profile
+    - Post images with captions
+    - Schedule posts
+    - Get post analytics
     """
 
     ALLOWED_TIERS = ['silver', 'gold', 'platinum']
 
-    def __init__(self, access_token: str, business_profile_id: str, user_tier: str = 'silver'):
+    def __init__(self, user_tier: str = 'silver'):
         """
-        access_token: LinkedIn API token
-        business_profile_id: LinkedIn page/profile ID
+        Initialize LinkedIn Poster with credentials from environment.
+        
         user_tier: tier string for gating
         """
         if user_tier not in self.ALLOWED_TIERS:
             raise ValueError(f"LinkedInPoster disabled for tier {user_tier}")
-        self.access_token = access_token
-        self.profile_id = business_profile_id
+        
+        # Get credentials from environment
+        self.access_token = os.getenv("LINKEDIN_ACCESS_TOKEN")
+        self.person_urn = os.getenv("LINKEDIN_PERSON_URN")
+        
+        # Fallback for business_profile_id parameter (backward compatibility)
+        if not self.person_urn:
+            self.person_urn = os.getenv("LINKEDIN_BUSINESS_PROFILE_ID")
+        
+        # API endpoints
+        self.base_url = "https://api.linkedin.com/v2"
+        
+        # Posts log
         self.posts = []
-        logger.info("✅ LinkedIn Poster initialized (Silver Tier)")
-    
+        self.vault_path = Path(__file__).parent.parent / "Vault"
+        self.vault_path.mkdir(parents=True, exist_ok=True)
+        
+        if self.access_token:
+            logger.info("✅ LinkedIn Poster initialized (Silver Tier) - API connected")
+        else:
+            logger.warning("⚠️ LINKEDIN_ACCESS_TOKEN not configured")
+
+    def test_connection(self) -> Dict[str, Any]:
+        """Test LinkedIn API connection"""
+        if not self.access_token:
+            return {"success": False, "error": "Access token not configured"}
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.access_token}"}
+            response = requests.get(
+                f"{self.base_url}/me",
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {
+                    "success": True,
+                    "user_id": data.get("id"),
+                    "user_name": f"{data.get('localizedFirstName', '')} {data.get('localizedLastName', '')}".strip(),
+                    "message": "Successfully connected to LinkedIn"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": f"API error: {response.status_code}",
+                    "details": response.text
+                }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def post_to_profile(self, message: str, title: str = "") -> Dict[str, Any]:
+        """
+        Post text update to LinkedIn profile using API v2.
+        
+        Args:
+            message: Post content (max 3000 characters)
+            title: Optional title for the post
+            
+        Returns:
+            dict: Post result with post_id and status
+        """
+        if not self.access_token:
+            return {"success": False, "error": "LinkedIn access token not configured"}
+
+        if not self.person_urn:
+            return {"success": False, "error": "LinkedIn person URN not configured"}
+
+        try:
+            # LinkedIn API v2 - Use ugcPosts endpoint for better visibility
+            endpoint = f"{self.base_url}/ugcPosts"
+
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json",
+                "X-Restli-Protocol-Version": "2.0.0",
+                "LinkedIn-Version": "202402"
+            }
+
+            # Prepare post content
+            post_text = message[:3000]  # LinkedIn limit
+
+            # Build share object using ugcPosts format
+            share_data = {
+                "author": f"urn:li:person:{self.person_urn}",
+                "lifecycleState": "PUBLISHED",
+                "specificContent": {
+                    "com.linkedin.ugc.ShareContent": {
+                        "shareCommentary": {
+                            "text": post_text
+                        },
+                        "shareMediaCategory": "NONE"
+                    }
+                },
+                "visibility": {
+                    "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+                }
+            }
+
+            response = requests.post(
+                endpoint,
+                headers=headers,
+                json=share_data,
+                timeout=30
+            )
+
+            result = response.json()
+
+            if response.status_code == 201 and "id" in result:
+                post_id = result["id"]
+
+                # Log the post
+                post_data = {
+                    "post_id": post_id,
+                    "message": message,
+                    "title": title,
+                    "timestamp": datetime.now().isoformat(),
+                    "status": "published",
+                    "platform": "LinkedIn"
+                }
+
+                self.posts.append(post_data)
+                self._save_post_to_vault(post_data)
+
+                logger.info(f"✅ LinkedIn post created: {post_id}")
+                return {
+                    "success": True,
+                    "post_id": post_id,
+                    "message": "Post successfully published on LinkedIn",
+                    "post_url": f"https://www.linkedin.com/feed/update/{post_id}"
+                }
+            else:
+                error_msg = result.get("message", "Unknown error")
+                logger.error(f"❌ LinkedIn post failed: {error_msg}")
+                logger.error(f"Response: {response.text}")
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "details": result,
+                    "status_code": response.status_code
+                }
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"❌ LinkedIn API error: {e}")
+            return {"success": False, "error": str(e)}
+        except Exception as e:
+            logger.error(f"❌ Unexpected error posting to LinkedIn: {e}")
+            return {"success": False, "error": str(e)}
+
+    def post_with_image(self, message: str, image_url: str) -> Dict[str, Any]:
+        """
+        Post with image to LinkedIn profile.
+        
+        Args:
+            message: Post caption
+            image_url: URL of the image to share
+            
+        Returns:
+            dict: Post result
+        """
+        if not self.access_token or not self.person_urn:
+            return {"success": False, "error": "LinkedIn credentials not configured"}
+        
+        try:
+            endpoint = f"{self.base_url}/shares"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            # Share with media
+            share_data = {
+                "owner": self.person_urn,
+                "text": {
+                    "text": message[:3000]
+                },
+                "content": {
+                    "contentEntities": [
+                        {
+                            "thumbnails": [{"url": image_url}],
+                            "description": message[:256]
+                        }
+                    ]
+                },
+                "visibility": "PUBLIC"
+            }
+            
+            response = requests.post(
+                endpoint,
+                headers=headers,
+                json=share_data,
+                timeout=30
+            )
+            
+            result = response.json()
+            
+            if response.status_code == 201 and "id" in result:
+                post_data = {
+                    "post_id": result["id"],
+                    "message": message,
+                    "image_url": image_url,
+                    "timestamp": datetime.now().isoformat(),
+                    "status": "published",
+                    "platform": "LinkedIn"
+                }
+                
+                self.posts.append(post_data)
+                logger.info(f"✅ LinkedIn post with image: {result['id']}")
+                return {
+                    "success": True,
+                    "post_id": result["id"],
+                    "message": "Post with image published successfully"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result.get("message", "Post failed")
+                }
+                
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def _save_post_to_vault(self, post_data: Dict[str, Any]) -> None:
+        """Save post record to vault"""
+        try:
+            posts_dir = self.vault_path / "System" / "social_logs" / "linkedin"
+            posts_dir.mkdir(parents=True, exist_ok=True)
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"LI_POST_{timestamp}_{post_data.get('post_id', 'unknown')}.md"
+            filepath = posts_dir / filename
+            
+            content = f"""# LinkedIn Post
+
+## Post Details
+- **Post ID:** {post_data.get('post_id', 'N/A')}
+- **Platform:** {post_data.get('platform', 'LinkedIn')}
+- **Status:** {post_data.get('status', 'unknown')}
+- **Timestamp:** {post_data.get('timestamp', 'N/A')}
+
+## Content
+**Message:**
+{post_data.get('message', '')}
+
+{f'**Title:** {post_data.get("title", "N/A")}' if post_data.get('title') else ''}
+
+## Metadata
+```json
+{json.dumps(post_data, indent=2)}
+```
+
+---
+*Generated by AI Employee LinkedIn Poster*
+"""
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(content)
+                
+        except Exception as e:
+            logger.error(f"Error saving post to vault: {e}")
+
     def generate_business_post(self, topic: str, details: Dict[str, Any]) -> str:
         """Generate business post content"""
         
@@ -130,11 +401,295 @@ class LinkedInPoster:
                         "shares": 0,
                         "engagement_rate": "0%"
                     }
-            
+
             return {"error": "Post not found"}
         except Exception as e:
             logger.error(f"❌ Error getting analytics: {e}")
             return {"error": str(e)}
+
+    def get_my_posts(self, count: int = 50) -> Dict[str, Any]:
+        """
+        Fetch your own posts from LinkedIn
+        
+        Args:
+            count: Number of posts to fetch (max 50)
+            
+        Returns:
+            dict: List of posts with engagement metrics
+        """
+        if not self.access_token:
+            return {"success": False, "error": "Access token not configured"}
+        
+        if not self.person_urn:
+            return {"success": False, "error": "Person URN not configured"}
+        
+        try:
+            # LinkedIn API v2 - Get shares by owner
+            endpoint = f"{self.base_url}/shares"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            params = {
+                "q": "owners",
+                "owners": self.person_urn,
+                "count": min(count, 50),
+                "projection": "(elements*(id,created,lastModified,text,visibility,content))"
+            }
+            
+            response = requests.get(
+                endpoint,
+                headers=headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                elements = data.get("elements", [])
+                
+                posts = []
+                for element in elements:
+                    post_data = {
+                        "post_id": element.get("id"),
+                        "text": element.get("text", {}).get("text", ""),
+                        "created_at": element.get("created"),
+                        "modified_at": element.get("lastModified"),
+                        "visibility": element.get("visibility"),
+                        "content": element.get("content", {})
+                    }
+                    posts.append(post_data)
+                
+                logger.info(f"✅ Fetched {len(posts)} posts from LinkedIn")
+                return {
+                    "success": True,
+                    "posts": posts,
+                    "total": len(posts)
+                }
+            else:
+                logger.error(f"❌ Failed to fetch posts: {response.status_code}")
+                return {
+                    "success": False,
+                    "error": f"API error: {response.status_code}",
+                    "details": response.text
+                }
+                
+        except Exception as e:
+            logger.error(f"❌ Error fetching posts: {e}")
+            return {"success": False, "error": str(e)}
+
+    def get_post_comments(self, post_id: str) -> Dict[str, Any]:
+        """
+        Fetch comments for a specific post
+        
+        Args:
+            post_id: LinkedIn post ID (URN format: urn:li:share:XXXXX)
+            
+        Returns:
+            dict: List of comments with author info
+        """
+        if not self.access_token:
+            return {"success": False, "error": "Access token not configured"}
+        
+        try:
+            # LinkedIn API v2 - Get comments on a share
+            endpoint = f"{self.base_url}/socialActions/{post_id}/comments"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            params = {
+                "count": 50,
+                "projection": "(elements*(id,actor,object,text,created))"
+            }
+            
+            response = requests.get(
+                endpoint,
+                headers=headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                elements = data.get("elements", [])
+                
+                comments = []
+                for element in elements:
+                    actor = element.get("actor", {})
+                    comment_data = {
+                        "comment_id": element.get("id"),
+                        "author_urn": actor.get("actor"),
+                        "text": element.get("object", {}).get("text", ""),
+                        "created_at": element.get("created"),
+                        "actor_name": actor.get("name", "Unknown")
+                    }
+                    comments.append(comment_data)
+                
+                logger.info(f"✅ Fetched {len(comments)} comments for post {post_id}")
+                return {
+                    "success": True,
+                    "comments": comments,
+                    "total": len(comments)
+                }
+            else:
+                logger.error(f"❌ Failed to fetch comments: {response.status_code}")
+                return {
+                    "success": False,
+                    "error": f"API error: {response.status_code}",
+                    "details": response.text
+                }
+                
+        except Exception as e:
+            logger.error(f"❌ Error fetching comments: {e}")
+            return {"success": False, "error": str(e)}
+
+    def get_notifications(self, count: int = 20) -> Dict[str, Any]:
+        """
+        Fetch LinkedIn notifications (likes, comments, mentions)
+        
+        Args:
+            count: Number of notifications to fetch
+            
+        Returns:
+            dict: List of notifications
+        """
+        if not self.access_token:
+            return {"success": False, "error": "Access token not configured"}
+        
+        try:
+            # LinkedIn API v2 - Get notifications
+            endpoint = f"{self.base_url}/notifications"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            params = {
+                "count": min(count, 50),
+                "projection": "(elements*(id,activity,actionType,created))"
+            }
+            
+            response = requests.get(
+                endpoint,
+                headers=headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                elements = data.get("elements", [])
+                
+                notifications = []
+                for element in elements:
+                    notif_data = {
+                        "notification_id": element.get("id"),
+                        "activity": element.get("activity"),
+                        "action_type": element.get("actionType"),
+                        "created_at": element.get("created"),
+                        "type": self._map_notification_type(element.get("actionType"))
+                    }
+                    notifications.append(notif_data)
+                
+                logger.info(f"✅ Fetched {len(notifications)} notifications")
+                return {
+                    "success": True,
+                    "notifications": notifications,
+                    "total": len(notifications)
+                }
+            else:
+                logger.error(f"❌ Failed to fetch notifications: {response.status_code}")
+                return {
+                    "success": False,
+                    "error": f"API error: {response.status_code}",
+                    "details": response.text
+                }
+                
+        except Exception as e:
+            logger.error(f"❌ Error fetching notifications: {e}")
+            return {"success": False, "error": str(e)}
+
+    def _map_notification_type(self, action_type: str) -> str:
+        """Map LinkedIn action type to readable notification type"""
+        mapping = {
+            "LIKE": "like",
+            "COMMENT": "comment",
+            "SHARE": "share",
+            "MENTION": "mention",
+            "FOLLOW": "follow",
+            "CONNECTION": "connection",
+            "JOB_INTEREST": "job_interest",
+            "PROFILE_VIEW": "profile_view"
+        }
+        return mapping.get(action_type, "unknown")
+
+    def get_engagement_summary(self, post_id: str) -> Dict[str, Any]:
+        """
+        Get detailed engagement summary for a post
+        
+        Args:
+            post_id: LinkedIn post ID
+            
+        Returns:
+            dict: Engagement metrics including likes, comments, shares
+        """
+        if not self.access_token:
+            return {"success": False, "error": "Access token not configured"}
+        
+        try:
+            # Get likes count
+            likes_endpoint = f"{self.base_url}/socialActions/{post_id}/likes"
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "X-Restli-Protocol-Version": "2.0.0"
+            }
+            
+            likes_response = requests.get(
+                likes_endpoint,
+                headers=headers,
+                params={"count": 0},  # Just get total count
+                timeout=30
+            )
+            
+            likes_count = 0
+            if likes_response.status_code == 200:
+                likes_data = likes_response.json()
+                likes_count = likes_data.get("paging", {}).get("total", 0)
+            
+            # Get comments count
+            comments_endpoint = f"{self.base_url}/socialActions/{post_id}/comments"
+            
+            comments_response = requests.get(
+                comments_endpoint,
+                headers=headers,
+                params={"count": 0},  # Just get total count
+                timeout=30
+            )
+            
+            comments_count = 0
+            if comments_response.status_code == 200:
+                comments_data = comments_response.json()
+                comments_count = comments_data.get("paging", {}).get("total", 0)
+            
+            return {
+                "success": True,
+                "post_id": post_id,
+                "likes": likes_count,
+                "comments": comments_count,
+                "shares": 0,  # Shares need separate API call
+                "total_engagement": likes_count + comments_count
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching engagement: {e}")
+            return {"success": False, "error": str(e)}
 
 
 class LinkedInScheduler:

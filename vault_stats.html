@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault Stats - Personal AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: none; }
+        .stat-card { transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-icon { font-size: 2.5rem; opacity: 0.8; }
+        .stat-number { font-size: 2rem; font-weight: bold; }
+        .recent-file { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; margin: 5px 0; }
+        .folder-badge { font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card text-white">
+                    <div class="card-body">
+                        <h1 class="display-4"><i class="bi bi-box-seam"></i> Vault Statistics</h1>
+                        <p class="lead">Real-time file statistics from your AI Employee Vault</p>
+                        <button class="btn btn-light" onclick="loadStats()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                        <a href="/dashboard" class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="stats-container">
+            <!-- Stats will be loaded here -->
+            <div class="col-12 text-center">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card text-white">
+                    <div class="card-header">
+                        <h4><i class="bi bi-clock-history"></i> Recent Files</h4>
+                    </div>
+                    <div class="card-body" id="recent-files">
+                        <p class="text-center">Loading recent files...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/vault/stats');
+                const stats = await response.json();
+                
+                if (stats.error) {
+                    document.getElementById('stats-container').innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger">Error: ${stats.error}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Color scheme for different folders
+                const colors = {
+                    inbox: 'primary',
+                    needs_action: 'warning',
+                    pending_approval: 'danger',
+                    approved: 'success',
+                    done: 'info',
+                    plans: 'purple',
+                    sent: 'secondary'
+                };
+
+                const icons = {
+                    inbox: 'bi-inbox',
+                    needs_action: 'bi-exclamation-triangle',
+                    pending_approval: 'bi-hourglass-split',
+                    approved: 'bi-check-circle',
+                    done: 'bi-check-all',
+                    plans: 'bi-file-earmark-text',
+                    sent: 'bi-send'
+                };
+
+                const labels = {
+                    inbox: 'Inbox',
+                    needs_action: 'Needs Action',
+                    pending_approval: 'Pending Approval',
+                    approved: 'Approved',
+                    done: 'Done',
+                    plans: 'Plans',
+                    sent: 'Sent'
+                };
+
+                let html = '';
+                for (const [key, count] of Object.entries(stats)) {
+                    if (key === 'total_files' || key === 'recent_files' || key === 'vault_path' || key === 'vault_exists') continue;
+                    
+                    const color = colors[key] || 'secondary';
+                    const icon = icons[key] || 'bi-file-earmark';
+                    const label = labels[key] || key;
+                    
+                    html += `
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card stat-card bg-${color} text-white h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi ${icon} stat-icon"></i>
+                                    <div class="stat-number mt-2">${count}</div>
+                                    <div class="stat-label">${label}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Add total
+                html += `
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="card stat-card bg-dark text-white h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-files stat-icon"></i>
+                                <div class="stat-number mt-2">${stats.total_files || 0}</div>
+                                <div class="stat-label">Total Files</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('stats-container').innerHTML = html;
+
+                // Load recent files
+                if (stats.recent_files && stats.recent_files.length > 0) {
+                    let recentHtml = '<div class="row">';
+                    stats.recent_files.forEach(file => {
+                        const date = new Date(file.modified).toLocaleString();
+                        recentHtml += `
+                            <div class="col-md-6">
+                                <div class="recent-file text-white">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <strong>${file.name}</strong>
+                                    <br><small class="text-muted">${file.path}</small>
+                                    <br><small class="text-muted"><i class="bi bi-clock"></i> ${date}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    recentHtml += '</div>';
+                    document.getElementById('recent-files').innerHTML = recentHtml;
+                } else {
+                    document.getElementById('recent-files').innerHTML = '<p class="text-center">No recent files found</p>';
+                }
+
+            } catch (error) {
+                document.getElementById('stats-container').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger">Error loading stats: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load stats on page load
+        loadStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Configuration - AI Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --linkedin-color: #0077b5;
+            --facebook-color: #1877f2;
+            --instagram-color: #e4405f;
+            --twitter-color: #000000;
+        }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; margin: 50px auto; }
+        .config-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        .platform-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        .platform-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .platform-section.linkedin { border-color: var(--linkedin-color); }
+        .platform-section.facebook { border-color: var(--facebook-color); }
+        .platform-section.instagram { border-color: var(--instagram-color); }
+        .platform-section.twitter { border-color: var(--twitter-color); }
+        
+        .platform-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .platform-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-right: 15px;
+        }
+        .platform-icon.linkedin { background: rgba(0, 119, 181, 0.1); color: var(--linkedin-color); }
+        .platform-icon.facebook { background: rgba(24, 119, 242, 0.1); color: var(--facebook-color); }
+        .platform-icon.instagram { background: rgba(228, 64, 95, 0.1); color: var(--instagram-color); }
+        .platform-icon.twitter { background: rgba(0, 0, 0, 0.1); color: var(--twitter-color); }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: auto;
+        }
+        .status-badge.connected { background: #d4edda; color: #155724; }
+        .status-badge.disconnected { background: #f8d7da; color: #721c24; }
+        
+        .form-label { font-weight: 600; color: #333; }
+        .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25); }
+        
+        .btn-test {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-test:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+            color: white;
+        }
+        
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        .result-box.success { border-left: 4px solid #28a745; }
+        .result-box.error { border-left: 4px solid #dc3545; }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        h1 { color: white; text-align: center; margin-bottom: 10px; }
+        .subtitle { color: rgba(255,255,255,0.8); text-align: center; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/social-media" class="back-btn">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        
+        <h1><i class="fas fa-cog me-2"></i>Social Media Configuration</h1>
+        <p class="subtitle">Set up your API credentials for Facebook, Instagram, LinkedIn & Twitter</p>
+        
+        <div class="config-card">
+            <form id="configForm">
+                <!-- LinkedIn Section -->
+                <div class="platform-section linkedin">
+                    <div class="platform-header">
+                        <div class="platform-icon linkedin">
+                            <i class="fab fa-linkedin-in"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">LinkedIn</h4>
+                            <small class="text-muted">Professional network updates</small>
+                        </div>
+                        <span class="status-badge disconnected" id="linkedin-status">
+                            <i class="fas fa-circle me-1"></i>Not Configured
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Access Token</label>
+                            <input type="text" class="form-control" id="linkedin_token" placeholder="AQV...">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Get from <a href="https://www.linkedin.com/developers/" target="_blank">LinkedIn Developer Portal</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Person URN</label>
+                            <input type="text" class="form-control" id="linkedin_urn" placeholder="urn:li:person:ABC123">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Your LinkedIn profile URN (e.g., urn:li:person:123456)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-test" onclick="testConnection('linkedin')">
+                        <i class="fas fa-plug me-2"></i>Test Connection
+                    </button>
+                    <div class="result-box" id="linkedin-result"></div>
+                </div>
+                
+                <!-- Facebook Section -->
+                <div class="platform-section facebook">
+                    <div class="platform-header">
+                        <div class="platform-icon facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">Facebook</h4>
+                            <small class="text-muted">Page posts and updates</small>
+                        </div>
+                        <span class="status-badge disconnected" id="facebook-status">
+                            <i class="fas fa-circle me-1"></i>Not Configured
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Page Access Token</label>
+                            <input type="text" class="form-control" id="facebook_token" placeholder="EAA...">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Get from <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Page ID</label>
+                            <input type="text" class="form-control" id="facebook_page_id" placeholder="123456789012345">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Your Facebook Page ID (found in Page About section)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-test" onclick="testConnection('facebook')">
+                        <i class="fas fa-plug me-2"></i>Test Connection
+                    </button>
+                    <div class="result-box" id="facebook-result"></div>
+                </div>
+                
+                <!-- Instagram Section -->
+                <div class="platform-section instagram">
+                    <div class="platform-header">
+                        <div class="platform-icon instagram">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">Instagram</h4>
+                            <small class="text-muted">Business account posts</small>
+                        </div>
+                        <span class="status-badge disconnected" id="instagram-status">
+                            <i class="fas fa-circle me-1"></i>Not Configured
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Access Token</label>
+                            <input type="text" class="form-control" id="instagram_token" placeholder="EAA...">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Same as Facebook Page Access Token
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Business Account ID</label>
+                            <input type="text" class="form-control" id="instagram_account_id" placeholder="17841400000000000">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Instagram Business Account ID from Graph API
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-test" onclick="testConnection('instagram')">
+                        <i class="fas fa-plug me-2"></i>Test Connection
+                    </button>
+                    <div class="result-box" id="instagram-result"></div>
+                </div>
+                
+                <!-- Twitter Section -->
+                <div class="platform-section twitter">
+                    <div class="platform-header">
+                        <div class="platform-icon twitter">
+                            <i class="fab fa-x-twitter"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">Twitter/X</h4>
+                            <small class="text-muted">Tweets and engagement</small>
+                        </div>
+                        <span class="status-badge disconnected" id="twitter-status">
+                            <i class="fas fa-circle me-1"></i>Not Configured
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">API Key</label>
+                            <input type="text" class="form-control" id="twitter_api_key" placeholder="Your API Key">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Get from <a href="https://developer.twitter.com/" target="_blank">Twitter Developer Portal</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">API Secret</label>
+                            <input type="password" class="form-control" id="twitter_api_secret" placeholder="Your API Secret">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Access Token</label>
+                            <input type="text" class="form-control" id="twitter_access_token" placeholder="Your Access Token">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Access Token Secret</label>
+                            <input type="password" class="form-control" id="twitter_access_token_secret" placeholder="Your Access Token Secret">
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-test" onclick="testConnection('twitter')">
+                        <i class="fas fa-plug me-2"></i>Test Connection
+                    </button>
+                    <div class="result-box" id="twitter-result"></div>
+                </div>
+                
+                <!-- Save Button -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-save btn-lg" onclick="saveAllConfig()">
+                        <i class="fas fa-save me-2"></i>Save All Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Quick Setup Guide -->
+        <div class="config-card">
+            <h3><i class="fas fa-book me-2"></i>Quick Setup Guide</h3>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 class="text-primary"><i class="fab fa-linkedin me-2"></i>LinkedIn Setup</h5>
+                    <ol class="small">
+                        <li>Go to <a href="https://www.linkedin.com/developers/" target="_blank">LinkedIn Developer Portal</a></li>
+                        <li>Create a new app</li>
+                        <li>Get your OAuth 2.0 access token</li>
+                        <li>Get your Person URN from API response</li>
+                        <li>Token expires in 60 days</li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-primary"><i class="fab fa-facebook me-2"></i>Facebook & Instagram Setup</h5>
+                    <ol class="small">
+                        <li>Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer</a></li>
+                        <li>Select your app and get Page Access Token</li>
+                        <li>Copy your Page ID from About section</li>
+                        <li>For Instagram, get Business Account ID</li>
+                        <li>Token expires in 60 days</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-lightbulb me-2"></i>
+                <strong>Tip:</strong> Save this page after configuration. Your credentials are stored securely in the .env file.
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load existing config on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+        });
+        
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/social/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    const config = data.config || {};
+                    
+                    // LinkedIn
+                    if (config.linkedin_access_token) document.getElementById('linkedin_token').value = config.linkedin_access_token;
+                    if (config.linkedin_person_urn) document.getElementById('linkedin_urn').value = config.linkedin_person_urn;
+                    
+                    // Facebook
+                    if (config.facebook_access_token) document.getElementById('facebook_token').value = config.facebook_access_token;
+                    if (config.facebook_page_id) document.getElementById('facebook_page_id').value = config.facebook_page_id;
+                    
+                    // Instagram
+                    if (config.instagram_access_token) document.getElementById('instagram_token').value = config.instagram_access_token;
+                    if (config.instagram_account_id) document.getElementById('instagram_account_id').value = config.instagram_account_id;
+                    
+                    // Twitter
+                    if (config.twitter_api_key) document.getElementById('twitter_api_key').value = config.twitter_api_key;
+                    if (config.twitter_api_secret) document.getElementById('twitter_api_secret').value = config.twitter_api_secret;
+                    if (config.twitter_access_token) document.getElementById('twitter_access_token').value = config.twitter_access_token;
+                    if (config.twitter_access_token_secret) document.getElementById('twitter_access_token_secret').value = config.twitter_access_token_secret;
+                    
+                    // Update status badges
+                    updateStatus('linkedin', !!config.linkedin_access_token);
+                    updateStatus('facebook', !!config.facebook_access_token && !!config.facebook_page_id);
+                    updateStatus('instagram', !!config.instagram_access_token && !!config.instagram_account_id);
+                    updateStatus('twitter', !!config.twitter_api_key);
+                }
+            } catch (error) {
+                console.error('Error loading config:', error);
+            }
+        }
+        
+        function updateStatus(platform, isConnected) {
+            const badge = document.getElementById(`${platform}-status`);
+            if (badge) {
+                if (isConnected) {
+                    badge.className = 'status-badge connected';
+                    badge.innerHTML = '<i class="fas fa-check-circle me-1"></i>Configured';
+                } else {
+                    badge.className = 'status-badge disconnected';
+                    badge.innerHTML = '<i class="fas fa-circle me-1"></i>Not Configured';
+                }
+            }
+        }
+        
+        async function testConnection(platform) {
+            const resultBox = document.getElementById(`${platform}-result`);
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            resultBox.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing connection...';
+            
+            try {
+                const response = await fetch(`/api/social/${platform}/test`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultBox.className = 'result-box success';
+                    resultBox.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Success!</strong> ${result.message || 'Connection successful'}
+                        ${result.user_name ? `<br><small>Connected as: ${result.user_name}</small>` : ''}
+                    `;
+                    updateStatus(platform, true);
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultBox.innerHTML = `
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Failed:</strong> ${result.error || 'Connection failed'}
+                    `;
+                }
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultBox.innerHTML = `
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                `;
+            }
+        }
+        
+        async function saveAllConfig() {
+            const config = {
+                // LinkedIn
+                linkedin_access_token: document.getElementById('linkedin_token').value,
+                linkedin_person_urn: document.getElementById('linkedin_urn').value,
+                
+                // Facebook
+                facebook_access_token: document.getElementById('facebook_token').value,
+                facebook_page_id: document.getElementById('facebook_page_id').value,
+                
+                // Instagram
+                instagram_access_token: document.getElementById('instagram_token').value,
+                instagram_account_id: document.getElementById('instagram_account_id').value,
+                
+                // Twitter
+                twitter_api_key: document.getElementById('twitter_api_key').value,
+                twitter_api_secret: document.getElementById('twitter_api_secret').value,
+                twitter_access_token: document.getElementById('twitter_access_token').value,
+                twitter_access_token_secret: document.getElementById('twitter_access_token_secret').value
+            };
+            
+            try {
+                const response = await fetch('/api/social/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success || result.status === 'success') {
+                    alert('✅ Configuration saved successfully!\n\nYour credentials have been stored in the .env file.\nRestart the server to apply changes.');
+                    location.reload();
+                } else {
+                    alert('❌ Error saving configuration: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('❌ Error saving configuration: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
